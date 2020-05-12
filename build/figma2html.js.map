@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/index.tsx"],
+  "sourcesContent": ["console.log('Hello World');\nconsole.log(__html__);\n\n// figma.showUI(__html__);\nconsole.log(document);\n\nfigma.ui.on('message', (msg) => {\n  console.log(msg);\n});\n\n// figma.closePlugin();\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,cAAQ,IAAI;AACZ,cAAQ,IAAI;AAGZ,cAAQ,IAAI;AAEZ,YAAM,GAAG,GAAG,WAAW,CAAC;AACtB,gBAAQ,IAAI;;",
+  "names": []
+}

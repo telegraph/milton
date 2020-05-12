@@ -1,0 +1,20 @@
+{
+  "name": "2020-05-06-figma2html",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "watchexec --exts css,html,tsx,ts -w ./src ./build.sh"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@figma/plugin-typings": "^1.15.0",
+    "esbuild": "^0.2.11",
+    "file-saver": "^2.0.2",
+    "preact": "^10.4.1"
+  },
+  "devDependencies": {
+    "@types/file-saver": "^2.0.1"
+  }
+}

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no"
+  />
+
+  <style>
+    body {
+      margin: 0;
+    }
+    text {
+      line-height: 0;
+      /* transform-origin: center right; */
+    }
+
+    text * {
+      white-space: normal;
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+
+  <script>
+    // @ts-check
+    (async () => {
+      /**
+       * @param {object}  props
+       * @param {Element} props.el
+       * @param {number}  props.width
+       * @param {number}  props.height
+       * @return {void}
+       **/
+      function resize(props) {
+        const { el, width, height } = props;
+        let scale = width / el.getBoundingClientRect().width;
+
+        // // Update SVG height to maintain aspect ratio
+        el.setAttribute('height', (height / scale).toString());
+
+        // // Fix grid size at 1px too
+        // // grid.style('stroke-width', scale + 'px');
+
+        // // Increase text scale proportional to overall scale reduction
+        // // e.g. 3/4 of the original width -> scale text by 4/3
+        const textNodes = [...el.querySelectorAll('text')];
+        textNodes.forEach((el) => {
+          const newTransformVal = el
+            .getAttribute('transform')
+            .replace(/scale\(.+\)|$/, ` scale(${scale} ${scale})`);
+          el.setAttribute('transform', newTransformVal);
+        });
+
+        // lines.map((lineEl) => {
+        //   lineEl.setAttribute('stroke-width', `${scale}px`);
+        // });
+      }
+
+      try {
+        const container = document.querySelector('#container');
+        if (!container) {
+          throw new Error('Missing container element');
+        }
+
+        const svgResponse = await fetch('map.svg');
+        if (svgResponse.ok === false) {
+          throw new Error(svgResponse.statusText);
+        }
+        const svgRaw = await svgResponse.text();
+        const parser = new DOMParser();
+        const { documentElement } = parser.parseFromString(
+          svgRaw,
+          'application/xml'
+        );
+
+        // Insert into DOM
+        container.appendChild(documentElement);
+        const { width, height } = documentElement.getBoundingClientRect();
+
+        // Prep SVG for resizing
+        const textNodes = [...documentElement.querySelectorAll('text')];
+        textNodes.forEach((textNode) => {
+          // const textWidth = tspan.getComputedTextLength();
+          // const { x, y, height } = textNode.getBBox();
+
+          textNode.removeAttribute('style');
+          textNode.removeAttribute('xml:space');
+
+          const tspanNodes = textNode.querySelectorAll('tspan');
+          tspanNodes.forEach((tspanNode) => {
+            const xAttr = parseInt(tspanNode.getAttribute('x'), 10);
+            const yAttr = parseInt(tspanNode.getAttribute('y'), 10);
+            const { width } = textNode.getBBox();
+
+            const newTextNode = document.createElementNS(
+              'http://www.w3.org/2000/svg',
+              'text'
+            );
+
+            const newTextSpanNode = document.createElementNS(
+              'http://www.w3.org/2000/svg',
+              'tspan'
+            );
+
+            const tNode = document.createTextNode(tspanNode.textContent);
+            newTextSpanNode.appendChild(tNode);
+            newTextNode.appendChild(newTextSpanNode);
+            // newTextNode.setAttribute('x', '200');
+            // newTextNode.setAttribute('y', '100');
+            [...textNode.attributes].forEach((attr) => {
+              newTextNode.setAttribute(attr.name, attr.value);
+            });
+
+            const tWidth = tspanNode.getComputedTextLength();
+            newTextSpanNode.setAttribute('x', (tWidth / 2).toString());
+
+            newTextNode.setAttribute(
+              'transform',
+              `translate(${xAttr}, ${yAttr})`
+            );
+
+            newTextNode.setAttribute('text-anchor', 'middle');
+            newTextNode.setAttribute('dominant-baseline', 'auto');
+            textNode.parentElement.insertBefore(newTextNode, textNode);
+          });
+
+          // const transformValue = `translate(${x + textWidth / 2} ${
+          //   y + height / 2
+          // })`;
+
+          // textNode.setAttribute('transform', transformValue);
+          // textNode.setAttribute('text-anchor', 'middle');
+          // textNode.innerHTML = textNode.textContent;
+          // textNode.setAttribute('dominant-baseline', 'middle');
+
+          // Remove original text node
+          textNode.parentNode.removeChild(textNode);
+        });
+
+        const props = {
+          el: documentElement,
+          width: width,
+          height: height,
+        };
+
+        // Prep document
+        documentElement.setAttribute('width', '100%');
+        documentElement.setAttribute('height', props.height.toString());
+        documentElement.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        documentElement.setAttribute(
+          'viewBox',
+          `0 0 ${props.width} ${props.height}`
+        );
+
+        resize(props);
+
+        window.addEventListener('resize', () => resize(props));
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  </script>
+</body>
