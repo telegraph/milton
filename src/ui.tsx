@@ -157,8 +157,11 @@ export type FrameDataType = {
 
 type MsgEventType = {
   type: MSG_EVENTS;
-  frames: FrameDataType[];
-  selectedFrames: string[];
+  frames?: FrameDataType[];
+  selectedFrames?: string[];
+  rawRender?: string;
+  renderId?: string;
+  errorText?: string;
 };
 
 export type AppState = {
@@ -168,6 +171,7 @@ export type AppState = {
   selectedFrames: string[];
   stage: STAGES;
   previewIndex: number;
+  renders: { [id: string]: string };
 };
 
 export class App extends Component {
@@ -178,6 +182,7 @@ export class App extends Component {
     selectedFrames: [],
     stage: STAGES.CHOOSE_FRAMES,
     previewIndex: 0,
+    renders: {},
   };
 
   componentDidMount() {
@@ -191,7 +196,14 @@ export class App extends Component {
   }
 
   handleEvents = (data: MsgEventType) => {
-    const { type, frames, selectedFrames } = data;
+    const {
+      type,
+      frames,
+      selectedFrames,
+      rawRender,
+      renderId,
+      errorText,
+    } = data;
     console.log(data);
 
     switch (type) {
@@ -203,18 +215,24 @@ export class App extends Component {
         });
         break;
 
-      case MSG_EVENTS.RENDER:
-        // main(data, textNodes);
-        console.log(data);
-        break;
-
       case MSG_EVENTS.NO_FRAMES:
         this.setState({ error: UI_TEXT.ERROR_MISSING_FRAMES });
         break;
 
       case MSG_EVENTS.ERROR:
-        this.setState({ error: `${UI_TEXT.ERROR_UNEXPECTED}: ${data?.text}` });
+        this.setState({ error: `${UI_TEXT.ERROR_UNEXPECTED}: ${errorText}` });
         break;
+
+      case MSG_EVENTS.RENDER:
+        if (!renderId || !rawRender) {
+          this.setState({ error: 'Missing render ID or raw render' });
+          return;
+        }
+
+        this.setState({
+          renders: { ...this.state.renders, [renderId]: rawRender },
+        });
+        return;
 
       default:
         this.setState({ error: 'Unknown error o_O?' });
@@ -288,6 +306,13 @@ export class App extends Component {
     }
   };
 
+  getOutputRender = (frameId: String) => {
+    parent.postMessage(
+      { pluginMessage: { type: MSG_EVENTS.RENDER, frameId } },
+      '*'
+    );
+  };
+
   render() {
     const {
       error,
@@ -303,6 +328,12 @@ export class App extends Component {
     const previewFrame = frames.find(
       (frame) => frame.id === selectedFrames[previewIndex]
     );
+
+    const previewRender = previewFrame && this.state.renders[previewFrame.id];
+    // If previewing frame without a render then request if from the backend
+    if (previewFrame && !previewRender) {
+      this.getOutputRender(previewFrame.id);
+    }
 
     return (
       <div class="f2h">
@@ -326,7 +357,7 @@ export class App extends Component {
           )}
 
           {ready && previewFrame && stage === STAGES.PREVIEW_OUTPUT && (
-            <Preview frame={previewFrame} />
+            <Preview frame={previewFrame} render={previewRender} />
           )}
 
           {ready && stage === STAGES.SAVE_OUTPUT && <p>Save OUTPUT</p>}

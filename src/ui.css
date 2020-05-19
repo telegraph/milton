@@ -174,8 +174,14 @@ button:hover {
   flex: 1;
 }
 
+.f2h__preview {
+  width: 100%;
+}
+
 .f2h__preview_wrapper {
-  overflow-x: scroll;
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
 }
 
 .error {

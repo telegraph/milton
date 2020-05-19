@@ -3,10 +3,11 @@ import type { FrameDataType } from '../ui';
 
 type PreviewProps = {
   frame: FrameDataType;
+  render: string | undefined;
 };
 
 export function Preview(props: PreviewProps) {
-  const { frame } = props;
+  const { frame, render } = props;
   const { name, width } = frame;
 
   return (
@@ -14,10 +15,15 @@ export function Preview(props: PreviewProps) {
       <p>
         {name} <span>{width}px</span>
       </p>
-      <div
-        class="f2h__preview_wrapper"
-        style={`width: ${width}; height: 300px; background: #999;`}
-      ></div>
+
+      {render ? (
+        <div
+          class="f2h__preview_wrapper"
+          dangerouslySetInnerHTML={{ __html: render }}
+        />
+      ) : (
+        '<p class="f2h__preview_loading">Loading...</p>'
+      )}
     </div>
   );
 }
