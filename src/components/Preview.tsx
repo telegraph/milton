@@ -14,7 +14,10 @@ export function Preview(props: PreviewProps) {
       <p>
         {name} <span>{width}px</span>
       </p>
-      <div style={`width: ${width}; height: 300px; background: #999;`}></div>
+      <div
+        class="f2h__preview_wrapper"
+        style={`width: ${width}; height: 300px; background: #999;`}
+      ></div>
     </div>
   );
 }

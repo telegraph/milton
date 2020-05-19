@@ -1,0 +1,170 @@
+/*! minireset.css v0.0.6 | MIT License | github.com/jgthms/minireset.css */
+html,
+body,
+p,
+ol,
+ul,
+li,
+dl,
+dt,
+dd,
+blockquote,
+figure,
+fieldset,
+legend,
+textarea,
+pre,
+iframe,
+hr,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  padding: 0;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 100%;
+  font-weight: normal;
+}
+ul {
+  list-style: none;
+}
+button,
+input,
+select,
+textarea {
+  margin: 0;
+}
+html {
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+iframe {
+  border: 0;
+}
+
+@import url('https://rsms.me/inter/inter.css');
+
+body {
+  --padding-small: 6px;
+  --padding-medium: 12px;
+  --padding-large: 24px;
+  --padding-huge: 48px;
+
+  --colours-grey-0: rgb(33, 33, 33);
+  --colours-grey-1: rgb(74, 74, 74);
+  --colours-grey-2: rgb(133, 133, 133);
+  --colours-grey-3: rgb(179, 179, 179);
+  --colours-grey-4: rgb(227, 227, 227);
+  --colours-main: rgb(72, 202, 126);
+  --colours-main-light: rgb(208, 242, 222);
+  --colours-main-dark: rgb(44, 75, 57);
+
+  --font-family-sans-serif: Arial, Helvetica, sans-serif;
+  --font-famailt-serif: Georgia, 'Times New Roman', Times, serif;
+
+  --font-size--small: 11px;
+  --font-size--medium: 14px;
+  --font-size--large: 18px;
+}
+
+html {
+  font-family: 'Inter', sans-serif;
+}
+@supports (font-variation-settings: normal) {
+  html {
+    font-family: 'Inter var', sans-serif;
+  }
+}
+
+html,
+body {
+  margin: 0;
+  font-size: 14px;
+}
+
+button {
+  border: 1px solid transparent;
+  background: #fff;
+  padding: var(--padding-small, 0) var(--padding-medium, 0);
+  cursor: pointer;
+  border-radius: 2px;
+  outline: none;
+  border: 1px solid transparent;
+
+  background: var(--colours-main, #f0f);
+}
+
+.btn--primary {
+  color: #fff;
+  background: var(--colours-main, #f0f);
+}
+
+.btn--secondary {
+  color: var(--colours-grey-1, #f0f);
+  border-color: var(--colours-grey-2, #f0f);
+  background-color: transparent;
+  margin-right: var(--padding-small, 0);
+}
+
+button:disabled {
+  border: 1px solid var(--colours-grey-4, #f0f);
+  color: var(--colours-grey-4, #f0f);
+  background: #fff;
+}
+
+button:active,
+button:hover {
+  outline: none;
+}
+
+.f2h {
+  padding: var(--padding-medium, 0);
+}
+
+.f2h__header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.f2h__label {
+  display: flex;
+  cursor: pointer;
+  padding: 12px 0;
+  align-items: center;
+}
+
+.f2h__checkbox {
+  margin-right: var(--padding-medium, 0);
+}
+
+.f2h__selection_width {
+  font-size: var(--font-size--small, 1);
+  margin: 0 var(--padding-small, 0);
+  display: block;
+  color: var(--colours-grey-2, #f0f);
+}
+
+.f2h__title {
+  font-family: var(--font-family-sans-serif, sans-serif);
+  font-size: var(--font-size--medium, 1em);
+  flex: 1;
+}
+
+.f2h__preview_wrapper {
+  overflow-x: scroll;
+}

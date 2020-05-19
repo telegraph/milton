@@ -43,9 +43,10 @@
         MSG_EVENTS2[MSG_EVENTS2["NO_FRAMES"] = 1] = "NO_FRAMES";
         MSG_EVENTS2[MSG_EVENTS2["NO_TARGET_FRAMES"] = 2] = "NO_TARGET_FRAMES";
         MSG_EVENTS2[MSG_EVENTS2["FOUND_FRAMES"] = 3] = "FOUND_FRAMES";
-        MSG_EVENTS2[MSG_EVENTS2["RENDER"] = 4] = "RENDER";
-        MSG_EVENTS2[MSG_EVENTS2["CLOSE"] = 5] = "CLOSE";
-        MSG_EVENTS2[MSG_EVENTS2["ERROR"] = 6] = "ERROR";
+        MSG_EVENTS2[MSG_EVENTS2["RESIZE"] = 4] = "RESIZE";
+        MSG_EVENTS2[MSG_EVENTS2["RENDER"] = 5] = "RENDER";
+        MSG_EVENTS2[MSG_EVENTS2["CLOSE"] = 6] = "CLOSE";
+        MSG_EVENTS2[MSG_EVENTS2["ERROR"] = 7] = "ERROR";
       })(MSG_EVENTS || (MSG_EVENTS = {}));
       var BREAKPOINTS;
       (function(BREAKPOINTS2) {
@@ -60,8 +61,11 @@
         WARN_TOO_MANY_TARGETS: "Please select three target frames",
         INFO_PREVIEW: "Preview each frame output",
         TITLE_CHOOSE_FRAME: "Choose which frames to export",
-        TITLE_PREVIEW: "Preview each frame",
-        TILE_OUTPUT: "Export"
+        TITLE_PREVIEW: "Preview",
+        TILE_OUTPUT: "Export",
+        BUTTON_NEXT: "Next",
+        BUTTON_DOWNLOAD: "Download",
+        BUTTON_PREVIOUS: "Back"
       };
 
       // src/index.tsx
@@ -78,8 +82,8 @@
         };
       }
       const handleReceivedMsg = (msg) => {
-        console.log(msg);
-        switch (msg) {
+        const {type, data} = msg;
+        switch (type) {
           case MSG_EVENTS.ERROR:
             console.log("plugin msg: error");
             break;
@@ -93,6 +97,10 @@
             break;
           case MSG_EVENTS.RENDER:
             console.log("plugin msg: render");
+            break;
+          case MSG_EVENTS.RESIZE:
+            console.log("plugin msg: resize");
+            figma.ui.resize(data, 400);
             break;
           default:
             console.error("Unknown post message", msg);
@@ -130,6 +138,7 @@
         }
       };
       figma.showUI(__html__);
+      figma.ui.resize(640, 500);
     }
   };
   return __require(1);

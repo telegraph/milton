@@ -16,9 +16,9 @@ async function getBoardAsSvg(frame: SceneNode): Promise<board> {
 }
 
 const handleReceivedMsg = (msg: MSG_EVENTS) => {
-  console.log(msg);
+  const { type, data } = msg;
 
-  switch (msg) {
+  switch (type) {
     case MSG_EVENTS.ERROR:
       console.log('plugin msg: error');
       break;
@@ -35,6 +35,11 @@ const handleReceivedMsg = (msg: MSG_EVENTS) => {
 
     case MSG_EVENTS.RENDER:
       console.log('plugin msg: render');
+      break;
+
+    case MSG_EVENTS.RESIZE:
+      console.log('plugin msg: resize');
+      figma.ui.resize(data, 400);
       break;
 
     default:
@@ -83,6 +88,7 @@ const main = () => {
 
 // Render the DOM
 figma.showUI(__html__);
+figma.ui.resize(640, 500);
 
 // (async () => {
 //   try {

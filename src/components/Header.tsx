@@ -22,35 +22,47 @@ export function Header(props: HeaderProps) {
   } = props;
 
   let title;
+  let nextText;
+  let backText;
+
   switch (stage) {
     case STAGES.CHOOSE_FRAMES:
       title = UI_TEXT.TITLE_CHOOSE_FRAME;
+      nextText = UI_TEXT.BUTTON_NEXT;
       break;
 
     case STAGES.PREVIEW_OUTPUT:
       title = `${UI_TEXT.TITLE_PREVIEW} ${
         paginationIndex + 1
       } of ${paginationLength}`;
+      nextText = UI_TEXT.BUTTON_NEXT;
+      backText = UI_TEXT.BUTTON_PREVIOUS;
       break;
 
     case STAGES.SAVE_OUTPUT:
       title = UI_TEXT.TILE_OUTPUT;
+      nextText = UI_TEXT.BUTTON_DOWNLOAD;
+      backText = UI_TEXT.BUTTON_PREVIOUS;
       break;
   }
 
   return (
-    <header>
-      <h1>{title}</h1>
-      <nav>
+    <header class="f2h__header">
+      <h1 class="f2h__title">{title}</h1>
+      <nav class="f2h__nav">
         {stage !== STAGES.CHOOSE_FRAMES && (
-          <button onClick={handleBackClick}>Back</button>
-        )}
-
-        {stage !== STAGES.SAVE_OUTPUT && (
-          <button onClick={handleNextClick} disabled={disableNext}>
-            Next
+          <button class="f2h__btn btn--secondary" onClick={handleBackClick}>
+            {backText}
           </button>
         )}
+
+        <button
+          class="f2h__btn btn--primary"
+          onClick={handleNextClick}
+          disabled={disableNext}
+        >
+          {nextText}
+        </button>
       </nav>
     </header>
   );

@@ -31,4 +31,10 @@ echo '<script>' >> build/ui.html
 echo "$inlined_js" >> build/ui.html
 echo '</script>' >> build/ui.html
 
+# Inline UI CSS into UI HTML
+css="$(cat src/ui.css)"
+echo '<style>' >> build/ui.html
+echo "$css" >> build/ui.html
+echo '</style>' >> build/ui.html
+
 

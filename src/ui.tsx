@@ -179,14 +179,13 @@ export class App extends Component {
     window.addEventListener('message', this.handleEvents);
 
     // Send backend message that UI is ready
-    parent.postMessage({ pluginMessage: MSG_EVENTS.DOM_READY }, '*');
+    parent.postMessage({ pluginMessage: { type: MSG_EVENTS.DOM_READY } }, '*');
   }
 
   handleEvents = (event: any) => {
     const type: MSG_EVENTS = event?.data?.pluginMessage.type;
     const data: { text?: string } = event?.data?.pluginMessage.data;
 
-    console.log('ui msg', type, data);
     switch (type) {
       case MSG_EVENTS.RENDER:
         // main(data, textNodes);
@@ -254,8 +253,7 @@ export class App extends Component {
   };
 
   goBack = () => {
-    console.log('go back', this.state);
-    const { stage, selectedFrames, previewIndex } = this.state;
+    const { stage, previewIndex } = this.state;
 
     if (stage === STAGES.CHOOSE_FRAMES) {
       return;
@@ -290,8 +288,6 @@ export class App extends Component {
     const previewFrame = frames.find(
       (frame) => frame.id === selectedFrames[previewIndex]
     );
-
-    console.log(this.state);
 
     return (
       <div class="f2h">

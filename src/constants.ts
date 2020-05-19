@@ -15,6 +15,7 @@ export enum MSG_EVENTS {
   NO_FRAMES,
   NO_TARGET_FRAMES,
   FOUND_FRAMES,
+  RESIZE,
   RENDER,
   CLOSE,
   ERROR,
@@ -33,6 +34,9 @@ export const UI_TEXT = {
   WARN_TOO_MANY_TARGETS: 'Please select three target frames',
   INFO_PREVIEW: 'Preview each frame output',
   TITLE_CHOOSE_FRAME: 'Choose which frames to export',
-  TITLE_PREVIEW: 'Preview each frame',
+  TITLE_PREVIEW: 'Preview',
   TILE_OUTPUT: 'Export',
+  BUTTON_NEXT: 'Next',
+  BUTTON_DOWNLOAD: 'Download',
+  BUTTON_PREVIOUS: 'Back',
 };

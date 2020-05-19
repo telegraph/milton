@@ -17,8 +17,9 @@ export function FrameSelection(props: FrameSelectionProps) {
   return (
     <div class="f2h__frame_selection">
       {sortedFrames.map(({ name, id, width }) => (
-        <div class="f2h__frame_selection__item">
+        <label class="f2h__label" for={name}>
           <input
+            class="f2h__checkbox"
             type="checkbox"
             key={name}
             value={name}
@@ -27,8 +28,8 @@ export function FrameSelection(props: FrameSelectionProps) {
             id={name}
             name={name}
           />
-          <label for={name}>{name}</label> <span>Width: {width}px</span>
-        </div>
+          {name} <span class="f2h__selection_width">{width}px</span>
+        </label>
       ))}
     </div>
   );
