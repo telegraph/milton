@@ -241,15 +241,20 @@ export class App extends Component {
   };
 
   handleFrameSelectionChange = (id: string) => {
-    const { selectedFrames } = this.state;
+    const { selectedFrames, frames } = this.state;
 
-    let newSelections = [];
+    let newSelections: string[] = [];
 
     if (selectedFrames.includes(id)) {
       newSelections = selectedFrames.filter((i) => i !== id);
     } else {
       newSelections = [...selectedFrames, id];
     }
+
+    newSelections = frames
+      .filter((frame) => newSelections.includes(frame.id))
+      .sort((a, b) => (a.width < b.width ? -1 : 1))
+      .map((frame) => frame.id);
 
     this.setState({ selectedFrames: newSelections });
   };
