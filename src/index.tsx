@@ -56,18 +56,14 @@ const main = () => {
 
   // Get default frames names
   const allFrames = currentPage.findAll((node) => node.type === 'FRAME');
-  const targetFrames = allFrames.filter((frame) =>
-    Object.keys(BREAKPOINTS).includes(frame.name)
+  const breakpoints = Object.keys(BREAKPOINTS).map((name) =>
+    name.toLowerCase()
   );
+  const selectedFrames = allFrames
+    .filter((frame) => breakpoints.includes(frame.name.toLowerCase()))
+    .map((frame) => frame.id);
 
-  if (allFrames.length < 1) {
-    console.warn('No frames');
-    figma.ui.postMessage({ type: MSG_EVENTS.NO_FRAMES });
-  }
-
-  if (targetFrames.length < 1) {
-    console.warn('No target frames', allFrames);
-
+  if (allFrames.length > 0) {
     const framesData = allFrames.map(({ name, width, id }) => ({
       name,
       width,
@@ -75,14 +71,18 @@ const main = () => {
     }));
 
     figma.ui.postMessage({
-      type: MSG_EVENTS.NO_TARGET_FRAMES,
-      data: framesData,
+      type: MSG_EVENTS.FOUND_FRAMES,
+      frames: framesData,
+      selectedFrames,
     });
+
+    return;
   }
 
-  if (targetFrames.length > 0) {
-    console.log('Found some target frames', targetFrames);
-    figma.ui.postMessage({ type: MSG_EVENTS.FOUND_FRAMES });
+  if (allFrames.length < 1) {
+    console.warn('No frames');
+    figma.ui.postMessage({ type: MSG_EVENTS.NO_FRAMES });
+    return;
   }
 };
 

@@ -41,12 +41,11 @@
       (function(MSG_EVENTS2) {
         MSG_EVENTS2[MSG_EVENTS2["DOM_READY"] = 0] = "DOM_READY";
         MSG_EVENTS2[MSG_EVENTS2["NO_FRAMES"] = 1] = "NO_FRAMES";
-        MSG_EVENTS2[MSG_EVENTS2["NO_TARGET_FRAMES"] = 2] = "NO_TARGET_FRAMES";
-        MSG_EVENTS2[MSG_EVENTS2["FOUND_FRAMES"] = 3] = "FOUND_FRAMES";
-        MSG_EVENTS2[MSG_EVENTS2["RESIZE"] = 4] = "RESIZE";
-        MSG_EVENTS2[MSG_EVENTS2["RENDER"] = 5] = "RENDER";
-        MSG_EVENTS2[MSG_EVENTS2["CLOSE"] = 6] = "CLOSE";
-        MSG_EVENTS2[MSG_EVENTS2["ERROR"] = 7] = "ERROR";
+        MSG_EVENTS2[MSG_EVENTS2["FOUND_FRAMES"] = 2] = "FOUND_FRAMES";
+        MSG_EVENTS2[MSG_EVENTS2["RESIZE"] = 3] = "RESIZE";
+        MSG_EVENTS2[MSG_EVENTS2["RENDER"] = 4] = "RENDER";
+        MSG_EVENTS2[MSG_EVENTS2["CLOSE"] = 5] = "CLOSE";
+        MSG_EVENTS2[MSG_EVENTS2["ERROR"] = 6] = "ERROR";
       })(MSG_EVENTS || (MSG_EVENTS = {}));
       var BREAKPOINTS;
       (function(BREAKPOINTS2) {
@@ -111,30 +110,27 @@
         const {currentPage} = figma;
         console.log(MSG_EVENTS);
         const allFrames = currentPage.findAll((node) => node.type === "FRAME");
-        const targetFrames = allFrames.filter((frame) => Object.keys(BREAKPOINTS).includes(frame.name));
-        if (allFrames.length < 1) {
-          console.warn("No frames");
-          figma.ui.postMessage({
-            type: MSG_EVENTS.NO_FRAMES
-          });
-        }
-        if (targetFrames.length < 1) {
-          console.warn("No target frames", allFrames);
+        const breakpoints = Object.keys(BREAKPOINTS).map((name) => name.toLowerCase());
+        const selectedFrames = allFrames.filter((frame) => breakpoints.includes(frame.name.toLowerCase())).map((frame) => frame.id);
+        if (allFrames.length > 0) {
           const framesData = allFrames.map(({name, width, id}) => ({
             name,
             width,
             id
           }));
           figma.ui.postMessage({
-            type: MSG_EVENTS.NO_TARGET_FRAMES,
-            data: framesData
+            type: MSG_EVENTS.FOUND_FRAMES,
+            frames: framesData,
+            selectedFrames
           });
+          return;
         }
-        if (targetFrames.length > 0) {
-          console.log("Found some target frames", targetFrames);
+        if (allFrames.length < 1) {
+          console.warn("No frames");
           figma.ui.postMessage({
-            type: MSG_EVENTS.FOUND_FRAMES
+            type: MSG_EVENTS.NO_FRAMES
           });
+          return;
         }
       };
       figma.showUI(__html__);

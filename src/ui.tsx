@@ -155,6 +155,12 @@ export type FrameDataType = {
   id: string;
 };
 
+type MsgEventType = {
+  type: MSG_EVENTS;
+  frames: FrameDataType[];
+  selectedFrames: string[];
+};
+
 export type AppState = {
   error: undefined | string;
   ready: boolean;
@@ -176,17 +182,27 @@ export class App extends Component {
 
   componentDidMount() {
     // Register DOM and POST messags
-    window.addEventListener('message', this.handleEvents);
+    window.addEventListener('message', (e) =>
+      this.handleEvents(e.data.pluginMessage)
+    );
 
     // Send backend message that UI is ready
     parent.postMessage({ pluginMessage: { type: MSG_EVENTS.DOM_READY } }, '*');
   }
 
-  handleEvents = (event: any) => {
-    const type: MSG_EVENTS = event?.data?.pluginMessage.type;
-    const data: { text?: string } = event?.data?.pluginMessage.data;
+  handleEvents = (data: MsgEventType) => {
+    const { type, frames, selectedFrames } = data;
+    console.log(data);
 
     switch (type) {
+      case MSG_EVENTS.FOUND_FRAMES:
+        this.setState({
+          frames,
+          selectedFrames,
+          ready: true,
+        });
+        break;
+
       case MSG_EVENTS.RENDER:
         // main(data, textNodes);
         console.log(data);
@@ -194,9 +210,6 @@ export class App extends Component {
 
       case MSG_EVENTS.NO_FRAMES:
         this.setState({ error: UI_TEXT.ERROR_MISSING_FRAMES });
-
-      case MSG_EVENTS.NO_TARGET_FRAMES:
-        this.setState({ frames: data, ready: true });
         break;
 
       case MSG_EVENTS.ERROR:
@@ -285,6 +298,8 @@ export class App extends Component {
       previewIndex,
     } = this.state;
 
+    console.log(this.state);
+
     const previewFrame = frames.find(
       (frame) => frame.id === selectedFrames[previewIndex]
     );
@@ -299,22 +314,23 @@ export class App extends Component {
           handleNextClick={this.goNext}
           disableNext={selectedFrames.length < 1}
         />
+        <div class="f2h__body">
+          {error && <div class="error">{error}</div>}
 
-        {error ?? <p class="error">{error}</p>}
+          {ready && stage === STAGES.CHOOSE_FRAMES && (
+            <FrameSelection
+              frames={frames}
+              selections={selectedFrames}
+              handleClick={this.handleFrameSelectionChange}
+            />
+          )}
 
-        {ready && stage === STAGES.CHOOSE_FRAMES && (
-          <FrameSelection
-            frames={frames}
-            selections={selectedFrames}
-            handleClick={this.handleFrameSelectionChange}
-          />
-        )}
+          {ready && previewFrame && stage === STAGES.PREVIEW_OUTPUT && (
+            <Preview frame={previewFrame} />
+          )}
 
-        {ready && previewFrame && stage === STAGES.PREVIEW_OUTPUT && (
-          <Preview frame={previewFrame} />
-        )}
-
-        {ready && stage === STAGES.SAVE_OUTPUT && <p>Save OUTPUT</p>}
+          {ready && stage === STAGES.SAVE_OUTPUT && <p>Save OUTPUT</p>}
+        </div>
       </div>
     );
   }

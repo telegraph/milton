@@ -69,6 +69,7 @@ body {
   --colours-grey-2: rgb(133, 133, 133);
   --colours-grey-3: rgb(179, 179, 179);
   --colours-grey-4: rgb(227, 227, 227);
+  --colours-grey-5: rgb(245, 245, 245);
   --colours-main: rgb(72, 202, 126);
   --colours-main-light: rgb(208, 242, 222);
   --colours-main-dark: rgb(44, 75, 57);
@@ -133,12 +134,20 @@ button:hover {
 
 .f2h {
   padding: var(--padding-medium, 0);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .f2h__header {
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+
+.f2h__body {
+  flex: 1;
+  display: flex;
 }
 
 .f2h__label {
@@ -167,4 +176,15 @@ button:hover {
 
 .f2h__preview_wrapper {
   overflow-x: scroll;
+}
+
+.error {
+  background-color: var(--colours-grey-5, #f0f);
+  border-radius: 2px;
+  padding: var(--padding-medium, 0) var(--padding-small, 0);
+  text-align: center;
+  color: var(--colours-grey-0, #f0f);
+  margin: var(--padding-medium, 0) 0;
+  flex: 1;
+  align-self: center;
 }

@@ -13,7 +13,6 @@ export enum STAGES {
 export enum MSG_EVENTS {
   DOM_READY,
   NO_FRAMES,
-  NO_TARGET_FRAMES,
   FOUND_FRAMES,
   RESIZE,
   RENDER,
