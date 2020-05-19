@@ -1,9 +1,10 @@
 import { h, Component, render } from 'preact';
 import { saveAs } from 'file-saver';
-import { MSG_EVENTS, STAGES, UI_TEXT } from './constants';
+import { MSG_EVENTS, STAGES, OUTPUT_FORMATS, UI_TEXT } from './constants';
 import { Header } from './components/Header';
 import { FrameSelection } from './components/FrameSelection';
 import { Preview } from './components/Preview';
+import { Save } from './components/Save';
 import type { board } from './constants';
 
 function saveBinaryFile(data: any, filename: string = 'download') {
@@ -172,6 +173,7 @@ export type AppState = {
   stage: STAGES;
   previewIndex: number;
   renders: { [id: string]: string };
+  outputFormat: OUTPUT_FORMATS;
 };
 
 export class App extends Component {
@@ -183,6 +185,7 @@ export class App extends Component {
     stage: STAGES.CHOOSE_FRAMES,
     previewIndex: 0,
     renders: {},
+    outputFormat: OUTPUT_FORMATS.INLINE,
   };
 
   componentDidMount() {
@@ -318,6 +321,12 @@ export class App extends Component {
     );
   };
 
+  setOutputFormat = (format: OUTPUT_FORMATS) => {
+    this.setState({
+      outputFormat: format,
+    });
+  };
+
   render() {
     const {
       error,
@@ -326,6 +335,7 @@ export class App extends Component {
       selectedFrames,
       stage,
       previewIndex,
+      outputFormat,
     } = this.state;
 
     console.log(this.state);
@@ -365,7 +375,12 @@ export class App extends Component {
             <Preview frame={previewFrame} render={previewRender} />
           )}
 
-          {ready && stage === STAGES.SAVE_OUTPUT && <p>Save OUTPUT</p>}
+          {ready && stage === STAGES.SAVE_OUTPUT && (
+            <Save
+              outputFormat={outputFormat}
+              handleClick={this.setOutputFormat}
+            />
+          )}
         </div>
       </div>
     );

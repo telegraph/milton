@@ -26,6 +26,11 @@ export enum BREAKPOINTS {
   Desktop = 1024,
 }
 
+export enum OUTPUT_FORMATS {
+  INLINE,
+  IFRAME,
+}
+
 export const UI_TEXT = {
   ERROR_UNEXPECTED: 'Unexpected error',
   ERROR_MISSING_FRAMES: 'No frames found. Please add some frames to the page.',

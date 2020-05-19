@@ -125,7 +125,7 @@ const main = () => {
 
 // Render the DOM
 figma.showUI(__html__);
-figma.ui.resize(640, 500);
+figma.ui.resize(640, 640);
 
 async function renderFrame(frameId: string) {
   const frame = figma.getNodeById(frameId);

@@ -12,9 +12,9 @@ export function Preview(props: PreviewProps) {
 
   return (
     <div class="f2h__preview">
-      <p>
-        {name} <span>{width}px</span>
-      </p>
+      <h2 class="f2h__preview_title">
+        {name} <span class="f2h__preview_width">{width}px</span>
+      </h2>
 
       {render ? (
         <div

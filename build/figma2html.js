@@ -53,6 +53,11 @@
         BREAKPOINTS2[BREAKPOINTS2["Tablet"] = 520] = "Tablet";
         BREAKPOINTS2[BREAKPOINTS2["Desktop"] = 1024] = "Desktop";
       })(BREAKPOINTS || (BREAKPOINTS = {}));
+      var OUTPUT_FORMATS;
+      (function(OUTPUT_FORMATS2) {
+        OUTPUT_FORMATS2[OUTPUT_FORMATS2["INLINE"] = 0] = "INLINE";
+        OUTPUT_FORMATS2[OUTPUT_FORMATS2["IFRAME"] = 1] = "IFRAME";
+      })(OUTPUT_FORMATS || (OUTPUT_FORMATS = {}));
       const UI_TEXT = {
         ERROR_UNEXPECTED: "Unexpected error",
         ERROR_MISSING_FRAMES: "No frames found. Please add some frames to the page.",
@@ -168,7 +173,7 @@
         }
       };
       figma.showUI(__html__);
-      figma.ui.resize(640, 500);
+      figma.ui.resize(640, 640);
       async function renderFrame(frameId) {
         const frame = figma.getNodeById(frameId);
         if (!frame || frame.type !== "FRAME") {
