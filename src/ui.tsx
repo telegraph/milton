@@ -7,149 +7,6 @@ import { Preview } from './components/Preview';
 import { Save } from './components/Save';
 import type { board } from './constants';
 
-function saveBinaryFile(data: any, filename: string = 'download') {
-  const blob = new Blob([data], { type: 'text/html' });
-  saveAs(blob, filename);
-}
-
-function main(boards: board[], textNodes: []) {
-  // Sort boards by width ascending
-  boards.sort((a, b) => {
-    return a.width < b.width ? -1 : 1;
-  });
-
-  const svgsHtml = boards.map((board) => {
-    const { id, buffer } = board;
-    const svgStr = String.fromCharCode.apply(null, Array.from(buffer));
-
-    return `
-      <div class="container" id="${id}">
-        ${svgStr}
-      </div>
-    `;
-  });
-
-  const mediaQueries = boards.map((board, i) => {
-    const { id, width } = board;
-    const { width: nextWidth } = boards[i + 1] || {};
-
-    return `
-      #${id} {
-        display: none;
-      }
-      @media screen and (min-width: ${width}px) ${
-      nextWidth ? `and (max-width: ${nextWidth}px)` : ''
-    } {
-        #${id} {
-          display: block;
-        }
-      }
-    `;
-  });
-
-  const html = `
-    <!doctype html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-          html, body {
-            margin: 0;
-            font-size: 16px;
-          }
-          p {
-            margin: 0;
-            padding: 0;
-          }
-        </style>
-        <style>
-          ${mediaQueries.join('\n')}
-        </style>
-      </head>
-      <body>
-        ${svgsHtml.join('\n')}
-      </body>
-    </html>
-  `;
-
-  // saveBinaryFile(html, 'figma2html-export.html');
-
-  console.log(textNodes);
-
-  const textEls = textNodes.map((node) => {
-    const {
-      text,
-      constraints,
-      position,
-      fontSize,
-      fontName,
-      colour,
-      width,
-    } = node;
-
-    const fontFamily = fontName?.family || 'sans-serif';
-
-    const css = Object.entries(position)
-      .map(([prop, val]) => {
-        return `${prop}: ${val}`;
-      })
-      .join('; ');
-
-    const p = document.createElement('p');
-    p.setAttribute(
-      'style',
-      `
-        font-size: ${fontSize};
-        font-family: ${fontFamily};
-        position: absolute;
-        color: ${colour};
-        width: ${width};
-        ${css}
-      `
-    );
-    p.classList.add('f_svg_text');
-    p.innerText = text;
-    return p;
-  });
-
-  const div = document.createElement('div');
-  div.innerHTML = `
-
-      ${svgsHtml.join('\n')}
-
-    <style>
-    @import url('https://cf.eip.telegraph.co.uk/assets/_css/fontsv02.css');
-      .f_svg_text {
-        margin: 0;
-        font-family: sans-serif;
-        transform: translate(-50%, -50%);
-
-      }
-
-      .f_svg_wrapper {
-        width: 100%;
-
-      }
-
-      svg {
-        width: 100%;
-        height: auto;
-      }
-
-      svg text {
-        display: none;
-      }
-    </style>
-  `;
-  div.setAttribute('style', 'position: relative;');
-  div.classList.add('f_svg_wrapper');
-
-  textEls.forEach((el) => div.appendChild(el));
-
-  document.body.appendChild(div);
-}
-
 export type FrameDataType = {
   name: string;
   width: number;
@@ -327,6 +184,11 @@ export class App extends Component {
     });
   };
 
+  saveBinaryFile(data: any, filename: string = 'download') {
+    const blob = new Blob([data], { type: 'text/html' });
+    saveAs(blob, filename);
+  }
+
   render() {
     const {
       error,
@@ -336,6 +198,7 @@ export class App extends Component {
       stage,
       previewIndex,
       outputFormat,
+      renders,
     } = this.state;
 
     console.log(this.state);
@@ -379,6 +242,8 @@ export class App extends Component {
             <Save
               outputFormat={outputFormat}
               handleClick={this.setOutputFormat}
+              frames={frames}
+              renders={renders}
             />
           )}
         </div>

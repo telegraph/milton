@@ -1,14 +1,19 @@
 import { h } from 'preact';
 import { OUTPUT_FORMATS } from '../constants';
-import type { FrameDataType } from '../ui';
+import { outputRender } from '../outputRender';
+import type { FrameDataType, AppState } from '../ui';
 
 type SaveProps = {
   handleClick: Function;
   outputFormat: OUTPUT_FORMATS;
+  frames: AppState['frames'];
+  renders: AppState['renders'];
 };
 
 export function Save(props: SaveProps) {
-  const { handleClick, outputFormat } = props;
+  const { handleClick, outputFormat, renders, frames } = props;
+
+  const raw = outputRender(frames, renders);
 
   return (
     <div class="f2h__save">
@@ -48,10 +53,7 @@ export function Save(props: SaveProps) {
       </label>
 
       <h2 class="f2h__save__subhead">Raw HTML</h2>
-      <textarea
-        class="f2h__save__raw"
-        value="ksdlfmlksdfmlkdsm flkdsmf lk"
-      ></textarea>
+      <textarea class="f2h__save__raw" value={raw}></textarea>
     </div>
   );
 }
