@@ -16,13 +16,14 @@ Figma plug-in that helps generate HTML embeds.
 
 ## Tasks
 
-- [Figma] Show preview of each frame
 - [Figma] Provide option for iframe or inline embed
 - [Figma] Generate raw HTML output
 - [Figma] Download raw HTML
+- [Figma] Package plugin
 - [Figma] ...
 - [Improvement] Optimise images
 - [Improvement] ZIP download
+- [Improvement] Tidy-up code
 
 ## UI
 

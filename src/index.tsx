@@ -1,32 +1,4 @@
 import { BREAKPOINTS, MSG_EVENTS } from './constants';
-import type { board } from './constants';
-
-const embedCss = `
-  @import url('https://cf.eip.telegraph.co.uk/assets/_css/fontsv02.css'); 
-  
-  .f2h__text {
-    margin: 0;
-    font-family: sans-serif;
-    transform: translate(-50%, -50%);
-  }
-
-  .f2h__render {
-    position: relative;
-  }
-
-  .f2h__render svg text {
-    display: none;
-  }
-
-  .f2h__render--responsive {
-    width: 100%;
-  }
-
-  .f2h__render--responsive svg {
-    width: 100%;
-    height: auto;
-  }
-`;
 
 async function getFrameSvgAsString(frame: SceneNode): Promise<string> {
   const svgBuff = await frame.exportAsync({
@@ -59,11 +31,11 @@ const handleReceivedMsg = (msg: MSG_EVENTS) => {
     case MSG_EVENTS.RENDER:
       console.log('plugin msg: render', frameId);
       renderFrame(frameId)
-        .then((render) => {
+        .then(({ frameId, svgStr }) => {
           figma.ui.postMessage({
             type: MSG_EVENTS.RENDER,
-            rawRender: render,
-            renderId: frameId,
+            frameId,
+            svgStr,
           });
         })
         .catch((err) => {
@@ -89,10 +61,11 @@ figma.ui.on('message', (e) => handleReceivedMsg(e));
 const main = () => {
   const { currentPage } = figma;
 
-  console.log(MSG_EVENTS);
-
   // Get default frames names
-  const allFrames = currentPage.findAll((node) => node.type === 'FRAME');
+  const allFrames = currentPage.findAll(
+    (node) => node.type === 'FRAME'
+  ) as FrameNode[];
+
   const breakpoints = Object.keys(BREAKPOINTS).map((name) =>
     name.toLowerCase()
   );
@@ -101,11 +74,18 @@ const main = () => {
     .map((frame) => frame.id);
 
   if (allFrames.length > 0) {
-    const framesData = allFrames.map(({ name, width, id }) => ({
-      name,
-      width,
-      id,
-    }));
+    const framesData = allFrames.map((frame) => {
+      const { name, width, height, id } = frame;
+      const textNodes = getTextNodes(frame);
+
+      return {
+        name,
+        width,
+        height,
+        id,
+        textNodes,
+      };
+    });
 
     figma.ui.postMessage({
       type: MSG_EVENTS.FOUND_FRAMES,
@@ -133,85 +113,30 @@ async function renderFrame(frameId: string) {
     throw new Error('Missing frame');
   }
 
-  const textNodes = frame.findAll((node) => {
-    const { type, name } = node;
-    console.log(type);
-    return type === 'TEXT';
-  });
+  const svgStr = await getFrameSvgAsString(frame);
 
-  const frameWidth = frame?.width || 1;
-  const frameHeight = frame?.height || 1;
+  return { frameId, svgStr };
+}
 
-  console.log(frameWidth, frameHeight);
+function getTextNodes(frame: FrameNode) {
+  return frame
+    .findAll(({ type }) => type === 'TEXT')
+    .map((node) => {
+      if (node.type !== 'TEXT') {
+        return;
+      }
 
-  const textStrings = textNodes.map((tNode) => {
-    if (tNode.type !== 'TEXT') {
-      return;
-    }
+      const {
+        x,
+        y,
+        width,
+        height,
+        fontSize,
+        fontName,
+        fills,
+        characters,
+      } = node;
 
-    const {
-      characters,
-      x,
-      y,
-      constraints,
-      width,
-      height,
-      fontSize,
-      fontName,
-      fills,
-    } = tNode;
-
-    const decoration = tNode.getRangeTextDecoration(0, characters.length);
-    const style = tNode.getRangeTextStyleId(0, characters.length);
-
-    const position = {
-      left: `${((x + width / 2) / frameWidth) * 100}%`,
-      top: `${((y + height / 2) / frameHeight) * 100}%`,
-    };
-
-    const [fill] = fills;
-    const { r = 0, g = 0, b = 0 } = fill?.color || {};
-    const { opacity = 1 } = fill;
-    console.log(r, g, b, fill?.color);
-    const colour = `rgba(${Math.round(r * 255)}, ${Math.round(
-      g * 255
-    )}, ${Math.round(b * 255)}, ${opacity})`;
-
-    const fontFamily = fontName?.family || 'sans-serif';
-
-    const css = Object.entries(position)
-      .map(([prop, val]) => {
-        return `${prop}: ${val}`;
-      })
-      .join('; ');
-
-    const styleText = `
-          font-size: ${String(fontSize)};
-          font-family: ${fontFamily};
-          position: absolute;
-          color: ${colour};
-          width: ${width};
-          ${css}
-        `;
-
-    return `<p class="f2h__text" style="${styleText}">${characters}</p>`;
-  });
-
-  const textContainer = `
-    <div class="f2h__text_container">
-      ${textStrings.join('\n')}
-    </div>
-  `;
-
-  const svg = await getFrameSvgAsString(frame);
-
-  return `
-    <div class="f2h__render" style="width: ${frameWidth}px;">
-      ${svg}
-      ${textContainer}
-      <style>
-        ${embedCss}
-      </style>
-    </div>
-  `;
+      return { x, y, width, height, fontSize, fontName, fills, characters };
+    });
 }

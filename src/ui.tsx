@@ -5,12 +5,17 @@ import { Header } from './components/Header';
 import { FrameSelection } from './components/FrameSelection';
 import { Preview } from './components/Preview';
 import { Save } from './components/Save';
-import type { board } from './constants';
+// @ts-expect-error
+import uiCss from './ui.css';
+// @ts-expect-error
+import embedCss from './embed.css';
 
 export type FrameDataType = {
   name: string;
   width: number;
+  height: number;
   id: string;
+  textNodes: Partial<TextNode>;
 };
 
 type MsgEventType = {
@@ -56,14 +61,9 @@ export class App extends Component {
   }
 
   handleEvents = (data: MsgEventType) => {
-    const {
-      type,
-      frames,
-      selectedFrames,
-      rawRender,
-      renderId,
-      errorText,
-    } = data;
+    const { type, frames, selectedFrames, frameId, svgStr, errorText } = data;
+
+    // frameId, svgStr
     console.log(data);
 
     switch (type) {
@@ -84,13 +84,8 @@ export class App extends Component {
         break;
 
       case MSG_EVENTS.RENDER:
-        if (!renderId || !rawRender) {
-          this.setState({ error: 'Missing render ID or raw render' });
-          return;
-        }
-
         this.setState({
-          renders: { ...this.state.renders, [renderId]: rawRender },
+          renders: { ...this.state.renders, [frameId]: svgStr },
         });
         return;
 
@@ -99,6 +94,15 @@ export class App extends Component {
         console.error('Unknown UI event type', type, data);
     }
   };
+
+  // storeFrameRender = (renderData) => {
+  //   const { frameId, width, height, svgStr, textNodes } = renderData;
+  //   const rawRender = frameContainer(renderData);
+
+  //   this.setState({
+  //     renders: { ...this.state.renders, [frameId]: rawRender },
+  //   });
+  // };
 
   handleFrameSelectionChange = (id: string) => {
     const { selectedFrames, frames } = this.state;
@@ -208,6 +212,7 @@ export class App extends Component {
     );
 
     const previewRender = previewFrame && this.state.renders[previewFrame.id];
+    // TODO: Move somewhere else
     // If previewing frame without a render then request if from the backend
     if (previewFrame && !previewRender) {
       this.getOutputRender(previewFrame.id);
@@ -252,6 +257,15 @@ export class App extends Component {
   }
 }
 
-render(<App />, document.body);
+function injectCss(css: string) {
+  const styleEl = document.createElement('style');
+  const styleText = document.createTextNode(css);
+  styleEl.appendChild(styleText);
+  document.head.appendChild(styleEl);
+}
 
-console.log('rendering');
+injectCss(uiCss);
+injectCss(embedCss);
+
+// Render app
+render(<App />, document.body);

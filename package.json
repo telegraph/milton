@@ -12,7 +12,8 @@
     "@figma/plugin-typings": "^1.15.0",
     "esbuild": "^0.3.5",
     "file-saver": "^2.0.2",
-    "preact": "^10.4.4"
+    "preact": "^10.4.4",
+    "preact-render-to-string": "^5.1.8"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.1"

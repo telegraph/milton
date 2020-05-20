@@ -1,5 +1,6 @@
 import { h } from 'preact';
 import type { FrameDataType } from '../ui';
+import { FrameContainer } from '../outputRender';
 
 type PreviewProps = {
   frame: FrameDataType;
@@ -17,12 +18,9 @@ export function Preview(props: PreviewProps) {
       </h2>
 
       {render ? (
-        <div
-          class="f2h__preview_wrapper"
-          dangerouslySetInnerHTML={{ __html: render }}
-        />
+        <FrameContainer {...frame} svgStr={render} />
       ) : (
-        '<p class="f2h__preview_loading">Loading...</p>'
+        <p class="f2h__preview_loading">Loading...</p>
       )}
     </div>
   );
