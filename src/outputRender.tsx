@@ -28,31 +28,6 @@ function generateIframeHtml(body: string) {
   `;
 }
 
-function renderFrame(
-  svgStr: string,
-  textNodes: TextNode[],
-  width: number,
-  height: number
-) {}
-
-export function frameRender() {}
-
-export function outputRender(
-  frames: AppState['frames'],
-  renders: AppState['renders'],
-  format: OUTPUT_FORMATS
-) {
-  if (format === OUTPUT_FORMATS.IFRAME) {
-    // render iframe
-  }
-
-  if (format === OUTPUT_FORMATS.INLINE) {
-    // render inline
-  }
-
-  return renders && Object.values(renders).join('\n');
-}
-
 // type TextNode = {
 //   characters: string;
 //   style: { [id: string]: string };
@@ -138,7 +113,8 @@ export function FrameContainer(props: FrameContainerProps) {
 
 export function renderInline(
   frames: FrameDataType[],
-  svgs: AppState['renders']
+  svgs: AppState['renders'],
+  iframe: OUTPUT_FORMATS
 ) {
   const mediaQuery = genreateMediaQueries(frames);
 
@@ -146,7 +122,7 @@ export function renderInline(
     <FrameContainer {...frame} svgStr={svgs[frame.id]} />
   ));
 
-  const html = render(
+  let html = render(
     <div class="f2h__embed">
       <style>
         {embedCss}
@@ -155,6 +131,10 @@ export function renderInline(
       {renderedFrames}
     </div>
   );
+
+  if (iframe === OUTPUT_FORMATS.IFRAME) {
+    html = generateIframeHtml(html);
+  }
 
   return html.replace(/\n|\r|\s{2,}/g, '');
 }

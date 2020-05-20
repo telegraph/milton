@@ -13,7 +13,7 @@ type SaveProps = {
 export function Save(props: SaveProps) {
   const { handleClick, outputFormat, renders, frames } = props;
 
-  const raw = renderInline(frames, renders);
+  const raw = renderInline(frames, renders, outputFormat);
 
   return (
     <div class="f2h__save">
