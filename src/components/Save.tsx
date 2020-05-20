@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { OUTPUT_FORMATS } from '../constants';
-import { outputRender, renderInline } from '../outputRender';
-import type { FrameDataType, AppState } from '../ui';
+import { renderInline } from '../outputRender';
+import type { AppState } from '../ui';
 
 type SaveProps = {
   handleClick: Function;

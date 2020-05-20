@@ -1,5 +1,7 @@
 import { h, Component, render } from 'preact';
 import { saveAs } from 'file-saver';
+
+import { renderInline } from './outputRender';
 import { MSG_EVENTS, STAGES, OUTPUT_FORMATS, UI_TEXT } from './constants';
 import { Header } from './components/Header';
 import { FrameSelection } from './components/FrameSelection';
@@ -118,6 +120,10 @@ export class App extends Component {
       return;
     }
 
+    if (stage === STAGES.SAVE_OUTPUT) {
+      this.saveBinaryFile();
+    }
+
     if (stage === STAGES.CHOOSE_FRAMES) {
       this.setState({ stage: STAGES.PREVIEW_OUTPUT });
       return;
@@ -176,10 +182,15 @@ export class App extends Component {
     });
   };
 
-  saveBinaryFile(data: any, filename: string = 'download') {
-    const blob = new Blob([data], { type: 'text/html' });
+  saveBinaryFile = () => {
+    const { frames, renders, outputFormat, selectedFrames } = this.state;
+    const outputFrames = frames.filter(({ id }) => selectedFrames.includes(id));
+    const filename = 'figma-to-html-test.html';
+    const raw = renderInline(outputFrames, renders, outputFormat);
+    const blob = new Blob([raw], { type: 'text/html' });
+
     saveAs(blob, filename);
-  }
+  };
 
   render() {
     const {
