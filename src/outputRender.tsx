@@ -1,11 +1,12 @@
 import { h } from 'preact';
+
 import render from 'preact-render-to-string';
-import type { AppState } from './ui';
+import type { AppState, FrameDataType } from './ui';
 import { OUTPUT_FORMATS } from './constants';
 // @ts-expect-error
-import embedCss from '../embed.css';
+import embedCss from './embed.css';
 
-function generateIframeHtml(svgsHtml: string[]) {
+function generateIframeHtml(body: string) {
   return `
     <!doctype html>
     <html>
@@ -15,7 +16,7 @@ function generateIframeHtml(svgsHtml: string[]) {
         <style> html, body { margin: 0; } </style>
       </head>
       <body>
-        ${svgsHtml.join('\n')}
+        ${body}
       </body>
     </html>
   `;
@@ -96,11 +97,11 @@ function generateStyleText(
   const fontFamily = fontName?.family || 'sans-serif';
 
   return `
-        font-size: ${String(fontSize)};
+        font-size: ${String(fontSize)}px;
         font-family: ${fontFamily};
         position: absolute;
         color: ${colour};
-        width: ${width};
+        width: ${width}px;
         left: ${left};
         top: ${top};
       `;
@@ -131,6 +132,7 @@ type FrameContainerProps = {
   width: number;
   height: number;
 };
+
 export function FrameContainer(props: FrameContainerProps) {
   const { id, width, height, textNodes, svgStr } = props;
 
@@ -152,4 +154,22 @@ export function FrameContainer(props: FrameContainerProps) {
       <div class="f2h__text_container">{textEls}</div>
     </div>
   );
+}
+
+export function renderInline(
+  frames: FrameDataType[],
+  svgs: AppState['renders']
+) {
+  const renderedFrames = frames.map((frame) => (
+    <FrameContainer {...frame} svgStr={svgs[frame.id]} />
+  ));
+
+  const html = render(
+    <div class="f2h__embed">
+      <style>{embedCss}</style>
+      {renderedFrames}
+    </div>
+  );
+
+  return html.replace(/\n|\r|\s{2,}/g, '');
 }

@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { OUTPUT_FORMATS } from '../constants';
-import { outputRender } from '../outputRender';
+import { outputRender, renderInline } from '../outputRender';
 import type { FrameDataType, AppState } from '../ui';
 
 type SaveProps = {
@@ -13,7 +13,7 @@ type SaveProps = {
 export function Save(props: SaveProps) {
   const { handleClick, outputFormat, renders, frames } = props;
 
-  const raw = outputRender(frames, renders);
+  const raw = renderInline(frames, renders);
 
   return (
     <div class="f2h__save">

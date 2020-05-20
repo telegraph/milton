@@ -63,9 +63,6 @@ export class App extends Component {
   handleEvents = (data: MsgEventType) => {
     const { type, frames, selectedFrames, frameId, svgStr, errorText } = data;
 
-    // frameId, svgStr
-    console.log(data);
-
     switch (type) {
       case MSG_EVENTS.FOUND_FRAMES:
         this.setState({
@@ -94,15 +91,6 @@ export class App extends Component {
         console.error('Unknown UI event type', type, data);
     }
   };
-
-  // storeFrameRender = (renderData) => {
-  //   const { frameId, width, height, svgStr, textNodes } = renderData;
-  //   const rawRender = frameContainer(renderData);
-
-  //   this.setState({
-  //     renders: { ...this.state.renders, [frameId]: rawRender },
-  //   });
-  // };
 
   handleFrameSelectionChange = (id: string) => {
     const { selectedFrames, frames } = this.state;
@@ -247,7 +235,7 @@ export class App extends Component {
             <Save
               outputFormat={outputFormat}
               handleClick={this.setOutputFormat}
-              frames={frames}
+              frames={frames.filter(({ id }) => selectedFrames.includes(id))}
               renders={renders}
             />
           )}
