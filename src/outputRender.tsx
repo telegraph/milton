@@ -6,6 +6,12 @@ import { OUTPUT_FORMATS } from './constants';
 // @ts-expect-error
 import embedCss from './embed.css';
 
+function htmlSafeId(id: string) {
+  const safeId = id.replace(/\W/g, '_');
+
+  return `f2h__render-${safeId}`;
+}
+
 function generateIframeHtml(body: string) {
   return `
     <!doctype html>
@@ -20,28 +26,6 @@ function generateIframeHtml(body: string) {
       </body>
     </html>
   `;
-}
-
-function genreateMediaQueries(frames: AppState['frames']) {
-  const mediaQueries = frames.map((frame, i) => {
-    const { id, width } = frame;
-    const { width: nextWidth } = frames[i + 1] || {};
-
-    return `
-      #${id} {
-        display: none;
-      }
-      @media screen and (min-width: ${width}px) ${
-      nextWidth ? `and (max-width: ${nextWidth}px)` : ''
-    } {
-        #${id} {
-          display: block;
-        }
-      }
-    `;
-  });
-
-  return mediaQueries;
 }
 
 function renderFrame(
@@ -141,11 +125,7 @@ export function FrameContainer(props: FrameContainerProps) {
   ));
 
   return (
-    <div
-      class="f2h__render"
-      style={`width: ${width}px;`}
-      id={`f2h__render__${id}`}
-    >
+    <div class="f2h__render" style={`width: ${width}px;`} id={htmlSafeId(id)}>
       <div
         class="f2h__svg_container"
         dangerouslySetInnerHTML={{ __html: svgStr }}
@@ -160,16 +140,47 @@ export function renderInline(
   frames: FrameDataType[],
   svgs: AppState['renders']
 ) {
+  const mediaQuery = genreateMediaQueries(frames);
+
   const renderedFrames = frames.map((frame) => (
     <FrameContainer {...frame} svgStr={svgs[frame.id]} />
   ));
 
   const html = render(
     <div class="f2h__embed">
-      <style>{embedCss}</style>
+      <style>
+        {embedCss}
+        {mediaQuery}
+      </style>
       {renderedFrames}
     </div>
   );
 
   return html.replace(/\n|\r|\s{2,}/g, '');
+}
+
+function genreateMediaQueries(frames: FrameDataType[]) {
+  const idWidths = frames
+    .map(({ width, id }) => [width, htmlSafeId(id)])
+    .sort(([a], [b]) => (a < b ? -1 : 1));
+
+  const mediaQueries = idWidths.map(([width, id], i) => {
+    if (i === 0) {
+      return '';
+    }
+
+    const [, prevId] = idWidths[i - 1];
+
+    return `
+      @media (min-width: ${width}px) {
+        #${prevId} { display: none; }
+        #${id} { display: block; }
+      }
+      @media (max-width: ${width}px) {
+        #${id} { display: none; }
+      }
+    `;
+  });
+
+  return mediaQueries.join('');
 }

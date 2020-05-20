@@ -20,6 +20,7 @@ Figma plug-in that helps generate HTML embeds.
 - [Figma] Generate raw HTML output
 - [Figma] Download raw HTML
 - [Figma] Package plugin
+- [Figma] Use hash HTML ID to prevent clash
 - [Figma] ...
 - [Improvement] Optimise images
 - [Improvement] ZIP download
