@@ -13,7 +13,7 @@ export function Preview(props: PreviewProps) {
   const { name, width } = frame;
 
   const renderCharCount = render?.length || 0;
-  const fileKbSize = Math.round(renderCharCount / 1000);
+  const fileKbSize = Math.ceil(renderCharCount / 1000);
   const isFileLarge = fileKbSize > FRAME_WARNING_SIZE;
 
   return (
