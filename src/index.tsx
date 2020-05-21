@@ -62,7 +62,7 @@ const main = () => {
   const { currentPage } = figma;
 
   // Get default frames names
-  const allFrames = currentPage.findAll(
+  const allFrames = currentPage.findChildren(
     (node) => node.type === 'FRAME'
   ) as FrameNode[];
 
