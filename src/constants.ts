@@ -53,3 +53,5 @@ export const INITIAL_UI_SIZE = {
   minWidth: 420,
   minHeight: 480,
 };
+
+export const FRAME_WARNING_SIZE = 300;

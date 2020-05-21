@@ -181,6 +181,7 @@ button:hover {
   flex: 1;
 }
 
+/* [ Preview]  */
 .f2h__preview {
 }
 
@@ -199,6 +200,25 @@ button:hover {
   font-size: var(--font-size--small, 1);
   color: var(--colours-grey-3, #f0f);
   padding-left: var(--padding-small, 0);
+}
+
+.f2h__size_warning {
+  background: #fff6c9;
+  padding: 6px 12px;
+  margin-left: -12px;
+  font-size: 12px;
+}
+
+.f2h__file_size {
+  font-size: 11px;
+  padding: 0 3px;
+  border-radius: 3px;
+}
+
+.f2h__file_size--large {
+  font-weight: bold;
+  background: #ffeded;
+  color: #a70f0f;
 }
 
 .error {

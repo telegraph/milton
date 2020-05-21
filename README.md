@@ -23,6 +23,7 @@ Figma plug-in that helps generate HTML embeds.
 - [QA] Test embedding in particle CMS
 - [QA] Check for CSS
 - [Figma] ...
+- [Improvement] File size wanring. Information about large shapes?
 - [Improvement] Optimise images
 - [Improvement] ZIP download
 - [Improvement] Tidy-up code
