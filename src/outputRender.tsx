@@ -1,8 +1,10 @@
 import { h } from 'preact';
-
 import render from 'preact-render-to-string';
+import type { textData } from '.';
 import type { AppState, FrameDataType } from './ui';
 import { OUTPUT_FORMATS } from './constants';
+
+// Import CSS file as plain text via esbuild loader option
 // @ts-expect-error
 import embedCss from './embed.css';
 
@@ -28,38 +30,27 @@ function generateIframeHtml(body: string) {
   `;
 }
 
-// type TextNode = {
-//   characters: string;
-//   style: { [id: string]: string };
-//   position: { left: string; top: string };
-// };
-
 function generateStyleText(
-  node: Partial<TextNode>,
+  node: textData,
   frameWidth: number,
   frameHeight: number
 ) {
-  const { x, y, width, height, fontSize, fontName, fills } = node;
+  const { x, y, width, height, fontSize, fontFamily, colour } = node;
 
   // Position center aligned
   const left = `${((x + width / 2) / frameWidth) * 100}%`;
   const top = `${((y + height / 2) / frameHeight) * 100}%`;
 
   // Colour
-  const [fill] = fills;
-  const { opacity = 1 } = fill;
-  const { r, g, b } = fill?.color || {};
+  const { r, g, b, a } = colour;
   const colourVals = [r, g, b].map((val = 0) => Math.round(val * 255));
-  const colour = `rgba(${colourVals.join(',')}, ${opacity})`;
-
-  // Font
-  const fontFamily = fontName?.family || 'sans-serif';
+  const textColour = `rgba(${colourVals.join(',')}, ${a})`;
 
   return `
         font-size: ${String(fontSize)}px;
-        font-family: ${fontFamily};
+        font-family: "${fontFamily}", Georgia, 'Times New Roman', Times, serif;
         position: absolute;
-        color: ${colour};
+        color: ${textColour};
         width: ${width}px;
         left: ${left};
         top: ${top};
@@ -67,7 +58,7 @@ function generateStyleText(
 }
 
 type TextProps = {
-  node: Partial<TextNode>;
+  node: textData;
   width: number;
   height: number;
 };
@@ -87,7 +78,7 @@ function Text(props: TextProps) {
 type FrameContainerProps = {
   id: string;
   svgStr: string;
-  textNodes: Partial<TextNode>[];
+  textNodes: textData[];
   width: number;
   height: number;
 };

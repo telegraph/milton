@@ -10,8 +10,14 @@ async function getFrameSvgAsString(frame: SceneNode): Promise<string> {
   return String.fromCharCode.apply(null, Array.from(svgBuff));
 }
 
-const handleReceivedMsg = (msg: MSG_EVENTS) => {
-  const { type, data, frameId } = msg;
+export interface PostMsg {
+  type: MSG_EVENTS;
+  frameId: string;
+  uiWidth: number;
+}
+// Handle messages from the UI
+const handleReceivedMsg = (msg: PostMsg) => {
+  const { type, uiWidth, frameId } = msg;
 
   switch (type) {
     case MSG_EVENTS.ERROR:
@@ -31,7 +37,7 @@ const handleReceivedMsg = (msg: MSG_EVENTS) => {
     case MSG_EVENTS.RENDER:
       console.log('plugin msg: render', frameId);
       renderFrame(frameId)
-        .then(({ frameId, svgStr }) => {
+        .then((svgStr) => {
           figma.ui.postMessage({
             type: MSG_EVENTS.RENDER,
             frameId,
@@ -48,7 +54,7 @@ const handleReceivedMsg = (msg: MSG_EVENTS) => {
 
     case MSG_EVENTS.RESIZE:
       console.log('plugin msg: resize');
-      figma.ui.resize(data, 400);
+      figma.ui.resize(uiWidth, 400);
       break;
 
     default:
@@ -56,13 +62,14 @@ const handleReceivedMsg = (msg: MSG_EVENTS) => {
   }
 };
 
+// Listen for messages from the UI
 figma.ui.on('message', (e) => handleReceivedMsg(e));
 
 const main = () => {
   const { currentPage } = figma;
 
   // Get default frames names
-  const allFrames = currentPage.findChildren(
+  const allFrames = currentPage.children.filter(
     (node) => node.type === 'FRAME'
   ) as FrameNode[];
 
@@ -115,28 +122,57 @@ async function renderFrame(frameId: string) {
 
   const svgStr = await getFrameSvgAsString(frame);
 
-  return { frameId, svgStr };
+  return svgStr;
 }
 
-function getTextNodes(frame: FrameNode) {
-  return frame
-    .findAll(({ type }) => type === 'TEXT')
-    .map((node) => {
-      if (node.type !== 'TEXT') {
-        return;
-      }
+export type textNodeSelectedProps = Pick<
+  TextNode,
+  'x' | 'y' | 'width' | 'height' | 'characters'
+>;
 
+export interface textData extends textNodeSelectedProps {
+  colour: { r: number; g: number; b: number; a: number };
+  fontSize: number;
+  fontFamily: string;
+}
+
+// Extract object properties from textNode for passing via postMessage
+function getTextNodes(frame: FrameNode): textData[] {
+  const textNodes = frame.findAll(({ type }) => type === 'TEXT') as TextNode[];
+
+  return textNodes.map(
+    (node): textData => {
       const {
         x,
         y,
         width,
         height,
-        fontSize,
+        fontSize: fontSizeData,
         fontName,
         fills,
         characters,
       } = node;
 
-      return { x, y, width, height, fontSize, fontName, fills, characters };
-    });
+      // Extract basic fill colour
+      const [fill] = fills;
+      let colour = { r: 0, g: 0, b: 0, a: 1 };
+      if (fill.type === 'SOLID') {
+        colour = { ...colour, a: fill.opacity || 1 };
+      }
+
+      // Extract font family
+      let fontSize = 16;
+      if (fontSizeData !== figma.mixed) {
+        fontSize = fontSizeData;
+      }
+
+      // Extract font family
+      let fontFamily = 'Arial';
+      if (fontName !== figma.mixed) {
+        fontFamily = fontName.family;
+      }
+
+      return { x, y, width, height, fontSize, fontFamily, colour, characters };
+    }
+  );
 }

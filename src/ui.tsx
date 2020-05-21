@@ -7,6 +7,9 @@ import { Header } from './components/Header';
 import { FrameSelection } from './components/FrameSelection';
 import { Preview } from './components/Preview';
 import { Save } from './components/Save';
+import type { textData } from './index';
+
+// Import CSS files as plain text via esbuild loader option
 // @ts-expect-error
 import uiCss from './ui.css';
 // @ts-expect-error
@@ -17,17 +20,19 @@ export type FrameDataType = {
   width: number;
   height: number;
   id: string;
-  textNodes: Partial<TextNode>;
+  textNodes: textData[];
 };
 
-type MsgEventType = {
+interface MsgEventType {
   type: MSG_EVENTS;
   frames?: FrameDataType[];
   selectedFrames?: string[];
   rawRender?: string;
   renderId?: string;
   errorText?: string;
-};
+  svgStr?: string;
+  frameId?: string;
+}
 
 export type AppState = {
   error: undefined | string;
@@ -83,6 +88,12 @@ export class App extends Component {
         break;
 
       case MSG_EVENTS.RENDER:
+        if (!frameId || !svgStr) {
+          this.setState({ error: 'Failed to render' });
+          console.error('Post message: failed to render', data);
+          return;
+        }
+
         this.setState({
           renders: { ...this.state.renders, [frameId]: svgStr },
         });
