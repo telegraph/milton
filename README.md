@@ -16,11 +16,13 @@ Figma plug-in that helps generate HTML embeds.
 
 ## Tasks
 
-- [Figma] Provide option for iframe or inline embed
-- [Figma] Generate raw HTML output
-- [Figma] Download raw HTML
-- [Figma] Package plugin
 - [Figma] Use hash HTML ID to prevent clash
+- [UI] Save UI - Push user to best default
+- [UI] Save UI - Hide advanced options by default
+- [UI] Add help message when no frames are used
+- [QA] Create test case Figma designs
+- [QA] Test embedding in particle CMS
+- [QA] Check for CSS
 - [Figma] ...
 - [Improvement] Optimise images
 - [Improvement] ZIP download
