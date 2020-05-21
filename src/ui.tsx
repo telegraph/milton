@@ -2,7 +2,13 @@ import { h, Component, render } from 'preact';
 import { saveAs } from 'file-saver';
 
 import { renderInline } from './outputRender';
-import { MSG_EVENTS, STAGES, OUTPUT_FORMATS, UI_TEXT } from './constants';
+import {
+  MSG_EVENTS,
+  STAGES,
+  OUTPUT_FORMATS,
+  UI_TEXT,
+  INITIAL_UI_SIZE,
+} from './constants';
 import { Header } from './components/Header';
 import { FrameSelection } from './components/FrameSelection';
 import { Preview } from './components/Preview';
@@ -44,6 +50,11 @@ export type AppState = {
   previewIndex: number;
   renders: { [id: string]: string };
   outputFormat: OUTPUT_FORMATS;
+  isResizing: boolean;
+  mouseStartX: number;
+  mouseStartY: number;
+  windowWidth: number;
+  windowHeight: number;
 };
 
 export class App extends Component {
@@ -56,6 +67,11 @@ export class App extends Component {
     previewIndex: 0,
     renders: {},
     outputFormat: OUTPUT_FORMATS.INLINE,
+    isResizing: false,
+    mouseStartX: 0,
+    mouseStartY: 0,
+    windowWidth: INITIAL_UI_SIZE.width,
+    windowHeight: INITIAL_UI_SIZE.height,
   };
 
   componentDidMount() {
@@ -204,6 +220,58 @@ export class App extends Component {
     saveAs(blob, filename);
   };
 
+  startResizing = (event: MouseEvent) => {
+    console.log('starting resizing');
+    const { isResizing } = this.state;
+
+    if (!isResizing) {
+      const { x, y } = event;
+      this.setState({ isResizing: true, mouseStartX: x, mouseStartY: y });
+      window.addEventListener('mousemove', this.handleResize);
+    }
+  };
+
+  handleResize = (event: MouseEvent) => {
+    const {
+      isResizing,
+      mouseStartX,
+      mouseStartY,
+      windowWidth,
+      windowHeight,
+    } = this.state;
+
+    if (isResizing) {
+      const { x, y } = event;
+      const width = windowWidth + (x - mouseStartX);
+      const height = windowHeight + (y - mouseStartY);
+
+      parent.postMessage(
+        {
+          pluginMessage: { type: MSG_EVENTS.RESIZE, width, height },
+        },
+        '*'
+      );
+
+      // Post message to backend
+    }
+  };
+
+  stopResizing = () => {
+    const { isResizing } = this.state;
+    console.log('stop resizing', isResizing);
+
+    if (isResizing) {
+      const { width, height } = document.body.getBoundingClientRect();
+
+      this.setState({
+        isResizing: false,
+        windowWidth: width,
+        windowHeight: height,
+      });
+      window.removeEventListener('mousemove', this.handleResize);
+    }
+  };
+
   render() {
     const {
       error,
@@ -230,7 +298,7 @@ export class App extends Component {
     }
 
     return (
-      <div class="f2h">
+      <div class="f2h" onMouseLeave={this.stopResizing}>
         <Header
           stage={stage}
           paginationLength={selectedFrames.length}
@@ -263,6 +331,12 @@ export class App extends Component {
             />
           )}
         </div>
+
+        <div
+          class="f2h__resizer"
+          onMouseDown={this.startResizing}
+          onMouseUp={this.stopResizing}
+        ></div>
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import { BREAKPOINTS, MSG_EVENTS } from './constants';
+import { BREAKPOINTS, MSG_EVENTS, INITIAL_UI_SIZE } from './constants';
 
 // Generate a unique id prefixed with identifer string for safe use as HTML ID
 // Note: Figma seems to stub .toString for security?
@@ -21,11 +21,12 @@ async function getFrameSvgAsString(frame: SceneNode): Promise<string> {
 export interface PostMsg {
   type: MSG_EVENTS;
   frameId: string;
-  uiWidth: number;
+  width: number;
+  height: number;
 }
 // Handle messages from the UI
 const handleReceivedMsg = (msg: PostMsg) => {
-  const { type, uiWidth, frameId } = msg;
+  const { type, width, height, frameId } = msg;
 
   switch (type) {
     case MSG_EVENTS.ERROR:
@@ -62,7 +63,7 @@ const handleReceivedMsg = (msg: PostMsg) => {
 
     case MSG_EVENTS.RESIZE:
       console.log('plugin msg: resize');
-      figma.ui.resize(uiWidth, 400);
+      figma.ui.resize(width, height);
       break;
 
     default:
@@ -93,8 +94,6 @@ const main = () => {
       const { name, width, height, id } = frame;
       const textNodes = getTextNodes(frame);
       const uid = genRandomUid();
-      console.log(uid);
-
       return {
         name,
         width,
@@ -123,7 +122,7 @@ const main = () => {
 
 // Render the DOM
 figma.showUI(__html__);
-figma.ui.resize(640, 640);
+figma.ui.resize(INITIAL_UI_SIZE.width, INITIAL_UI_SIZE.height);
 
 async function renderFrame(frameId: string) {
   const frame = figma.getNodeById(frameId);

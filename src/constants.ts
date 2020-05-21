@@ -44,3 +44,5 @@ export const UI_TEXT = {
   BUTTON_DOWNLOAD: 'Download',
   BUTTON_PREVIOUS: 'Back',
 };
+
+export const INITIAL_UI_SIZE = { width: 480, height: 600 };
