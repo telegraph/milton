@@ -1,5 +1,13 @@
 import { BREAKPOINTS, MSG_EVENTS } from './constants';
 
+// Generate a unique id prefixed with identifer string for safe use as HTML ID
+// Note: Figma seems to stub .toString for security?
+function genRandomUid() {
+  const rnd = Math.random();
+  const uid = rnd.toString().substr(2);
+  return `f2h-${uid}`;
+}
+
 async function getFrameSvgAsString(frame: SceneNode): Promise<string> {
   const svgBuff = await frame.exportAsync({
     format: 'SVG',
@@ -84,6 +92,8 @@ const main = () => {
     const framesData = allFrames.map((frame) => {
       const { name, width, height, id } = frame;
       const textNodes = getTextNodes(frame);
+      const uid = genRandomUid();
+      console.log(uid);
 
       return {
         name,
@@ -91,6 +101,7 @@ const main = () => {
         height,
         id,
         textNodes,
+        uid,
       };
     });
 

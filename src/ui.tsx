@@ -21,6 +21,7 @@ export type FrameDataType = {
   height: number;
   id: string;
   textNodes: textData[];
+  uid: string;
 };
 
 interface MsgEventType {

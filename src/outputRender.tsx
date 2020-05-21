@@ -8,12 +8,6 @@ import { OUTPUT_FORMATS } from './constants';
 // @ts-expect-error
 import embedCss from './embed.css';
 
-function htmlSafeId(id: string) {
-  const safeId = id.replace(/\W/g, '_');
-
-  return `f2h__render-${safeId}`;
-}
-
 function generateIframeHtml(body: string) {
   return `
     <!doctype html>
@@ -75,23 +69,21 @@ function Text(props: TextProps) {
   );
 }
 
-type FrameContainerProps = {
-  id: string;
+interface FrameContainerProps extends FrameDataType {
   svgStr: string;
-  textNodes: textData[];
-  width: number;
-  height: number;
-};
+}
 
 export function FrameContainer(props: FrameContainerProps) {
-  const { id, width, height, textNodes, svgStr } = props;
+  const { uid, width, height, textNodes, svgStr } = props;
+
+  console.log(uid);
 
   const textEls = textNodes.map((node) => (
     <Text node={node} width={width} height={height} />
   ));
 
   return (
-    <div class="f2h__render" style={`width: ${width}px;`} id={htmlSafeId(id)}>
+    <div class="f2h__render" style={`width: ${width}px;`} id={uid}>
       <div
         class="f2h__svg_container"
         dangerouslySetInnerHTML={{ __html: svgStr }}
@@ -132,10 +124,10 @@ export function renderInline(
 
 function genreateMediaQueries(frames: FrameDataType[]) {
   const idWidths = frames
-    .map(({ width, id }) => [width, htmlSafeId(id)])
+    .map(({ width, uid }) => [width, uid])
     .sort(([a], [b]) => (a < b ? -1 : 1));
 
-  const mediaQueries = idWidths.map(([width, id], i) => {
+  const mediaQueries = idWidths.map(([width, uid], i) => {
     if (i === 0) {
       return '';
     }
@@ -145,10 +137,10 @@ function genreateMediaQueries(frames: FrameDataType[]) {
     return `
       @media (min-width: ${width}px) {
         #${prevId} { display: none; }
-        #${id} { display: block; }
+        #${uid} { display: block; }
       }
       @media (max-width: ${width}px) {
-        #${id} { display: none; }
+        #${uid} { display: none; }
       }
     `;
   });
