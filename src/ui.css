@@ -149,9 +149,11 @@ button:hover {
 }
 
 .f2h__body {
-  flex: 1;
   display: flex;
   padding: var(--padding-large, 0) var(--padding-huge, 0);
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .f2h__label {
@@ -180,7 +182,6 @@ button:hover {
 }
 
 .f2h__preview {
-  width: 100%;
 }
 
 .f2h__preview_title {
@@ -216,6 +217,7 @@ button:hover {
   display: flex;
   flex-direction: column;
   width: 100%;
+  align-self: flex-start;
 }
 
 .f2h__save__subhead {

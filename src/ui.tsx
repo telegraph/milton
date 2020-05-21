@@ -89,11 +89,42 @@ export class App extends Component {
 
     switch (type) {
       case MSG_EVENTS.FOUND_FRAMES:
+        if (!frames) {
+          this.setState({ error: 'No frames!' });
+          console.error('Post error: no frames', data);
+          return;
+        }
+
+        let { width, height } = this.getMaxFrameDimensions(frames);
+        if (width > INITIAL_UI_SIZE.maxWidth) {
+          width = INITIAL_UI_SIZE.maxWidth;
+        }
+        if (width < INITIAL_UI_SIZE.minWidth) {
+          width = INITIAL_UI_SIZE.minWidth;
+        }
+
+        if (height > INITIAL_UI_SIZE.maxHeight) {
+          height = INITIAL_UI_SIZE.maxHeight;
+        }
+        if (height < INITIAL_UI_SIZE.minHeight) {
+          height = INITIAL_UI_SIZE.minHeight;
+        }
+
         this.setState({
           frames,
           selectedFrames,
           ready: true,
+          windowWidth: width,
+          windowHeight: height,
         });
+
+        parent.postMessage(
+          {
+            pluginMessage: { type: MSG_EVENTS.RESIZE, width, height },
+          },
+          '*'
+        );
+
         break;
 
       case MSG_EVENTS.NO_FRAMES:
@@ -202,6 +233,19 @@ export class App extends Component {
       { pluginMessage: { type: MSG_EVENTS.RENDER, frameId } },
       '*'
     );
+  };
+
+  getMaxFrameDimensions = (frames: FrameDataType[]) => {
+    let width = frames.reduce((p, { width }) => (width > p ? width : p), 0);
+    let height = frames.reduce((p, { height }) => (height > p ? height : p), 0);
+
+    const paddingWidth = 16;
+    const paddingHeight = 100;
+    width = width + paddingWidth;
+    height = height + paddingHeight;
+    console.log(height);
+
+    return { width, height };
   };
 
   setOutputFormat = (format: OUTPUT_FORMATS) => {
