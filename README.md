@@ -16,7 +16,6 @@ Figma plug-in that helps generate HTML embeds.
 
 ## Tasks
 
-- [Figma] Use hash HTML ID to prevent clash
 - [UI] Save UI - Push user to best default
 - [UI] Save UI - Hide advanced options by default
 - [UI] Add help message when no frames are used
