@@ -16,6 +16,9 @@ Figma plug-in that helps generate HTML embeds.
 
 ## Tasks
 
+- [BUG] Very wide or tall frames break UI window
+- [BUG] Handle frames with the same name
+- [BUG] Handle frames with the same width (make user choose?)
 - [UI] Save UI - Push user to best default
 - [UI] Save UI - Hide advanced options by default
 - [UI] Add help message when no frames are used
@@ -24,7 +27,7 @@ Figma plug-in that helps generate HTML embeds.
 - [QA] Check for CSS
 - [Figma] ...
 - [Improvement] File size wanring. Information about large shapes?
-- [Improvement] Optimise images
+- [Improvement] Optimise images and SVG
 - [Improvement] ZIP download
 - [Improvement] Tidy-up code
 
