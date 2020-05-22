@@ -156,6 +156,54 @@ button:hover {
   height: 100%;
 }
 
+/* [ Frame selection ] */
+.f2h__frame_selection {
+  display: grid;
+  grid-template-columns: 1fr min-content min-content;
+  grid-template-rows: auto;
+  min-width: 320px;
+  grid-gap: var(--padding-small, 0) var(--padding-medium, 0);
+  align-items: center;
+}
+
+.f2h__sel_header {
+  color: var(--colours-grey-2, #f0f);
+  font-size: var(--font-size--small);
+}
+
+.f2h__sel_header--name {
+  grid-column: 1/2;
+  grid-row: 1/2;
+}
+
+.f2h__sel_header--width {
+  grid-column: 2/3;
+  grid-row: 1/2;
+  justify-self: center;
+}
+
+.f2h__sel_header--responsive {
+  grid-column: 3/4;
+  grid-row: 1/2;
+  justify-self: center;
+}
+
+.f2h__label.f2h__label--name {
+  grid-column: 1/2;
+}
+
+.f2h__sel_width {
+  grid-column: 2/3;
+  justify-self: center;
+  margin: 0;
+}
+
+.f2h__input--responsive {
+  grid-column: 3/4;
+  justify-self: center;
+  margin: 0;
+}
+
 .f2h__label {
   display: flex;
   cursor: pointer;
