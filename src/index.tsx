@@ -1,4 +1,10 @@
 import { BREAKPOINTS, MSG_EVENTS, INITIAL_UI_SIZE } from './constants';
+import {
+  MsgFramesType,
+  MsgNoFramesType,
+  MsgRenderType,
+  MsgErrorType,
+} from './ui';
 
 // Generate a unique id prefixed with identifer string for safe use as HTML ID
 // Note: Figma seems to stub .toString for security?
@@ -51,13 +57,13 @@ const handleReceivedMsg = (msg: PostMsg) => {
             type: MSG_EVENTS.RENDER,
             frameId,
             svgStr,
-          });
+          } as MsgRenderType);
         })
         .catch((err) => {
           figma.ui.postMessage({
             type: MSG_EVENTS.ERROR,
             errorText: `Render failed: ${err ?? err.message}`,
-          });
+          } as MsgErrorType);
         });
       break;
 
@@ -108,14 +114,14 @@ const main = () => {
       type: MSG_EVENTS.FOUND_FRAMES,
       frames: framesData,
       selectedFrames,
-    });
+    } as MsgFramesType);
 
     return;
   }
 
   if (allFrames.length < 1) {
     console.warn('No frames');
-    figma.ui.postMessage({ type: MSG_EVENTS.NO_FRAMES });
+    figma.ui.postMessage({ type: MSG_EVENTS.NO_FRAMES } as MsgNoFramesType);
     return;
   }
 };

@@ -29,17 +29,35 @@ export type FrameDataType = {
   id: string;
   textNodes: textData[];
   uid: string;
+  responsive: boolean;
+  selected: boolean;
 };
 
-interface MsgEventType {
-  type: MSG_EVENTS;
-  frames?: FrameDataType[];
-  selectedFrames?: string[];
-  rawRender?: string;
-  renderId?: string;
-  errorText?: string;
-  svgStr?: string;
-  frameId?: string;
+type MsgEventType =
+  | MsgFramesType
+  | MsgRenderType
+  | MsgNoFramesType
+  | MsgErrorType;
+
+export interface MsgFramesType {
+  type: MSG_EVENTS.FOUND_FRAMES;
+  selectedFrames: string[];
+  frames: FrameDataType[];
+}
+
+export interface MsgRenderType {
+  type: MSG_EVENTS.RENDER;
+  svgStr: string;
+  frameId: string;
+}
+
+export interface MsgNoFramesType {
+  type: MSG_EVENTS.NO_FRAMES;
+}
+
+export interface MsgErrorType {
+  type: MSG_EVENTS.ERROR;
+  errorText: string;
 }
 
 export type AppState = {
@@ -88,10 +106,10 @@ export class App extends Component {
   }
 
   handleEvents = (data: MsgEventType) => {
-    const { type, frames, selectedFrames, frameId, svgStr, errorText } = data;
-
-    switch (type) {
+    switch (data.type) {
       case MSG_EVENTS.FOUND_FRAMES:
+        const { frames, selectedFrames } = data;
+
         if (!frames) {
           this.setState({ error: 'No frames!' });
           console.error('Post error: no frames', data);
@@ -135,10 +153,13 @@ export class App extends Component {
         break;
 
       case MSG_EVENTS.ERROR:
-        this.setState({ error: `${UI_TEXT.ERROR_UNEXPECTED}: ${errorText}` });
+        this.setState({
+          error: `${UI_TEXT.ERROR_UNEXPECTED}: ${data.errorText}`,
+        });
         break;
 
       case MSG_EVENTS.RENDER:
+        const { frameId, svgStr } = data;
         if (!frameId || !svgStr) {
           this.setState({ error: 'Failed to render' });
           console.error('Post message: failed to render', data);
@@ -148,11 +169,12 @@ export class App extends Component {
         this.setState({
           renders: { ...this.state.renders, [frameId]: svgStr },
         });
-        return;
+        break;
 
       default:
-        this.setState({ error: 'Unknown error o_O?' });
-        console.error('Unknown UI event type', type, data);
+        this.setState({ error: 'Unknown post message' });
+        console.error('UI post message error', data);
+        break;
     }
   };
 
