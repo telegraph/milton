@@ -134,13 +134,14 @@ function genreateMediaQueries(frames: FrameDataType[]) {
 
     const [, prevId] = idWidths[i - 1];
 
+    // Note: Cascade order is important.
     return `
+      @media (max-width: ${width}px) {
+        #${uid} { display: none; }
+      }
       @media (min-width: ${width}px) {
         #${prevId} { display: none; }
         #${uid} { display: block; }
-      }
-      @media (max-width: ${width}px) {
-        #${uid} { display: none; }
       }
     `;
   });

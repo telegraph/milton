@@ -29,6 +29,13 @@ export function Header(props: HeaderProps) {
     case STAGES.CHOOSE_FRAMES:
       title = UI_TEXT.TITLE_CHOOSE_FRAME;
       nextText = UI_TEXT.BUTTON_NEXT;
+      backText = UI_TEXT.BUTTON_PREVIOUS;
+      break;
+
+    case STAGES.RESPONSIVE_PREVIEW:
+      title = UI_TEXT.TITLE_RESPONSIVE_PREVIEW;
+      nextText = UI_TEXT.BUTTON_NEXT;
+      backText = UI_TEXT.BUTTON_PREVIOUS;
       break;
 
     case STAGES.PREVIEW_OUTPUT:

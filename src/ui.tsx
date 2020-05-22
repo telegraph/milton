@@ -14,6 +14,7 @@ import { FrameSelection } from './components/FrameSelection';
 import { Preview } from './components/Preview';
 import { Save } from './components/Save';
 import type { textData } from './index';
+import { ResponsiveView } from './components/ResponsiveView';
 
 // Import CSS files as plain text via esbuild loader option
 // @ts-expect-error
@@ -200,6 +201,11 @@ export class App extends Component {
       stage === STAGES.PREVIEW_OUTPUT &&
       previewIndex === selectedFrames.length - 1
     ) {
+      this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
+      return;
+    }
+
+    if (stage === STAGES.RESPONSIVE_PREVIEW) {
       this.setState({ stage: STAGES.SAVE_OUTPUT });
       return;
     }
@@ -222,8 +228,13 @@ export class App extends Component {
       return;
     }
 
-    if (stage === STAGES.SAVE_OUTPUT) {
+    if (stage === STAGES.RESPONSIVE_PREVIEW) {
       this.setState({ stage: STAGES.PREVIEW_OUTPUT });
+      return;
+    }
+
+    if (stage === STAGES.SAVE_OUTPUT) {
+      this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
       return;
     }
   };
@@ -364,6 +375,13 @@ export class App extends Component {
 
           {ready && previewFrame && stage === STAGES.PREVIEW_OUTPUT && (
             <Preview frame={previewFrame} render={previewRender} />
+          )}
+
+          {ready && stage === STAGES.RESPONSIVE_PREVIEW && (
+            <ResponsiveView
+              frames={frames.filter(({ id }) => selectedFrames.includes(id))}
+              renders={renders}
+            />
           )}
 
           {ready && stage === STAGES.SAVE_OUTPUT && (

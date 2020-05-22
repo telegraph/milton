@@ -7,6 +7,7 @@ export type board = {
 export enum STAGES {
   CHOOSE_FRAMES,
   PREVIEW_OUTPUT,
+  RESPONSIVE_PREVIEW,
   SAVE_OUTPUT,
 }
 
@@ -39,6 +40,7 @@ export const UI_TEXT = {
   INFO_PREVIEW: 'Preview each frame output',
   TITLE_CHOOSE_FRAME: 'Choose which frames to export',
   TITLE_PREVIEW: 'Preview',
+  TITLE_RESPONSIVE_PREVIEW: 'Responsive preview',
   TILE_OUTPUT: 'Export',
   BUTTON_NEXT: 'Next',
   BUTTON_DOWNLOAD: 'Download',
