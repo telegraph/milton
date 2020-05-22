@@ -5,14 +5,13 @@ import { FrameContainer } from '../outputRender';
 
 type PreviewProps = {
   frame: FrameDataType;
-  render: string | undefined;
 };
 
 export function Preview(props: PreviewProps) {
-  const { frame, render } = props;
-  const { name, width } = frame;
+  const { frame } = props;
+  const { name, width, svg } = frame;
 
-  const renderCharCount = render?.length || 0;
+  const renderCharCount = svg?.length || 0;
   const fileKbSize = Math.ceil(renderCharCount / 1000);
   const isFileLarge = fileKbSize > FRAME_WARNING_SIZE;
 
@@ -38,8 +37,8 @@ export function Preview(props: PreviewProps) {
         </p>
       )}
 
-      {render ? (
-        <FrameContainer {...frame} svgStr={render} />
+      {svg ? (
+        <FrameContainer {...frame} />
       ) : (
         <p class="f2h__preview_loading">Loading...</p>
       )}

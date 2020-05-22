@@ -1,4 +1,4 @@
-import { h, Component, render, Fragment } from 'preact';
+import { h, Component, render } from 'preact';
 import { saveAs } from 'file-saver';
 
 import { renderInline } from './outputRender';
@@ -27,10 +27,11 @@ export type FrameDataType = {
   width: number;
   height: number;
   id: string;
-  textNodes: textData[];
   uid: string;
+  textNodes: textData[];
   responsive: boolean;
   selected: boolean;
+  svg?: string;
 };
 
 type MsgEventType =
@@ -41,8 +42,9 @@ type MsgEventType =
 
 export interface MsgFramesType {
   type: MSG_EVENTS.FOUND_FRAMES;
-  selectedFrames: string[];
-  frames: FrameDataType[];
+  frames: {
+    [id: string]: FrameDataType;
+  };
 }
 
 export interface MsgRenderType {
@@ -60,14 +62,16 @@ export interface MsgErrorType {
   errorText: string;
 }
 
+export interface FrameCollection {
+  [id: string]: FrameDataType;
+}
+
 export type AppState = {
   error: undefined | string;
   ready: boolean;
-  frames: FrameDataType[];
-  selectedFrames: string[];
+  frames: FrameCollection;
   stage: STAGES;
   previewIndex: number;
-  renders: { [id: string]: string };
   outputFormat: OUTPUT_FORMATS;
   isResizing: boolean;
   mouseStartX: number;
@@ -81,11 +85,9 @@ export class App extends Component {
   state: AppState = {
     error: undefined,
     ready: false,
-    frames: [],
-    selectedFrames: [],
+    frames: {},
     stage: STAGES.CHOOSE_FRAMES,
     previewIndex: 0,
-    renders: {},
     outputFormat: OUTPUT_FORMATS.INLINE,
     isResizing: false,
     mouseStartX: 0,
@@ -108,7 +110,7 @@ export class App extends Component {
   handleEvents = (data: MsgEventType) => {
     switch (data.type) {
       case MSG_EVENTS.FOUND_FRAMES:
-        const { frames, selectedFrames } = data;
+        const { frames } = data;
 
         if (!frames) {
           this.setState({ error: 'No frames!' });
@@ -133,7 +135,6 @@ export class App extends Component {
 
         this.setState({
           frames,
-          selectedFrames,
           ready: true,
           windowWidth: width,
           windowHeight: height,
@@ -166,8 +167,13 @@ export class App extends Component {
           return;
         }
 
+        const targetFrame = this.state.frames[frameId];
+
         this.setState({
-          renders: { ...this.state.renders, [frameId]: svgStr },
+          frames: {
+            ...this.state.frames,
+            [frameId]: { ...targetFrame, svg: svgStr },
+          },
         });
         break;
 
@@ -179,28 +185,25 @@ export class App extends Component {
   };
 
   handleFrameSelectionChange = (id: string) => {
-    const { selectedFrames, frames } = this.state;
+    const { frames } = this.state;
+    const targetFrame = frames[id];
 
-    let newSelections: string[] = [];
-
-    if (selectedFrames.includes(id)) {
-      newSelections = selectedFrames.filter((i) => i !== id);
-    } else {
-      newSelections = [...selectedFrames, id];
-    }
-
-    newSelections = frames
-      .filter((frame) => newSelections.includes(frame.id))
-      .sort((a, b) => (a.width < b.width ? -1 : 1))
-      .map((frame) => frame.id);
-
-    this.setState({ selectedFrames: newSelections });
+    this.setState({
+      frames: {
+        ...frames,
+        [id]: {
+          ...targetFrame,
+          selected: !targetFrame.selected,
+        },
+      },
+    });
   };
 
   goNext = () => {
-    const { stage, selectedFrames, previewIndex } = this.state;
+    const { stage, previewIndex, frames } = this.state;
+    const selectedCount = Object.values(frames).filter((f) => f.selected);
 
-    if (selectedFrames.length < 1) {
+    if (selectedCount.length < 1) {
       return;
     }
 
@@ -215,7 +218,7 @@ export class App extends Component {
 
     if (
       stage === STAGES.PREVIEW_OUTPUT &&
-      previewIndex < selectedFrames.length - 1
+      previewIndex < selectedCount.length - 1
     ) {
       this.setState({ previewIndex: previewIndex + 1 });
       return;
@@ -223,7 +226,7 @@ export class App extends Component {
 
     if (
       stage === STAGES.PREVIEW_OUTPUT &&
-      previewIndex === selectedFrames.length - 1
+      previewIndex === selectedCount.length - 1
     ) {
       this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
       return;
@@ -270,9 +273,13 @@ export class App extends Component {
     );
   };
 
-  getMaxFrameDimensions = (frames: FrameDataType[]) => {
-    let width = frames.reduce((p, { width }) => (width > p ? width : p), 0);
-    let height = frames.reduce((p, { height }) => (height > p ? height : p), 0);
+  getMaxFrameDimensions = (frames: FrameCollection) => {
+    const frameVals = Object.values(frames);
+    let width = frameVals.reduce((p, { width }) => (width > p ? width : p), 0);
+    let height = frameVals.reduce(
+      (p, { height }) => (height > p ? height : p),
+      0
+    );
 
     const paddingWidth = 16;
     const paddingHeight = 100;
@@ -290,16 +297,11 @@ export class App extends Component {
   };
 
   saveBinaryFile = () => {
-    const {
-      frames,
-      renders,
-      outputFormat,
-      selectedFrames,
-      responsive,
-    } = this.state;
-    const outputFrames = frames.filter(({ id }) => selectedFrames.includes(id));
+    const { frames, outputFormat } = this.state;
+    const outputFrames = Object.values(frames).filter((f) => f.selected);
+
     const filename = 'figma-to-html-test.html';
-    const raw = renderInline(outputFrames, renders, outputFormat, responsive);
+    const raw = renderInline(outputFrames, outputFormat);
     const blob = new Blob([raw], { type: 'text/html' });
 
     saveAs(blob, filename);
@@ -359,8 +361,19 @@ export class App extends Component {
     window.removeEventListener('mousemove', this.handleResize);
   };
 
-  toggleResonsive = () => {
-    this.setState({ responsive: !this.state.responsive });
+  toggleResonsive = (id: string) => {
+    const { frames } = this.state;
+    const targetFrame = frames[id];
+
+    this.setState({
+      frames: {
+        ...frames,
+        [id]: {
+          ...targetFrame,
+          responsive: !targetFrame.responsive,
+        },
+      },
+    });
   };
 
   render() {
@@ -368,84 +381,59 @@ export class App extends Component {
       error,
       ready,
       frames,
-      selectedFrames,
       stage,
       previewIndex,
       outputFormat,
-      renders,
-      responsive,
     } = this.state;
 
     console.log(this.state);
 
-    const previewFrame = frames.find(
-      (frame) => frame.id === selectedFrames[previewIndex]
-    );
+    const framesArr = Object.values(frames);
+    const selectedFrames = framesArr.filter((f) => f.selected);
+    const selectedCount = selectedFrames.length;
+    selectedFrames.sort((a, b) => (a.width < b.width ? -1 : 1));
 
-    const previewRender = previewFrame && this.state.renders[previewFrame.id];
-    // TODO: Move somewhere else
     // If previewing frame without a render then request if from the backend
-    if (previewFrame && !previewRender) {
-      this.getOutputRender(previewFrame.id);
+    if (stage === STAGES.PREVIEW_OUTPUT && !selectedFrames[previewIndex].svg) {
+      this.getOutputRender(selectedFrames[previewIndex].id);
     }
 
     return (
       <div class="f2h" onMouseLeave={this.stopResizing}>
         <Header
           stage={stage}
-          paginationLength={selectedFrames.length}
+          paginationLength={selectedCount}
           paginationIndex={previewIndex}
           handleBackClick={this.goBack}
           handleNextClick={this.goNext}
-          disableNext={selectedFrames.length < 1}
+          disableNext={selectedCount < 1}
         />
         <div class="f2h__body">
           {error && <div class="error">{error}</div>}
 
           {ready && stage === STAGES.CHOOSE_FRAMES && (
-            <Fragment>
-              <FrameSelection
-                frames={frames}
-                selections={selectedFrames}
-                handleClick={this.handleFrameSelectionChange}
-              />
-
-              <div class="f2h__responsive_option">
-                <label
-                  for="f2h__responsive_input"
-                  class="f2h__responsive_label"
-                >
-                  <input
-                    type="checkbox"
-                    checked={responsive}
-                    id="f2h__responsive_input"
-                    onChange={this.toggleResonsive}
-                  />
-                  Responsive layout
-                </label>
-              </div>
-            </Fragment>
+            <FrameSelection
+              frames={framesArr}
+              handleClick={this.handleFrameSelectionChange}
+              toggleResonsive={this.toggleResonsive}
+            />
           )}
 
-          {ready && previewFrame && stage === STAGES.PREVIEW_OUTPUT && (
-            <Preview frame={previewFrame} render={previewRender} />
-          )}
+          {ready &&
+            selectedFrames[previewIndex] &&
+            stage === STAGES.PREVIEW_OUTPUT && (
+              <Preview frame={selectedFrames[previewIndex]} />
+            )}
 
           {ready && stage === STAGES.RESPONSIVE_PREVIEW && (
-            <ResponsiveView
-              frames={frames.filter(({ id }) => selectedFrames.includes(id))}
-              renders={renders}
-              responsive={responsive}
-            />
+            <ResponsiveView frames={selectedFrames} />
           )}
 
           {ready && stage === STAGES.SAVE_OUTPUT && (
             <Save
               outputFormat={outputFormat}
               handleClick={this.setOutputFormat}
-              frames={frames.filter(({ id }) => selectedFrames.includes(id))}
-              renders={renders}
-              responsive={responsive}
+              frames={selectedFrames}
             />
           )}
         </div>

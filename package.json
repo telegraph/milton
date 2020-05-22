@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "watchexec --exts css,html,tsx,ts -w ./src ./build.sh"
+    "dev": "watchexec --exts css,html,tsx,ts -w ./src ./build.sh",
+    "lint": "tsc"
   },
   "author": "",
   "license": "ISC",

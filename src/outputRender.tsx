@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import render from 'preact-render-to-string';
 import type { textData } from '.';
-import type { AppState, FrameDataType } from './ui';
+import type { FrameDataType } from './ui';
 import { OUTPUT_FORMATS } from './constants';
 
 // Import CSS file as plain text via esbuild loader option
@@ -69,13 +69,8 @@ function Text(props: TextProps) {
   );
 }
 
-interface FrameContainerProps extends FrameDataType {
-  svgStr: string;
-  responsive: boolean;
-}
-
-export function FrameContainer(props: FrameContainerProps) {
-  const { uid, width, height, textNodes, svgStr, responsive } = props;
+export function FrameContainer(props: FrameDataType) {
+  const { uid, width, height, textNodes, svg = '', responsive } = props;
 
   const textEls = textNodes.map((node) => (
     <Text node={node} width={width} height={height} />
@@ -88,7 +83,7 @@ export function FrameContainer(props: FrameContainerProps) {
     <div class={classNames} style={style} id={uid}>
       <div
         class="f2h__svg_container"
-        dangerouslySetInnerHTML={{ __html: svgStr }}
+        dangerouslySetInnerHTML={{ __html: svg }}
       />
 
       <div class="f2h__text_container">{textEls}</div>
@@ -96,21 +91,10 @@ export function FrameContainer(props: FrameContainerProps) {
   );
 }
 
-export function renderInline(
-  frames: FrameDataType[],
-  svgs: AppState['renders'],
-  iframe: OUTPUT_FORMATS,
-  responsive: boolean
-) {
+export function renderInline(frames: FrameDataType[], iframe: OUTPUT_FORMATS) {
   const mediaQuery = genreateMediaQueries(frames);
 
-  const renderedFrames = frames.map((frame) => (
-    <FrameContainer
-      {...frame}
-      svgStr={svgs[frame.id]}
-      responsive={responsive}
-    />
-  ));
+  const renderedFrames = frames.map((frame) => <FrameContainer {...frame} />);
 
   let html = render(
     <div class="f2h__embed">

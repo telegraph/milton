@@ -1,20 +1,17 @@
 import { h } from 'preact';
 import { OUTPUT_FORMATS } from '../constants';
 import { renderInline } from '../outputRender';
-import type { AppState } from '../ui';
+import type { FrameDataType } from '../ui';
 
 type SaveProps = {
   handleClick: Function;
   outputFormat: OUTPUT_FORMATS;
-  frames: AppState['frames'];
-  renders: AppState['renders'];
-  responsive: boolean;
+  frames: FrameDataType[];
 };
 
 export function Save(props: SaveProps) {
-  const { handleClick, outputFormat, renders, frames, responsive } = props;
-
-  const raw = renderInline(frames, renders, outputFormat, responsive);
+  const { handleClick, outputFormat, frames } = props;
+  const raw = renderInline(frames, outputFormat);
 
   return (
     <div class="f2h__save">

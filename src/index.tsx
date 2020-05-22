@@ -4,6 +4,7 @@ import {
   MsgNoFramesType,
   MsgRenderType,
   MsgErrorType,
+  FrameDataType,
 } from './ui';
 
 // Generate a unique id prefixed with identifer string for safe use as HTML ID
@@ -91,29 +92,31 @@ const main = () => {
   const breakpoints = Object.keys(BREAKPOINTS).map((name) =>
     name.toLowerCase()
   );
-  const selectedFrames = allFrames
-    .filter((frame) => breakpoints.includes(frame.name.toLowerCase()))
-    .map((frame) => frame.id);
 
   if (allFrames.length > 0) {
-    const framesData = allFrames.map((frame) => {
+    const framesData: { [id: string]: FrameDataType } = {};
+
+    allFrames.forEach((frame) => {
       const { name, width, height, id } = frame;
       const textNodes = getTextNodes(frame);
+      const isSelected = breakpoints.includes(id);
       const uid = genRandomUid();
-      return {
+
+      framesData[id] = {
         name,
         width,
         height,
         id,
         textNodes,
         uid,
+        responsive: false,
+        selected: isSelected,
       };
     });
 
     figma.ui.postMessage({
       type: MSG_EVENTS.FOUND_FRAMES,
       frames: framesData,
-      selectedFrames,
     } as MsgFramesType);
 
     return;

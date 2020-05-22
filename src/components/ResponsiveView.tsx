@@ -1,26 +1,19 @@
 import { h } from 'preact';
 import { renderInline } from '../outputRender';
 import { OUTPUT_FORMATS } from '../constants';
-import type { AppState } from '../ui';
+import type { FrameDataType } from '../ui';
 
 type ResponsiveViewProps = {
-  frames: AppState['frames'];
-  renders: AppState['renders'];
-  responsive: boolean;
+  frames: FrameDataType[];
 };
 
 export function ResponsiveView(props: ResponsiveViewProps) {
-  const { frames, renders, responsive } = props;
+  const { frames } = props;
 
   const width = frames.reduce((p, { width }) => (width > p ? width : p), 0);
   const height = frames.reduce((p, { height }) => (height > p ? height : p), 0);
 
-  const rawHtml = renderInline(
-    frames,
-    renders,
-    OUTPUT_FORMATS.IFRAME,
-    responsive
-  );
+  const rawHtml = renderInline(frames, OUTPUT_FORMATS.IFRAME);
 
   return (
     <div class="f2h__responsive_preview">
@@ -37,7 +30,7 @@ export function ResponsiveView(props: ResponsiveViewProps) {
           style={`height: ${height}px; width: ${width}px;`}
           class="f2h__responsive__sandbox"
           scrolling="no"
-          srcdoc={rawHtml}
+          srcDoc={rawHtml}
           sandbox=""
         ></iframe>
       </div>
