@@ -6,15 +6,21 @@ import type { AppState } from '../ui';
 type ResponsiveViewProps = {
   frames: AppState['frames'];
   renders: AppState['renders'];
+  responsive: boolean;
 };
 
 export function ResponsiveView(props: ResponsiveViewProps) {
-  const { frames, renders } = props;
+  const { frames, renders, responsive } = props;
 
   const width = frames.reduce((p, { width }) => (width > p ? width : p), 0);
   const height = frames.reduce((p, { height }) => (height > p ? height : p), 0);
 
-  const rawHtml = renderInline(frames, renders, OUTPUT_FORMATS.IFRAME);
+  const rawHtml = renderInline(
+    frames,
+    renders,
+    OUTPUT_FORMATS.IFRAME,
+    responsive
+  );
 
   return (
     <div class="f2h__responsive_preview">

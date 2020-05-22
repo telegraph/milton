@@ -221,6 +221,11 @@ button:hover {
   color: #a70f0f;
 }
 
+/* [Render] */
+.f2h__render--responsive svg {
+  width: 100%;
+}
+
 .error {
   background-color: var(--colours-grey-5, #f0f);
   border-radius: 2px;

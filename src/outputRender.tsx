@@ -71,19 +71,21 @@ function Text(props: TextProps) {
 
 interface FrameContainerProps extends FrameDataType {
   svgStr: string;
+  responsive: boolean;
 }
 
 export function FrameContainer(props: FrameContainerProps) {
-  const { uid, width, height, textNodes, svgStr } = props;
-
-  console.log(uid);
+  const { uid, width, height, textNodes, svgStr, responsive } = props;
 
   const textEls = textNodes.map((node) => (
     <Text node={node} width={width} height={height} />
   ));
 
+  const classNames = `f2h__render ${responsive && 'f2h__render--responsive'}`;
+  const style = responsive ? '' : `width: ${width}px;`;
+
   return (
-    <div class="f2h__render" style={`width: ${width}px;`} id={uid}>
+    <div class={classNames} style={style} id={uid}>
       <div
         class="f2h__svg_container"
         dangerouslySetInnerHTML={{ __html: svgStr }}
@@ -97,12 +99,17 @@ export function FrameContainer(props: FrameContainerProps) {
 export function renderInline(
   frames: FrameDataType[],
   svgs: AppState['renders'],
-  iframe: OUTPUT_FORMATS
+  iframe: OUTPUT_FORMATS,
+  responsive: boolean
 ) {
   const mediaQuery = genreateMediaQueries(frames);
 
   const renderedFrames = frames.map((frame) => (
-    <FrameContainer {...frame} svgStr={svgs[frame.id]} />
+    <FrameContainer
+      {...frame}
+      svgStr={svgs[frame.id]}
+      responsive={responsive}
+    />
   ));
 
   let html = render(

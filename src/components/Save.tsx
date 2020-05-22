@@ -8,12 +8,13 @@ type SaveProps = {
   outputFormat: OUTPUT_FORMATS;
   frames: AppState['frames'];
   renders: AppState['renders'];
+  responsive: boolean;
 };
 
 export function Save(props: SaveProps) {
-  const { handleClick, outputFormat, renders, frames } = props;
+  const { handleClick, outputFormat, renders, frames, responsive } = props;
 
-  const raw = renderInline(frames, renders, outputFormat);
+  const raw = renderInline(frames, renders, outputFormat, responsive);
 
   return (
     <div class="f2h__save">

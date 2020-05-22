@@ -1,4 +1,4 @@
-import { h, Component, render } from 'preact';
+import { h, Component, render, Fragment } from 'preact';
 import { saveAs } from 'file-saver';
 
 import { renderInline } from './outputRender';
@@ -56,6 +56,7 @@ export type AppState = {
   mouseStartY: number;
   windowWidth: number;
   windowHeight: number;
+  responsive: boolean;
 };
 
 export class App extends Component {
@@ -73,6 +74,7 @@ export class App extends Component {
     mouseStartY: 0,
     windowWidth: INITIAL_UI_SIZE.width,
     windowHeight: INITIAL_UI_SIZE.height,
+    responsive: true,
   };
 
   componentDidMount() {
@@ -266,18 +268,24 @@ export class App extends Component {
   };
 
   saveBinaryFile = () => {
-    const { frames, renders, outputFormat, selectedFrames } = this.state;
+    const {
+      frames,
+      renders,
+      outputFormat,
+      selectedFrames,
+      responsive,
+    } = this.state;
     const outputFrames = frames.filter(({ id }) => selectedFrames.includes(id));
     const filename = 'figma-to-html-test.html';
-    const raw = renderInline(outputFrames, renders, outputFormat);
+    const raw = renderInline(outputFrames, renders, outputFormat, responsive);
     const blob = new Blob([raw], { type: 'text/html' });
 
     saveAs(blob, filename);
   };
 
   startResizing = (event: MouseEvent) => {
-    console.log('starting resizing');
     const { isResizing } = this.state;
+    console.log('starting resizing');
 
     if (!isResizing) {
       const { x, y } = event;
@@ -313,18 +321,24 @@ export class App extends Component {
 
   stopResizing = () => {
     const { isResizing } = this.state;
-    console.log('stop resizing', isResizing);
 
-    if (isResizing) {
-      const { width, height } = document.body.getBoundingClientRect();
-
-      this.setState({
-        isResizing: false,
-        windowWidth: width,
-        windowHeight: height,
-      });
-      window.removeEventListener('mousemove', this.handleResize);
+    if (!isResizing) {
+      return;
     }
+
+    console.log('stop resizing', isResizing);
+    const { width, height } = document.body.getBoundingClientRect();
+
+    this.setState({
+      isResizing: false,
+      windowWidth: width,
+      windowHeight: height,
+    });
+    window.removeEventListener('mousemove', this.handleResize);
+  };
+
+  toggleResonsive = () => {
+    this.setState({ responsive: !this.state.responsive });
   };
 
   render() {
@@ -337,6 +351,7 @@ export class App extends Component {
       previewIndex,
       outputFormat,
       renders,
+      responsive,
     } = this.state;
 
     console.log(this.state);
@@ -366,11 +381,28 @@ export class App extends Component {
           {error && <div class="error">{error}</div>}
 
           {ready && stage === STAGES.CHOOSE_FRAMES && (
-            <FrameSelection
-              frames={frames}
-              selections={selectedFrames}
-              handleClick={this.handleFrameSelectionChange}
-            />
+            <Fragment>
+              <FrameSelection
+                frames={frames}
+                selections={selectedFrames}
+                handleClick={this.handleFrameSelectionChange}
+              />
+
+              <div class="f2h__responsive_option">
+                <label
+                  for="f2h__responsive_input"
+                  class="f2h__responsive_label"
+                >
+                  <input
+                    type="checkbox"
+                    checked={responsive}
+                    id="f2h__responsive_input"
+                    onChange={this.toggleResonsive}
+                  />
+                  Responsive layout
+                </label>
+              </div>
+            </Fragment>
           )}
 
           {ready && previewFrame && stage === STAGES.PREVIEW_OUTPUT && (
@@ -381,6 +413,7 @@ export class App extends Component {
             <ResponsiveView
               frames={frames.filter(({ id }) => selectedFrames.includes(id))}
               renders={renders}
+              responsive={responsive}
             />
           )}
 
@@ -390,6 +423,7 @@ export class App extends Component {
               handleClick={this.setOutputFormat}
               frames={frames.filter(({ id }) => selectedFrames.includes(id))}
               renders={renders}
+              responsive={responsive}
             />
           )}
         </div>
