@@ -50,6 +50,13 @@ What is wanted from this tool
 [Responsive sticky text SVGs](https://bl.ocks.org/veltman/5cd1ba0b3c623e7b5146
 [Grid widths](https://docs.google.com/spreadsheets/d/1AxeiLKKsQn7pq6wFKcKsSbAgR44K8CA1cLyBYre64IY/edit?ts=5ebd2636#gid=0)
 
+Examples:
+
+- https://interactive.guim.co.uk/uploader/embed/2020/01/iraq-airstrikes/giv-39029u79KgLyXZcG/
+- https://interactive.guim.co.uk/uploader/embed/2020/01/reaper-dronespecs/giv-3902RxT87H1Zvcyy/
+- https://interactive.guim.co.uk/uploader/embed/2020/01/baghdad_general-zip/giv-3902n6MjnGXSLzAt/
+- https://interactive.guim.co.uk/uploader/embed/2020/01/middle_east-zip/giv-3902Ow9fZ1NM5sM7/
+
 ## Examples
 
 Telegraph AI2HTML Covid graphs
