@@ -1,26 +1,20 @@
-import { h, Component, render } from 'preact';
-import { saveAs } from 'file-saver';
+import { h, Component, render } from "preact";
+import { saveAs } from "file-saver";
 
-import { renderInline } from './outputRender';
-import {
-  MSG_EVENTS,
-  STAGES,
-  OUTPUT_FORMATS,
-  UI_TEXT,
-  INITIAL_UI_SIZE,
-} from './constants';
-import { Header } from './components/Header';
-import { FrameSelection } from './components/FrameSelection';
-import { Preview } from './components/Preview';
-import { Save } from './components/Save';
-import type { textData } from './index';
-import { ResponsiveView } from './components/ResponsiveView';
+import { renderInline } from "./outputRender";
+import { MSG_EVENTS, STAGES, OUTPUT_FORMATS, UI_TEXT, INITIAL_UI_SIZE } from "./constants";
+import { Header } from "./components/Header";
+import { FrameSelection } from "./components/FrameSelection";
+import { Preview } from "./components/Preview";
+import { Save } from "./components/Save";
+import type { textData } from "./index";
+import { ResponsiveView } from "./components/ResponsiveView";
 
 // Import CSS files as plain text via esbuild loader option
 // @ts-expect-error
-import uiCss from './ui.css';
+import uiCss from "./ui.css";
 // @ts-expect-error
-import embedCss from './embed.css';
+import embedCss from "./embed.css";
 
 export type FrameDataType = {
   name: string;
@@ -34,11 +28,7 @@ export type FrameDataType = {
   svg?: string;
 };
 
-type MsgEventType =
-  | MsgFramesType
-  | MsgRenderType
-  | MsgNoFramesType
-  | MsgErrorType;
+type MsgEventType = MsgFramesType | MsgRenderType | MsgNoFramesType | MsgErrorType;
 
 export interface MsgFramesType {
   type: MSG_EVENTS.FOUND_FRAMES;
@@ -99,12 +89,10 @@ export class App extends Component {
 
   componentDidMount() {
     // Register DOM and POST messags
-    window.addEventListener('message', (e) =>
-      this.handleEvents(e.data.pluginMessage)
-    );
+    window.addEventListener("message", (e) => this.handleEvents(e.data.pluginMessage));
 
     // Send backend message that UI is ready
-    parent.postMessage({ pluginMessage: { type: MSG_EVENTS.DOM_READY } }, '*');
+    parent.postMessage({ pluginMessage: { type: MSG_EVENTS.DOM_READY } }, "*");
   }
 
   handleEvents = (data: MsgEventType) => {
@@ -113,8 +101,8 @@ export class App extends Component {
         const { frames } = data;
 
         if (!frames) {
-          this.setState({ error: 'No frames!' });
-          console.error('Post error: no frames', data);
+          this.setState({ error: "No frames!" });
+          console.error("Post error: no frames", data);
           return;
         }
 
@@ -144,7 +132,7 @@ export class App extends Component {
           {
             pluginMessage: { type: MSG_EVENTS.RESIZE, width, height },
           },
-          '*'
+          "*"
         );
 
         break;
@@ -162,8 +150,8 @@ export class App extends Component {
       case MSG_EVENTS.RENDER:
         const { frameId, svgStr } = data;
         if (!frameId || !svgStr) {
-          this.setState({ error: 'Failed to render' });
-          console.error('Post message: failed to render', data);
+          this.setState({ error: "Failed to render" });
+          console.error("Post message: failed to render", data);
           return;
         }
 
@@ -178,8 +166,8 @@ export class App extends Component {
         break;
 
       default:
-        this.setState({ error: 'Unknown post message' });
-        console.error('UI post message error', data);
+        this.setState({ error: "Unknown post message" });
+        console.error("UI post message error", data);
         break;
     }
   };
@@ -216,18 +204,12 @@ export class App extends Component {
       return;
     }
 
-    if (
-      stage === STAGES.PREVIEW_OUTPUT &&
-      previewIndex < selectedCount.length - 1
-    ) {
+    if (stage === STAGES.PREVIEW_OUTPUT && previewIndex < selectedCount.length - 1) {
       this.setState({ previewIndex: previewIndex + 1 });
       return;
     }
 
-    if (
-      stage === STAGES.PREVIEW_OUTPUT &&
-      previewIndex === selectedCount.length - 1
-    ) {
+    if (stage === STAGES.PREVIEW_OUTPUT && previewIndex === selectedCount.length - 1) {
       this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
       return;
     }
@@ -267,19 +249,13 @@ export class App extends Component {
   };
 
   getOutputRender = (frameId: String) => {
-    parent.postMessage(
-      { pluginMessage: { type: MSG_EVENTS.RENDER, frameId } },
-      '*'
-    );
+    parent.postMessage({ pluginMessage: { type: MSG_EVENTS.RENDER, frameId } }, "*");
   };
 
   getMaxFrameDimensions = (frames: FrameCollection) => {
     const frameVals = Object.values(frames);
     let width = frameVals.reduce((p, { width }) => (width > p ? width : p), 0);
-    let height = frameVals.reduce(
-      (p, { height }) => (height > p ? height : p),
-      0
-    );
+    let height = frameVals.reduce((p, { height }) => (height > p ? height : p), 0);
 
     const paddingWidth = 16;
     const paddingHeight = 100;
@@ -300,32 +276,26 @@ export class App extends Component {
     const { frames, outputFormat } = this.state;
     const outputFrames = Object.values(frames).filter((f) => f.selected);
 
-    const filename = 'figma-to-html-test.html';
+    const filename = "figma-to-html-test.html";
     const raw = renderInline(outputFrames, outputFormat);
-    const blob = new Blob([raw], { type: 'text/html' });
+    const blob = new Blob([raw], { type: "text/html" });
 
     saveAs(blob, filename);
   };
 
   startResizing = (event: MouseEvent) => {
     const { isResizing } = this.state;
-    console.log('starting resizing');
+    console.log("starting resizing");
 
     if (!isResizing) {
       const { x, y } = event;
       this.setState({ isResizing: true, mouseStartX: x, mouseStartY: y });
-      window.addEventListener('mousemove', this.handleResize);
+      window.addEventListener("mousemove", this.handleResize);
     }
   };
 
   handleResize = (event: MouseEvent) => {
-    const {
-      isResizing,
-      mouseStartX,
-      mouseStartY,
-      windowWidth,
-      windowHeight,
-    } = this.state;
+    const { isResizing, mouseStartX, mouseStartY, windowWidth, windowHeight } = this.state;
 
     if (isResizing) {
       const { x, y } = event;
@@ -336,7 +306,7 @@ export class App extends Component {
         {
           pluginMessage: { type: MSG_EVENTS.RESIZE, width, height },
         },
-        '*'
+        "*"
       );
 
       // Post message to backend
@@ -350,7 +320,7 @@ export class App extends Component {
       return;
     }
 
-    console.log('stop resizing', isResizing);
+    console.log("stop resizing", isResizing);
     const { width, height } = document.body.getBoundingClientRect();
 
     this.setState({
@@ -358,7 +328,7 @@ export class App extends Component {
       windowWidth: width,
       windowHeight: height,
     });
-    window.removeEventListener('mousemove', this.handleResize);
+    window.removeEventListener("mousemove", this.handleResize);
   };
 
   toggleResonsive = (id: string) => {
@@ -377,14 +347,7 @@ export class App extends Component {
   };
 
   render() {
-    const {
-      error,
-      ready,
-      frames,
-      stage,
-      previewIndex,
-      outputFormat,
-    } = this.state;
+    const { error, ready, frames, stage, previewIndex, outputFormat } = this.state;
 
     console.log(this.state);
 
@@ -419,37 +382,25 @@ export class App extends Component {
             />
           )}
 
-          {ready &&
-            selectedFrames[previewIndex] &&
-            stage === STAGES.PREVIEW_OUTPUT && (
-              <Preview frame={selectedFrames[previewIndex]} />
-            )}
-
-          {ready && stage === STAGES.RESPONSIVE_PREVIEW && (
-            <ResponsiveView frames={selectedFrames} />
+          {ready && selectedFrames[previewIndex] && stage === STAGES.PREVIEW_OUTPUT && (
+            <Preview frame={selectedFrames[previewIndex]} />
           )}
 
+          {ready && stage === STAGES.RESPONSIVE_PREVIEW && <ResponsiveView frames={selectedFrames} />}
+
           {ready && stage === STAGES.SAVE_OUTPUT && (
-            <Save
-              outputFormat={outputFormat}
-              handleClick={this.setOutputFormat}
-              frames={selectedFrames}
-            />
+            <Save outputFormat={outputFormat} handleClick={this.setOutputFormat} frames={selectedFrames} />
           )}
         </div>
 
-        <div
-          class="f2h__resizer"
-          onMouseDown={this.startResizing}
-          onMouseUp={this.stopResizing}
-        ></div>
+        <div class="f2h__resizer" onMouseDown={this.startResizing} onMouseUp={this.stopResizing}></div>
       </div>
     );
   }
 }
 
 function injectCss(css: string) {
-  const styleEl = document.createElement('style');
+  const styleEl = document.createElement("style");
   const styleText = document.createTextNode(css);
   styleEl.appendChild(styleText);
   document.head.appendChild(styleEl);

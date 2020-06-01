@@ -1,11 +1,5 @@
-import { BREAKPOINTS, MSG_EVENTS, INITIAL_UI_SIZE } from './constants';
-import {
-  MsgFramesType,
-  MsgNoFramesType,
-  MsgRenderType,
-  MsgErrorType,
-  FrameDataType,
-} from './ui';
+import { BREAKPOINTS, MSG_EVENTS, INITIAL_UI_SIZE } from "./constants";
+import { MsgFramesType, MsgNoFramesType, MsgRenderType, MsgErrorType, FrameDataType } from "./ui";
 
 // Generate a unique id prefixed with identifer string for safe use as HTML ID
 // Note: Figma seems to stub .toString for security?
@@ -17,7 +11,7 @@ function genRandomUid() {
 
 async function getFrameSvgAsString(frame: SceneNode): Promise<string> {
   const svgBuff = await frame.exportAsync({
-    format: 'SVG',
+    format: "SVG",
     svgOutlineText: false,
     svgSimplifyStroke: true,
   });
@@ -37,21 +31,21 @@ const handleReceivedMsg = (msg: PostMsg) => {
 
   switch (type) {
     case MSG_EVENTS.ERROR:
-      console.log('plugin msg: error');
+      console.log("plugin msg: error");
       break;
 
     case MSG_EVENTS.CLOSE:
-      console.log('plugin msg: close');
+      console.log("plugin msg: close");
       figma.closePlugin();
       break;
 
     case MSG_EVENTS.DOM_READY:
-      console.log('plugin msg: DOM READY');
+      console.log("plugin msg: DOM READY");
       main();
       break;
 
     case MSG_EVENTS.RENDER:
-      console.log('plugin msg: render', frameId);
+      console.log("plugin msg: render", frameId);
       renderFrame(frameId)
         .then((svgStr) => {
           figma.ui.postMessage({
@@ -69,29 +63,25 @@ const handleReceivedMsg = (msg: PostMsg) => {
       break;
 
     case MSG_EVENTS.RESIZE:
-      console.log('plugin msg: resize');
+      console.log("plugin msg: resize");
       figma.ui.resize(width, height);
       break;
 
     default:
-      console.error('Unknown post message', msg);
+      console.error("Unknown post message", msg);
   }
 };
 
 // Listen for messages from the UI
-figma.ui.on('message', (e) => handleReceivedMsg(e));
+figma.ui.on("message", (e) => handleReceivedMsg(e));
 
 const main = () => {
   const { currentPage } = figma;
 
   // Get default frames names
-  const allFrames = currentPage.children.filter(
-    (node) => node.type === 'FRAME'
-  ) as FrameNode[];
+  const allFrames = currentPage.children.filter((node) => node.type === "FRAME") as FrameNode[];
 
-  const breakpoints = Object.keys(BREAKPOINTS).map((name) =>
-    name.toLowerCase()
-  );
+  const breakpoints = Object.keys(BREAKPOINTS).map((name) => name.toLowerCase());
 
   if (allFrames.length > 0) {
     const framesData: { [id: string]: FrameDataType } = {};
@@ -123,7 +113,7 @@ const main = () => {
   }
 
   if (allFrames.length < 1) {
-    console.warn('No frames');
+    console.warn("No frames");
     figma.ui.postMessage({ type: MSG_EVENTS.NO_FRAMES } as MsgNoFramesType);
     return;
   }
@@ -135,8 +125,8 @@ figma.ui.resize(INITIAL_UI_SIZE.width, INITIAL_UI_SIZE.height);
 
 async function renderFrame(frameId: string) {
   const frame = figma.getNodeById(frameId);
-  if (!frame || frame.type !== 'FRAME') {
-    throw new Error('Missing frame');
+  if (!frame || frame.type !== "FRAME") {
+    throw new Error("Missing frame");
   }
 
   const svgStr = await getFrameSvgAsString(frame);
@@ -144,10 +134,7 @@ async function renderFrame(frameId: string) {
   return svgStr;
 }
 
-export type textNodeSelectedProps = Pick<
-  TextNode,
-  'x' | 'y' | 'width' | 'height' | 'characters'
->;
+export type textNodeSelectedProps = Pick<TextNode, "x" | "y" | "width" | "height" | "characters">;
 
 export interface textData extends textNodeSelectedProps {
   colour: { r: number; g: number; b: number; a: number };
@@ -157,25 +144,16 @@ export interface textData extends textNodeSelectedProps {
 
 // Extract object properties from textNode for passing via postMessage
 function getTextNodes(frame: FrameNode): textData[] {
-  const textNodes = frame.findAll(({ type }) => type === 'TEXT') as TextNode[];
+  const textNodes = frame.findAll(({ type }) => type === "TEXT") as TextNode[];
 
   return textNodes.map(
     (node): textData => {
-      const {
-        x,
-        y,
-        width,
-        height,
-        fontSize: fontSizeData,
-        fontName,
-        fills,
-        characters,
-      } = node;
+      const { x, y, width, height, fontSize: fontSizeData, fontName, fills, characters } = node;
 
       // Extract basic fill colour
       const [fill] = fills;
       let colour = { r: 0, g: 0, b: 0, a: 1 };
-      if (fill.type === 'SOLID') {
+      if (fill.type === "SOLID") {
         colour = { ...colour, a: fill.opacity || 1 };
       }
 
@@ -186,7 +164,7 @@ function getTextNodes(frame: FrameNode): textData[] {
       }
 
       // Extract font family
-      let fontFamily = 'Arial';
+      let fontFamily = "Arial";
       if (fontName !== figma.mixed) {
         fontFamily = fontName.family;
       }
