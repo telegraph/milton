@@ -16,6 +16,15 @@ Figma plug-in that helps generate HTML embeds.
 
 ## Tasks
 
+- [BUG] Clipping mask not working on responsive layout
+- [BUG] Incorrect size ordering (ordering by text value not number?)
+- [BUG] Auto-layout frames causes issues
+- [Feature] Add select all frames / responsive
+- [Improvement] Main window large by default (less need to size up)
+- [Improvement] Tint preview background
+- [Improvement] Default export shows two buttons 'save file' and 'copy'
+- [Improvement] Hide advanced export features by default
+- [Improvement] In situ preview mode
 - [BUG] Very wide or tall frames break UI window
 - [BUG] Handle frames with the same name
 - [BUG] Handle frames with the same width (make user choose?)
