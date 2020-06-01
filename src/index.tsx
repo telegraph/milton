@@ -142,10 +142,20 @@ export interface textData extends textNodeSelectedProps {
 // Extract object properties from textNode for passing via postMessage
 function getTextNodes(frame: FrameNode): textData[] {
   const textNodes = frame.findAll(({ type }) => type === "TEXT") as TextNode[];
+  const { absoluteTransform } = frame;
+  const rootX = absoluteTransform[0][2];
+  const rootY = absoluteTransform[1][2];
 
   return textNodes.map(
     (node): textData => {
-      const { x, y, width, height, fontSize: fontSizeData, fontName, fills, characters } = node;
+      const { absoluteTransform, width, height, fontSize: fontSizeData, fontName, fills, characters } = node;
+
+      // NOTE: Figma node x, y are relative to first parent, we want them
+      // relative to the root frame
+      const textX = absoluteTransform[0][2];
+      const textY = absoluteTransform[1][2];
+      const x = textX - rootX;
+      const y = textY - rootY;
 
       // Extract basic fill colour
       const [fill] = fills;
