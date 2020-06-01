@@ -154,6 +154,7 @@ button:hover {
   align-items: center;
   justify-content: center;
   height: 100%;
+  background-color: var(--colours-grey-5, #f0f);
 }
 
 /* [ Frame selection ] */
