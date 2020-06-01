@@ -233,6 +233,10 @@ button:hover {
 .f2h__preview_title {
   font-size: var(--font-size--medium, 1);
   margin: var(--padding-small, 0) 0;
+  display: flex;
+}
+.f2h__preview_name {
+  flex: 1;
 }
 
 .f2h__preview_wrapper {
@@ -241,6 +245,7 @@ button:hover {
   width: 100%;
 }
 
+.f2h__preview_responsive,
 .f2h__preview_width {
   font-size: var(--font-size--small, 1);
   color: var(--colours-grey-3, #f0f);
