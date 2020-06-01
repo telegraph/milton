@@ -346,15 +346,38 @@ export class App extends Component {
     });
   };
 
+  toggleSelectAll = () => {
+    const { frames } = this.state;
+    const shouldDeselectAll = Object.values(frames).some((frame) => frame.selected);
+
+    const newFrames: FrameCollection = JSON.parse(JSON.stringify(frames));
+    Object.values(newFrames).forEach((frame) => (frame.selected = !shouldDeselectAll));
+
+    this.setState({ frames: newFrames });
+  };
+
+  toggleResponsiveAll = () => {
+    const { frames } = this.state;
+    const shouldDeselectAll = Object.values(frames).some((frame) => frame.responsive);
+
+    const newFrames: FrameCollection = JSON.parse(JSON.stringify(frames));
+    Object.values(newFrames).forEach((frame) => (frame.responsive = !shouldDeselectAll));
+
+    this.setState({ frames: newFrames });
+  };
+
   render() {
     const { error, ready, frames, stage, previewIndex, outputFormat } = this.state;
 
     console.log(this.state);
 
-    const framesArr = Object.values(frames);
-    const selectedFrames = framesArr.filter((f) => f.selected);
+    const framesArr = Object.values(frames).sort((a, b) => (a.width <= b.width ? -1 : 1));
+
+    let selectedFrames = framesArr.filter((frame) => frame.selected);
     const selectedCount = selectedFrames.length;
-    selectedFrames.sort((a, b) => (a.width < b.width ? -1 : 1));
+
+    // Sort frames
+    selectedFrames = [...selectedFrames].sort((a, b) => (a.width <= b.width ? -1 : 1));
 
     // If previewing frame without a render then request if from the backend
     if (stage === STAGES.PREVIEW_OUTPUT && !selectedFrames[previewIndex].svg) {
@@ -379,6 +402,8 @@ export class App extends Component {
               frames={framesArr}
               handleClick={this.handleFrameSelectionChange}
               toggleResonsive={this.toggleResonsive}
+              toggleSelectAll={this.toggleSelectAll}
+              toggleResponsiveAll={this.toggleResponsiveAll}
             />
           )}
 
