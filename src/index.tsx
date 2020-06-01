@@ -81,15 +81,12 @@ const main = () => {
   // Get default frames names
   const allFrames = currentPage.children.filter((node) => node.type === "FRAME") as FrameNode[];
 
-  const breakpoints = Object.keys(BREAKPOINTS).map((name) => name.toLowerCase());
-
   if (allFrames.length > 0) {
     const framesData: { [id: string]: FrameDataType } = {};
 
     allFrames.forEach((frame) => {
       const { name, width, height, id } = frame;
       const textNodes = getTextNodes(frame);
-      const isSelected = breakpoints.includes(id);
       const uid = genRandomUid();
 
       framesData[id] = {
@@ -100,7 +97,7 @@ const main = () => {
         textNodes,
         uid,
         responsive: false,
-        selected: isSelected,
+        selected: true,
       };
     });
 
