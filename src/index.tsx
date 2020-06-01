@@ -118,7 +118,12 @@ const main = () => {
 
 // Render the DOM
 figma.showUI(__html__);
-figma.ui.resize(figma.viewport.bounds.width, figma.viewport.bounds.height);
+const { width, height } = figma.viewport.bounds;
+const { zoom } = figma.viewport;
+const initialWindowWidth = Math.round(width * zoom);
+const initialWindowHeight = Math.round(height * zoom);
+console.log(zoom, width, height, initialWindowWidth, initialWindowHeight, width, height);
+figma.ui.resize(initialWindowWidth, initialWindowHeight);
 
 async function renderFrame(frameId: string) {
   const frame = figma.getNodeById(frameId);
