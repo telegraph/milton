@@ -1,14 +1,15 @@
-import { h, Fragment } from 'preact';
-import type { App, FrameDataType } from '../ui';
+import { h, Fragment } from "preact";
+import type { App, FrameDataType } from "../ui";
 
 type FrameSelectionProps = {
   frames: FrameDataType[];
-  handleClick: App['handleFrameSelectionChange'];
-  toggleResonsive: App['toggleResonsive'];
+  handleClick: App["handleFrameSelectionChange"];
+  toggleResonsive: App["toggleResonsive"];
 };
 
 export function FrameSelection(props: FrameSelectionProps) {
   const { frames, handleClick, toggleResonsive } = props;
+  const sizeSorted = [...frames].sort((a, b) => (a.width <= b.width ? -1 : 1));
 
   return (
     <div class="f2h__frame_selection">
@@ -16,7 +17,7 @@ export function FrameSelection(props: FrameSelectionProps) {
       <p class="f2h__sel_header f2h__sel_header--width">Width</p>
       <p class="f2h__sel_header f2h__sel_header--responsive">Responsive</p>
 
-      {frames.map(({ name, id, width, selected, responsive }) => (
+      {sizeSorted.map(({ name, id, width, selected, responsive }) => (
         <Fragment>
           <label class="f2h__label f2h__label--name">
             <input
