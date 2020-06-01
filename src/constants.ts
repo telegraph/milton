@@ -1,9 +1,3 @@
-export type board = {
-  id: string;
-  width: number;
-  buffer: Uint8Array;
-};
-
 export enum STAGES {
   CHOOSE_FRAMES,
   PREVIEW_OUTPUT,
@@ -21,30 +15,24 @@ export enum MSG_EVENTS {
   ERROR,
 }
 
-export enum BREAKPOINTS {
-  Mobile = 340,
-  Tablet = 520,
-  Desktop = 1024,
-}
-
 export enum OUTPUT_FORMATS {
   INLINE,
   IFRAME,
 }
 
 export const UI_TEXT = {
-  ERROR_UNEXPECTED: 'Unexpected error',
-  ERROR_MISSING_FRAMES: 'No frames found. Please add some frames to the page.',
-  WARN_NO_TARGETS: 'Standard frames not found. Please select target frames.',
-  WARN_TOO_MANY_TARGETS: 'Please select three target frames',
-  INFO_PREVIEW: 'Preview each frame output',
-  TITLE_CHOOSE_FRAME: 'Choose which frames to export',
-  TITLE_PREVIEW: 'Preview',
-  TITLE_RESPONSIVE_PREVIEW: 'Responsive preview',
-  TILE_OUTPUT: 'Export',
-  BUTTON_NEXT: 'Next',
-  BUTTON_DOWNLOAD: 'Download',
-  BUTTON_PREVIOUS: 'Back',
+  ERROR_UNEXPECTED: "Unexpected error",
+  ERROR_MISSING_FRAMES: "No frames found. Please add some frames to the page.",
+  WARN_NO_TARGETS: "Standard frames not found. Please select target frames.",
+  WARN_TOO_MANY_TARGETS: "Please select three target frames",
+  INFO_PREVIEW: "Preview each frame output",
+  TITLE_CHOOSE_FRAME: "Choose which frames to export",
+  TITLE_PREVIEW: "Preview",
+  TITLE_RESPONSIVE_PREVIEW: "Responsive preview",
+  TILE_OUTPUT: "Export",
+  BUTTON_NEXT: "Next",
+  BUTTON_DOWNLOAD: "Download",
+  BUTTON_PREVIOUS: "Back",
 };
 
 export const INITIAL_UI_SIZE = {

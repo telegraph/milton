@@ -128,13 +128,6 @@ export class App extends Component {
           windowHeight: height,
         });
 
-        parent.postMessage(
-          {
-            pluginMessage: { type: MSG_EVENTS.RESIZE, width, height },
-          },
-          "*"
-        );
-
         break;
 
       case MSG_EVENTS.NO_FRAMES:
@@ -418,7 +411,7 @@ export class App extends Component {
           )}
         </div>
 
-        <div class="f2h__resizer" onMouseDown={this.startResizing} onMouseUp={this.stopResizing}></div>
+        {/* <div class="f2h__resizer" onMouseDown={this.startResizing} onMouseUp={this.stopResizing}></div> */}
       </div>
     );
   }

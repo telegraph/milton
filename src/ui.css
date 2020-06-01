@@ -287,7 +287,8 @@ button:hover {
   display: flex;
   flex-direction: column;
   width: 100%;
-  align-self: flex-start;
+  align-self: center;
+  max-width: 800px;
 }
 
 .f2h__save__subhead {
@@ -328,7 +329,7 @@ button:hover {
   /* width: 300px; */
   display: flex;
   flex-direction: column;
-  align-self: flex-start;
+  align-self: center;
 }
 
 .f2h__responsive__wrapper {

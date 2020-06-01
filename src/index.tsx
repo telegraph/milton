@@ -1,4 +1,4 @@
-import { MSG_EVENTS, INITIAL_UI_SIZE } from "./constants";
+import { MSG_EVENTS } from "./constants";
 import { MsgFramesType, MsgNoFramesType, MsgRenderType, MsgErrorType, FrameDataType } from "./ui";
 
 // Generate a unique id prefixed with identifer string for safe use as HTML ID
@@ -118,7 +118,7 @@ const main = () => {
 
 // Render the DOM
 figma.showUI(__html__);
-figma.ui.resize(INITIAL_UI_SIZE.width, INITIAL_UI_SIZE.height);
+figma.ui.resize(figma.viewport.bounds.width, figma.viewport.bounds.height);
 
 async function renderFrame(frameId: string) {
   const frame = figma.getNodeById(frameId);
