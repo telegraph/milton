@@ -1,4 +1,4 @@
-import { BREAKPOINTS, MSG_EVENTS, INITIAL_UI_SIZE } from "./constants";
+import { MSG_EVENTS, INITIAL_UI_SIZE } from "./constants";
 import { MsgFramesType, MsgNoFramesType, MsgRenderType, MsgErrorType, FrameDataType } from "./ui";
 
 // Generate a unique id prefixed with identifer string for safe use as HTML ID
@@ -126,7 +126,26 @@ async function renderFrame(frameId: string) {
     throw new Error("Missing frame");
   }
 
-  const svgStr = await getFrameSvgAsString(frame);
+  let svgStr = await getFrameSvgAsString(frame);
+
+  // NOTE: Figma generates non-unique IDs for masks which can clash when
+  // embedding multiple SVGSs. We do a string replace for unique IDs
+  const regex = /id="(.+?)"/g;
+  const ids: string[] = [];
+  let matches;
+
+  while ((matches = regex.exec(svgStr))) {
+    const [, id] = matches;
+    ids.push(id);
+  }
+
+  ids.forEach((id) => {
+    const randomId = `${id}-${genRandomUid()}`;
+    // Replace ID
+    svgStr = svgStr.replace(`id="${id}"`, `id="${randomId}"`);
+    // Replace anchor refs
+    svgStr = svgStr.replace(`#${id}`, `#${randomId}`);
+  });
 
   return svgStr;
 }
