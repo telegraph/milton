@@ -22,8 +22,7 @@ export function FrameSelection(props: FrameSelectionProps) {
 
   return (
     <div class="f2h__frame_selection">
-      <p class="f2h__sel_header f2h__sel_header--name">
-        Selected frames{" "}
+      <label class="f2h__sel_header f2h__sel_header--name">
         <input
           name="selectAll"
           id="selectAll"
@@ -31,11 +30,10 @@ export function FrameSelection(props: FrameSelectionProps) {
           onClick={toggleSelectAll}
           checked={allSelected}
           ref={(el) => el && (el.indeterminate = someFramesSelected)}
-        />
-      </p>
-      <p class="f2h__sel_header f2h__sel_header--width">Width</p>
-      <p class="f2h__sel_header f2h__sel_header--responsive">
-        Responsive{" "}
+        />{" "}
+        Frames
+      </label>
+      <label class="f2h__sel_header f2h__sel_header--responsive">
         <input
           type="checkbox"
           id="responsiveAll"
@@ -43,8 +41,9 @@ export function FrameSelection(props: FrameSelectionProps) {
           onClick={toggleResponsiveAll}
           checked={allResponsiveSelected}
           ref={(el) => el && (el.indeterminate = someResponsiveSelected)}
-        />
-      </p>
+        />{" "}
+        Responsive
+      </label>
 
       {frames.map(({ name, id, width, selected, responsive }) => (
         <Fragment>
@@ -58,9 +57,9 @@ export function FrameSelection(props: FrameSelectionProps) {
               name={name}
             />
             {name}
-          </label>
 
-          <span class="f2h__sel_width">{width}px</span>
+            <span class="f2h__sel_width">{width}px</span>
+          </label>
 
           <input
             class="f2h__checkbox f2h__input--responsive"

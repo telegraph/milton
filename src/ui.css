@@ -56,7 +56,7 @@ iframe {
   border: 0;
 }
 
-@import url('https://rsms.me/inter/inter.css');
+@import url("https://rsms.me/inter/inter.css");
 
 body {
   --padding-small: 6px;
@@ -75,7 +75,7 @@ body {
   --colours-main-dark: rgb(44, 75, 57);
 
   --font-family-sans-serif: Arial, Helvetica, sans-serif;
-  --font-famailt-serif: Georgia, 'Times New Roman', Times, serif;
+  --font-famailt-serif: Georgia, "Times New Roman", Times, serif;
 
   --font-size--small: 11px;
   --font-size--medium: 14px;
@@ -83,11 +83,11 @@ body {
 }
 
 html {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 @supports (font-variation-settings: normal) {
   html {
-    font-family: 'Inter var', sans-serif;
+    font-family: "Inter var", sans-serif;
   }
 }
 
@@ -159,7 +159,7 @@ button:hover {
 /* [ Frame selection ] */
 .f2h__frame_selection {
   display: grid;
-  grid-template-columns: 1fr min-content min-content;
+  grid-template-columns: 1fr min-content;
   grid-template-rows: auto;
   min-width: 320px;
   grid-gap: var(--padding-small, 0) var(--padding-medium, 0);
@@ -167,8 +167,10 @@ button:hover {
 }
 
 .f2h__sel_header {
-  color: var(--colours-grey-2, #f0f);
-  font-size: var(--font-size--small);
+  color: var(--colours-grey-0, #f0f);
+  font-size: var(--font-size--medium);
+  border-bottom: 1px solid var(--colours-grey-0);
+  padding-bottom: var(--padding-small, 0);
 }
 
 .f2h__sel_header--name {
@@ -176,30 +178,20 @@ button:hover {
   grid-row: 1/2;
 }
 
-.f2h__sel_header--width {
+.f2h__sel_header--responsive {
   grid-column: 2/3;
   grid-row: 1/2;
   justify-self: center;
-}
-
-.f2h__sel_header--responsive {
-  grid-column: 3/4;
-  grid-row: 1/2;
-  justify-self: center;
+  white-space: nowrap;
 }
 
 .f2h__label.f2h__label--name {
   grid-column: 1/2;
-}
-
-.f2h__sel_width {
-  grid-column: 2/3;
-  justify-self: center;
-  margin: 0;
+  align-items: baseline;
 }
 
 .f2h__input--responsive {
-  grid-column: 3/4;
+  grid-column: 2/3;
   justify-self: center;
   margin: 0;
 }
@@ -209,6 +201,12 @@ button:hover {
   cursor: pointer;
   padding: var(--padding-small) 0;
   align-items: center;
+}
+
+.f2h__sel_width {
+  font-size: var(--font-size--small, 1em);
+  color: var(--colours-grey-3, #f0f);
+  padding-left: var(--padding-small, 0);
 }
 
 .f2h__checkbox,
@@ -229,7 +227,7 @@ button:hover {
   flex: 1;
 }
 
-/* [ Preview]  */
+/* [Preview]  */
 
 .f2h__preview_title {
   font-size: var(--font-size--medium, 1);
@@ -320,13 +318,7 @@ button:hover {
   bottom: 6px;
   right: 6px;
   cursor: grabbing;
-  background: repeating-linear-gradient(
-    -45deg,
-    #d2d2d2,
-    #d2d2d2 2px,
-    transparent 1px,
-    transparent 8px
-  );
+  background: repeating-linear-gradient(-45deg, #d2d2d2, #d2d2d2 2px, transparent 1px, transparent 8px);
   border-radius: 100% 0 0;
 }
 
