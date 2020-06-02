@@ -9,9 +9,6 @@ type PreviewProps = {
   windowHeight: number;
 };
 
-//      transform-origin: top;
-//
-
 export function Preview(props: PreviewProps) {
   const { frame, windowHeight, windowWidth } = props;
   const { name, width, height, svg, responsive } = frame;

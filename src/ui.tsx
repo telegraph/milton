@@ -115,31 +115,54 @@ export class App extends Component {
     parent.postMessage({ pluginMessage: { type: MSG_EVENTS.DOM_READY } }, "*");
   }
 
+  updateInitialState = (data: MsgFramesType) => {
+    let { frames, windowHeight, windowWidth } = data;
+
+    if (!Array.isArray(frames) || frames?.length < 1) {
+      this.setState({ error: "No frames!" });
+      console.error("Post error: no frames", data);
+      return;
+    }
+
+    const frameData: FrameCollection = {};
+    for (const frame of frames) {
+      const { id } = frame;
+      const rndId = Math.random().toString(32).substr(2);
+      frameData[id] = { ...frame, uid: `f2h-${rndId}` };
+    }
+
+    this.setState({
+      frames: frameData,
+      ready: true,
+      windowWidth,
+      windowHeight,
+    });
+  };
+
+  handleRenderMessage = (data: MsgRenderType) => {
+    const { frameId, svg } = data;
+    if (!frameId || !svg) {
+      this.setState({ error: "Failed to render" });
+      console.error("Post message: failed to render", data);
+      return;
+    }
+
+    const targetFrame = this.state.frames[frameId];
+
+    const svgStr = decodeSvgToString(svg);
+
+    this.setState({
+      frames: {
+        ...this.state.frames,
+        [frameId]: { ...targetFrame, svg: svgStr },
+      },
+    });
+  };
+
   handleEvents = (data: MsgEventType) => {
     switch (data.type) {
       case MSG_EVENTS.FOUND_FRAMES:
-        let { frames, windowHeight, windowWidth } = data;
-
-        if (!Array.isArray(frames) || frames?.length < 1) {
-          this.setState({ error: "No frames!" });
-          console.error("Post error: no frames", data);
-          return;
-        }
-
-        const frameData: FrameCollection = {};
-        for (const frame of frames) {
-          const { id } = frame;
-          const rndId = Math.random().toString(32).substr(2);
-          frameData[id] = { ...frame, uid: `f2h-${rndId}` };
-        }
-
-        this.setState({
-          frames: frameData,
-          ready: true,
-          windowWidth,
-          windowHeight,
-        });
-
+        this.updateInitialState(data);
         break;
 
       case MSG_EVENTS.NO_FRAMES:
@@ -153,24 +176,7 @@ export class App extends Component {
         break;
 
       case MSG_EVENTS.RENDER:
-        const { frameId, svg } = data;
-
-        if (!frameId || !svg) {
-          this.setState({ error: "Failed to render" });
-          console.error("Post message: failed to render", data);
-          return;
-        }
-
-        const targetFrame = this.state.frames[frameId];
-
-        const svgStr = decodeSvgToString(svg);
-
-        this.setState({
-          frames: {
-            ...this.state.frames,
-            [frameId]: { ...targetFrame, svg: svgStr },
-          },
-        });
+        this.handleRenderMessage(data);
         break;
 
       default:
