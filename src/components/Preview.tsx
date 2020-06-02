@@ -5,11 +5,33 @@ import { FrameContainer } from "../outputRender";
 
 type PreviewProps = {
   frame: FrameDataType;
+  windowWidth: number;
+  windowHeight: number;
 };
 
+//      transform-origin: top;
+//
+
 export function Preview(props: PreviewProps) {
-  const { frame } = props;
-  const { name, width, svg, responsive } = frame;
+  const { frame, windowHeight, windowWidth } = props;
+  const { name, width, height, svg, responsive } = frame;
+
+  // Frames can be larger than Figma's plugin UI window.
+  // To allow the user to see the whole frame we need to scale it down to fit
+  // TODO: Get real UI header height?
+  const WINDOW_HEADER_HEIGHT = 200;
+  const heightRatio = (windowHeight - WINDOW_HEADER_HEIGHT) / height;
+
+  const WINDOW_SIDE_MARGINS = 80;
+  const widthRatio = (windowWidth - WINDOW_SIDE_MARGINS) / width;
+
+  const smallestRatio = Math.min(heightRatio, widthRatio);
+
+  const scale = smallestRatio < 1 ? smallestRatio : 1;
+  const scaledHeight = height * scale;
+  const scaledWidth = width * scale;
+
+  const previewWrapperStyles = `width: ${scaledWidth}; height: ${scaledHeight};`;
 
   const renderCharCount = svg?.length || 0;
   const fileKbSize = Math.ceil(renderCharCount / 1000);
@@ -28,7 +50,13 @@ export function Preview(props: PreviewProps) {
         <p class="f2h__size_warning">File size is very large, consider using smaller images and simplier shapes</p>
       )}
 
-      {svg ? <FrameContainer {...frame} /> : <p class="f2h__preview_loading">Loading...</p>}
+      {svg ? (
+        <div style={previewWrapperStyles}>
+          <FrameContainer {...frame} scale={scale} />
+        </div>
+      ) : (
+        <p class="f2h__preview_loading">Loading...</p>
+      )}
     </div>
   );
 }

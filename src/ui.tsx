@@ -56,6 +56,8 @@ type MsgEventType = MsgFramesType | MsgRenderType | MsgNoFramesType | MsgErrorTy
 export interface MsgFramesType {
   type: MSG_EVENTS.FOUND_FRAMES;
   frames: Omit<FrameDataType, "uid">[];
+  windowWidth: number;
+  windowHeight: number;
 }
 
 export interface MsgRenderType {
@@ -116,27 +118,12 @@ export class App extends Component {
   handleEvents = (data: MsgEventType) => {
     switch (data.type) {
       case MSG_EVENTS.FOUND_FRAMES:
-        let { frames } = data;
+        let { frames, windowHeight, windowWidth } = data;
 
         if (!Array.isArray(frames) || frames?.length < 1) {
           this.setState({ error: "No frames!" });
           console.error("Post error: no frames", data);
           return;
-        }
-
-        let { width, height } = this.getMaxFrameDimensions(frames);
-        if (width > INITIAL_UI_SIZE.maxWidth) {
-          width = INITIAL_UI_SIZE.maxWidth;
-        }
-        if (width < INITIAL_UI_SIZE.minWidth) {
-          width = INITIAL_UI_SIZE.minWidth;
-        }
-
-        if (height > INITIAL_UI_SIZE.maxHeight) {
-          height = INITIAL_UI_SIZE.maxHeight;
-        }
-        if (height < INITIAL_UI_SIZE.minHeight) {
-          height = INITIAL_UI_SIZE.minHeight;
         }
 
         const frameData: FrameCollection = {};
@@ -149,8 +136,8 @@ export class App extends Component {
         this.setState({
           frames: frameData,
           ready: true,
-          windowWidth: width,
-          windowHeight: height,
+          windowWidth,
+          windowHeight,
         });
 
         break;
@@ -269,18 +256,6 @@ export class App extends Component {
     parent.postMessage({ pluginMessage: { type: MSG_EVENTS.RENDER, frameId } }, "*");
   };
 
-  getMaxFrameDimensions = (frames: MsgFramesType["frames"]) => {
-    let width = frames.reduce((p, { width }) => (width > p ? width : p), 0);
-    let height = frames.reduce((p, { height }) => (height > p ? height : p), 0);
-
-    const paddingWidth = 16;
-    const paddingHeight = 100;
-    width = width + paddingWidth;
-    height = height + paddingHeight;
-
-    return { width, height };
-  };
-
   startResizing = (event: MouseEvent) => {
     const { isResizing } = this.state;
     console.log("starting resizing");
@@ -365,7 +340,7 @@ export class App extends Component {
   };
 
   render() {
-    const { error, ready, frames, stage, previewIndex, outputFormat } = this.state;
+    const { error, ready, frames, stage, previewIndex, windowHeight, windowWidth } = this.state;
 
     console.log(this.state);
 
@@ -407,7 +382,7 @@ export class App extends Component {
           )}
 
           {ready && selectedFrames[previewIndex] && stage === STAGES.PREVIEW_OUTPUT && (
-            <Preview frame={selectedFrames[previewIndex]} />
+            <Preview frame={selectedFrames[previewIndex]} windowHeight={windowHeight} windowWidth={windowWidth} />
           )}
 
           {ready && stage === STAGES.RESPONSIVE_PREVIEW && <ResponsiveView frames={selectedFrames} />}

@@ -1,6 +1,21 @@
 import { MSG_EVENTS } from "./constants";
 import { MsgFramesType, MsgNoFramesType, MsgRenderType, MsgErrorType } from "./ui";
 
+// Listen for messages from the UI
+// NOTE: Listen for DOM_READY message to kick-off main function
+figma.ui.on("message", (e) => handleReceivedMsg(e));
+
+// Render the DOM
+// NOTE: on successful UI render a post message is send back of DOM_READY
+figma.showUI(__html__);
+
+// Resize UI to max viewport dimensions
+const { width, height } = figma.viewport.bounds;
+const { zoom } = figma.viewport;
+const initialWindowWidth = Math.round(width * zoom);
+const initialWindowHeight = Math.round(height * zoom);
+figma.ui.resize(initialWindowWidth, initialWindowHeight);
+
 function getRootFrames() {
   const { currentPage } = figma;
   const rootFrames = currentPage.children.filter((node) => node.type === "FRAME") as FrameNode[];
@@ -30,6 +45,8 @@ function getRootFrames() {
   figma.ui.postMessage({
     type: MSG_EVENTS.FOUND_FRAMES,
     frames: framesData,
+    windowWidth: initialWindowWidth,
+    windowHeight: initialWindowHeight,
   } as MsgFramesType);
 }
 
@@ -148,18 +165,3 @@ function handleReceivedMsg(msg: PostMsg) {
       console.error("Unknown post message", msg);
   }
 }
-
-// Listen for messages from the UI
-// NOTE: Listen for DOM_READY message to kick-off main function
-figma.ui.on("message", (e) => handleReceivedMsg(e));
-
-// Render the DOM
-// NOTE: on successful UI render a post message is send back of DOM_READY
-figma.showUI(__html__);
-
-// Resize UI to max viewport dimensions
-const { width, height } = figma.viewport.bounds;
-const { zoom } = figma.viewport;
-const initialWindowWidth = Math.round(width * zoom);
-const initialWindowHeight = Math.round(height * zoom);
-figma.ui.resize(initialWindowWidth, initialWindowHeight);

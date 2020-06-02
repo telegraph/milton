@@ -16,10 +16,8 @@ Figma plug-in that helps generate HTML embeds.
 
 ## Tasks
 
-- [Improvement] Main window large by default (less need to size up)
-- [Improvement] Default export shows two buttons 'save file' and 'copy'
-- [Improvement] Hide advanced export features by default
 - [Improvement] In situ preview mode
+- [BUG] Wide responsive preview breaks text layout
 - [BUG] Very wide or tall frames break UI window
 - [BUG] Handle frames with the same name
 - [BUG] Handle frames with the same width (make user choose?)

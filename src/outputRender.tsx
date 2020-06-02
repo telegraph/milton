@@ -65,13 +65,17 @@ function Text(props: TextProps) {
   );
 }
 
-export function FrameContainer(props: FrameDataType) {
-  const { uid, width, height, textNodes, svg = "", responsive } = props;
-
+interface FrameContainerProps extends FrameDataType {
+  scale?: number;
+}
+export function FrameContainer(props: FrameContainerProps) {
+  const { uid, width, height, textNodes, svg = "", responsive, scale } = props;
   const textEls = textNodes.map((node) => <Text node={node} width={width} height={height} />);
+  const classNames = `f2h__render ${responsive ? "f2h__render--responsive" : ""}`;
 
-  const classNames = `f2h__render ${responsive && "f2h__render--responsive"}`;
-  const style = responsive ? "" : `width: ${width}px;`;
+  //
+  let style = responsive ? "" : `width: ${width}px;`;
+  style = scale ? `${style} transform: scale(${scale});` : style;
 
   return (
     <div class={classNames} style={style} id={uid}>

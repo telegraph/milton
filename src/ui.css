@@ -272,6 +272,10 @@ button:hover {
 }
 
 /* [Render] */
+.f2h__render {
+  transform-origin: top left;
+}
+
 .f2h__render--responsive svg {
   width: 100%;
 }
