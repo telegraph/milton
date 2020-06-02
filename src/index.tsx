@@ -9,6 +9,42 @@ function genRandomUid() {
   return `f2h-${uid}`;
 }
 
+function getRootFrames() {
+  const { currentPage } = figma;
+  const rootFrames = currentPage.children.filter((node) => node.type === "FRAME") as FrameNode[];
+
+  // Return error if there's no frames on the current page
+  if (rootFrames.length < 1) {
+    console.warn("No frames");
+    figma.ui.postMessage({ type: MSG_EVENTS.NO_FRAMES } as MsgNoFramesType);
+    return;
+  }
+
+  const framesData: { [id: string]: FrameDataType } = {};
+
+  rootFrames.forEach((frame) => {
+    const { name, width, height, id } = frame;
+    const textNodes = getTextNodes(frame);
+    const uid = genRandomUid();
+
+    framesData[id] = {
+      name,
+      width,
+      height,
+      id,
+      textNodes,
+      uid,
+      responsive: false,
+      selected: true,
+    };
+  });
+
+  figma.ui.postMessage({
+    type: MSG_EVENTS.FOUND_FRAMES,
+    frames: framesData,
+  } as MsgFramesType);
+}
+
 async function getFrameSvgAsString(frame: SceneNode): Promise<string> {
   const svgBuff = await frame.exportAsync({
     format: "SVG",
@@ -19,111 +55,22 @@ async function getFrameSvgAsString(frame: SceneNode): Promise<string> {
   return String.fromCharCode.apply(null, Array.from(svgBuff));
 }
 
-export interface PostMsg {
-  type: MSG_EVENTS;
-  frameId: string;
-  width: number;
-  height: number;
-}
-// Handle messages from the UI
-const handleReceivedMsg = (msg: PostMsg) => {
-  const { type, width, height, frameId } = msg;
-
-  switch (type) {
-    case MSG_EVENTS.ERROR:
-      console.log("plugin msg: error");
-      break;
-
-    case MSG_EVENTS.CLOSE:
-      console.log("plugin msg: close");
-      figma.closePlugin();
-      break;
-
-    case MSG_EVENTS.DOM_READY:
-      console.log("plugin msg: DOM READY");
-      main();
-      break;
-
-    case MSG_EVENTS.RENDER:
-      console.log("plugin msg: render", frameId);
-      renderFrame(frameId)
-        .then((svgStr) => {
-          figma.ui.postMessage({
-            type: MSG_EVENTS.RENDER,
-            frameId,
-            svgStr,
-          } as MsgRenderType);
-        })
-        .catch((err) => {
-          figma.ui.postMessage({
-            type: MSG_EVENTS.ERROR,
-            errorText: `Render failed: ${err ?? err.message}`,
-          } as MsgErrorType);
-        });
-      break;
-
-    case MSG_EVENTS.RESIZE:
-      console.log("plugin msg: resize");
-      figma.ui.resize(width, height);
-      break;
-
-    default:
-      console.error("Unknown post message", msg);
-  }
-};
-
-// Listen for messages from the UI
-figma.ui.on("message", (e) => handleReceivedMsg(e));
-
-const main = () => {
-  const { currentPage } = figma;
-
-  // Get default frames names
-  const allFrames = currentPage.children.filter((node) => node.type === "FRAME") as FrameNode[];
-
-  if (allFrames.length > 0) {
-    const framesData: { [id: string]: FrameDataType } = {};
-
-    allFrames.forEach((frame) => {
-      const { name, width, height, id } = frame;
-      const textNodes = getTextNodes(frame);
-      const uid = genRandomUid();
-
-      framesData[id] = {
-        name,
-        width,
-        height,
-        id,
-        textNodes,
-        uid,
-        responsive: false,
-        selected: true,
-      };
-    });
+async function handleRender(frameId: string) {
+  try {
+    const svgStr = await renderFrame(frameId);
 
     figma.ui.postMessage({
-      type: MSG_EVENTS.FOUND_FRAMES,
-      frames: framesData,
-    } as MsgFramesType);
-
-    return;
+      type: MSG_EVENTS.RENDER,
+      frameId,
+      svgStr,
+    } as MsgRenderType);
+  } catch (err) {
+    figma.ui.postMessage({
+      type: MSG_EVENTS.ERROR,
+      errorText: `Render failed: ${err ?? err.message}`,
+    } as MsgErrorType);
   }
-
-  if (allFrames.length < 1) {
-    console.warn("No frames");
-    figma.ui.postMessage({ type: MSG_EVENTS.NO_FRAMES } as MsgNoFramesType);
-    return;
-  }
-};
-
-// Render the DOM
-figma.showUI(__html__);
-const { width, height } = figma.viewport.bounds;
-const { zoom } = figma.viewport;
-const initialWindowWidth = Math.round(width * zoom);
-const initialWindowHeight = Math.round(height * zoom);
-console.log(zoom, width, height, initialWindowWidth, initialWindowHeight, width, height);
-figma.ui.resize(initialWindowWidth, initialWindowHeight);
+}
 
 async function renderFrame(frameId: string) {
   const frame = figma.getNodeById(frameId);
@@ -204,3 +151,58 @@ function getTextNodes(frame: FrameNode): textData[] {
     }
   );
 }
+
+export interface PostMsg {
+  type: MSG_EVENTS;
+  frameId: string;
+  width: number;
+  height: number;
+}
+// Handle messages from the UI
+function handleReceivedMsg(msg: PostMsg) {
+  const { type, width, height, frameId } = msg;
+
+  switch (type) {
+    case MSG_EVENTS.ERROR:
+      console.log("plugin msg: error");
+      break;
+
+    case MSG_EVENTS.CLOSE:
+      console.log("plugin msg: close");
+      figma.closePlugin();
+      break;
+
+    case MSG_EVENTS.DOM_READY:
+      console.log("plugin msg: DOM READY");
+      getRootFrames();
+      break;
+
+    case MSG_EVENTS.RENDER:
+      console.log("plugin msg: render", frameId);
+      handleRender(frameId);
+      break;
+
+    case MSG_EVENTS.RESIZE:
+      console.log("plugin msg: resize");
+      figma.ui.resize(width, height);
+      break;
+
+    default:
+      console.error("Unknown post message", msg);
+  }
+}
+
+// Listen for messages from the UI
+// NOTE: Listen for DOM_READY message to kick-off main function
+figma.ui.on("message", (e) => handleReceivedMsg(e));
+
+// Render the DOM
+// NOTE: on successful UI render a post message is send back of DOM_READY
+figma.showUI(__html__);
+
+// Resize UI to max viewport dimensions
+const { width, height } = figma.viewport.bounds;
+const { zoom } = figma.viewport;
+const initialWindowWidth = Math.round(width * zoom);
+const initialWindowHeight = Math.round(height * zoom);
+figma.ui.resize(initialWindowWidth, initialWindowHeight);

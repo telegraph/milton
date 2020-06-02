@@ -1,12 +1,12 @@
-import { h } from 'preact';
-import render from 'preact-render-to-string';
-import type { textData } from '.';
-import type { FrameDataType } from './ui';
-import { OUTPUT_FORMATS } from './constants';
+import { h } from "preact";
+import render from "preact-render-to-string";
+import type { textData } from ".";
+import type { FrameDataType } from "./ui";
+import { OUTPUT_FORMATS } from "./constants";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-expect-error
-import embedCss from './embed.css';
+import embedCss from "./embed.css";
 
 function generateIframeHtml(body: string) {
   return `
@@ -24,11 +24,7 @@ function generateIframeHtml(body: string) {
   `;
 }
 
-function generateStyleText(
-  node: textData,
-  frameWidth: number,
-  frameHeight: number
-) {
+function generateStyleText(node: textData, frameWidth: number, frameHeight: number) {
   const { x, y, width, height, fontSize, fontFamily, colour } = node;
 
   // Position center aligned
@@ -38,7 +34,7 @@ function generateStyleText(
   // Colour
   const { r, g, b, a } = colour;
   const colourVals = [r, g, b].map((val = 0) => Math.round(val * 255));
-  const textColour = `rgba(${colourVals.join(',')}, ${a})`;
+  const textColour = `rgba(${colourVals.join(",")}, ${a})`;
 
   return `
         font-size: ${String(fontSize)}px;
@@ -70,21 +66,16 @@ function Text(props: TextProps) {
 }
 
 export function FrameContainer(props: FrameDataType) {
-  const { uid, width, height, textNodes, svg = '', responsive } = props;
+  const { uid, width, height, textNodes, svg = "", responsive } = props;
 
-  const textEls = textNodes.map((node) => (
-    <Text node={node} width={width} height={height} />
-  ));
+  const textEls = textNodes.map((node) => <Text node={node} width={width} height={height} />);
 
-  const classNames = `f2h__render ${responsive && 'f2h__render--responsive'}`;
-  const style = responsive ? '' : `width: ${width}px;`;
+  const classNames = `f2h__render ${responsive && "f2h__render--responsive"}`;
+  const style = responsive ? "" : `width: ${width}px;`;
 
   return (
     <div class={classNames} style={style} id={uid}>
-      <div
-        class="f2h__svg_container"
-        dangerouslySetInnerHTML={{ __html: svg }}
-      />
+      <div class="f2h__svg_container" dangerouslySetInnerHTML={{ __html: svg }} />
 
       <div class="f2h__text_container">{textEls}</div>
     </div>
@@ -110,17 +101,15 @@ export function renderInline(frames: FrameDataType[], iframe: OUTPUT_FORMATS) {
     html = generateIframeHtml(html);
   }
 
-  return html.replace(/\n|\r|\s{2,}/g, '');
+  return html.replace(/\n|\r|\s{2,}/g, "");
 }
 
 function genreateMediaQueries(frames: FrameDataType[]) {
-  const idWidths = frames
-    .map(({ width, uid }) => [width, uid])
-    .sort(([a], [b]) => (a < b ? -1 : 1));
+  const idWidths = frames.map(({ width, uid }) => [width, uid]).sort(([a], [b]) => (a < b ? -1 : 1));
 
   const mediaQueries = idWidths.map(([width, uid], i) => {
     if (i === 0) {
-      return '';
+      return "";
     }
 
     const [, prevId] = idWidths[i - 1];
@@ -137,5 +126,5 @@ function genreateMediaQueries(frames: FrameDataType[]) {
     `;
   });
 
-  return mediaQueries.join('');
+  return mediaQueries.join("");
 }

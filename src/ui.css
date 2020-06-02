@@ -296,6 +296,24 @@ button:hover {
   max-width: 800px;
 }
 
+.f2h__save_btn {
+  font-size: var(--font-size--large, 1em);
+  color: #fff;
+  border-radius: var(--padding-small, 0);
+  padding: var(--padding-medium, 0);
+  margin-right: var(--padding-medium, 0);
+  border-bottom: 2px solid var(--colours-main-dark, #f0f);
+}
+
+.f2h__save_btn:last-of-type {
+  margin: 0;
+}
+
+.f2h__save_options {
+  display: flex;
+  justify-content: center;
+}
+
 .f2h__save__subhead {
   font-size: var(--font-size--medium, 1);
   margin: var(--padding-large, 0) 0 var(--padding-small, 0);
@@ -303,8 +321,17 @@ button:hover {
   border-bottom: 1px solid var(--colours-grey-4, #f0f);
 }
 
-.f2h__save_intro {
-  margin: var(--padding-small, 0) 0;
+.f2h__save_advanced-header {
+  display: flex;
+}
+
+.f2h__save_advanced_title {
+  flex: 1;
+}
+
+.f2h__save_advanced_show {
+  background-color: transparent;
+  border: 1px solid var(--colours-grey-3, #f0f);
 }
 
 .f2h__save__raw {
