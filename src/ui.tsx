@@ -55,9 +55,7 @@ type MsgEventType = MsgFramesType | MsgRenderType | MsgNoFramesType | MsgErrorTy
 
 export interface MsgFramesType {
   type: MSG_EVENTS.FOUND_FRAMES;
-  frames: {
-    [id: string]: FrameDataType;
-  };
+  frames: Omit<FrameDataType, "uid">[];
 }
 
 export interface MsgRenderType {
@@ -118,9 +116,9 @@ export class App extends Component {
   handleEvents = (data: MsgEventType) => {
     switch (data.type) {
       case MSG_EVENTS.FOUND_FRAMES:
-        const { frames } = data;
+        let { frames } = data;
 
-        if (!frames) {
+        if (!Array.isArray(frames) || frames?.length < 1) {
           this.setState({ error: "No frames!" });
           console.error("Post error: no frames", data);
           return;
@@ -141,8 +139,15 @@ export class App extends Component {
           height = INITIAL_UI_SIZE.minHeight;
         }
 
+        const frameData: FrameCollection = {};
+        for (const frame of frames) {
+          const { id } = frame;
+          const rndId = Math.random().toString(32).substr(2);
+          frameData[id] = { ...frame, uid: `f2h-${rndId}` };
+        }
+
         this.setState({
-          frames,
+          frames: frameData,
           ready: true,
           windowWidth: width,
           windowHeight: height,
@@ -264,10 +269,9 @@ export class App extends Component {
     parent.postMessage({ pluginMessage: { type: MSG_EVENTS.RENDER, frameId } }, "*");
   };
 
-  getMaxFrameDimensions = (frames: FrameCollection) => {
-    const frameVals = Object.values(frames);
-    let width = frameVals.reduce((p, { width }) => (width > p ? width : p), 0);
-    let height = frameVals.reduce((p, { height }) => (height > p ? height : p), 0);
+  getMaxFrameDimensions = (frames: MsgFramesType["frames"]) => {
+    let width = frames.reduce((p, { width }) => (width > p ? width : p), 0);
+    let height = frames.reduce((p, { height }) => (height > p ? height : p), 0);
 
     const paddingWidth = 16;
     const paddingHeight = 100;

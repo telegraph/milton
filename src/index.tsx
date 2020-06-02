@@ -1,13 +1,5 @@
 import { MSG_EVENTS } from "./constants";
-import { MsgFramesType, MsgNoFramesType, MsgRenderType, MsgErrorType, FrameDataType } from "./ui";
-
-// Generate a unique id prefixed with identifer string for safe use as HTML ID
-// Note: Figma seems to stub .toString for security?
-function genRandomUid() {
-  const rnd = Math.random();
-  const uid = rnd.toString().substr(2);
-  return `f2h-${uid}`;
-}
+import { MsgFramesType, MsgNoFramesType, MsgRenderType, MsgErrorType } from "./ui";
 
 function getRootFrames() {
   const { currentPage } = figma;
@@ -20,20 +12,16 @@ function getRootFrames() {
     return;
   }
 
-  const framesData: { [id: string]: FrameDataType } = {};
-
-  rootFrames.forEach((frame) => {
+  const framesData = rootFrames.map((frame) => {
     const { name, width, height, id } = frame;
     const textNodes = getTextNodes(frame);
-    const uid = genRandomUid();
 
-    framesData[id] = {
+    return {
       name,
       width,
       height,
       id,
       textNodes,
-      uid,
       responsive: false,
       selected: true,
     };
