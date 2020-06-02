@@ -303,6 +303,16 @@ button:hover {
   padding: var(--padding-medium, 0);
   margin-right: var(--padding-medium, 0);
   border-bottom: 2px solid var(--colours-main-dark, #f0f);
+  border-top: 3px solid transparent;
+}
+.f2h__save_btn:hover {
+  border-top: 0;
+  border-bottom-width: 5px;
+  box-shadow: 0 4px 2px rgba(0, 0, 0, 0.1);
+}
+.f2h__save_btn:active {
+  border-bottom: 2px solid var(--colours-main-dark, #f0f);
+  border-top: 3px solid transparent;
 }
 
 .f2h__save_btn:last-of-type {
@@ -319,6 +329,14 @@ button:hover {
   margin: var(--padding-large, 0) 0 var(--padding-small, 0);
   padding-bottom: var(--padding-small, 0);
   border-bottom: 1px solid var(--colours-grey-4, #f0f);
+}
+
+.f2h__save_advanced {
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.f2h__save_advanced--open {
+  opacity: 1;
 }
 
 .f2h__save_advanced-header {
@@ -354,6 +372,24 @@ button:hover {
   cursor: grabbing;
   background: repeating-linear-gradient(-45deg, #d2d2d2, #d2d2d2 2px, transparent 1px, transparent 8px);
   border-radius: 100% 0 0;
+}
+
+.f2h__toast {
+  background-color: var(--colours-grey-1, #f0f);
+  color: #fff;
+  border-radius: var(--padding-medium, 0);
+  padding: var(--padding-medium, 0);
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 0);
+  transition: transform 0.3s, opacity 0.3s 0.1s;
+  opacity: 0;
+}
+
+.f2h__toast--open {
+  transform: translate(-50%, -100%);
+  opacity: 1;
 }
 
 /* [Responsive preview] */

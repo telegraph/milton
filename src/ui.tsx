@@ -88,6 +88,9 @@ export class App extends Component {
   };
 
   componentDidMount() {
+    console.log(navigator);
+    //     $("#txtSelectedColor").val(text).select();
+    // document.execCommand('copy');
     // Register DOM and POST messags
     window.addEventListener("message", (e) => this.handleEvents(e.data.pluginMessage));
 
@@ -186,10 +189,6 @@ export class App extends Component {
 
     if (selectedCount.length < 1) {
       return;
-    }
-
-    if (stage === STAGES.SAVE_OUTPUT) {
-      this.saveBinaryFile();
     }
 
     if (stage === STAGES.CHOOSE_FRAMES) {

@@ -1,25 +1,18 @@
-import { h } from 'preact';
-import { STAGES, UI_TEXT } from '../constants';
-import type { App } from '../ui';
+import { h } from "preact";
+import { STAGES, UI_TEXT } from "../constants";
+import type { App } from "../ui";
 
 type HeaderProps = {
   stage: STAGES;
-  handleNextClick: App['goNext'];
-  handleBackClick: App['goBack'];
+  handleNextClick: App["goNext"];
+  handleBackClick: App["goBack"];
   disableNext: boolean;
   paginationIndex: number;
   paginationLength: number;
 };
 
 export function Header(props: HeaderProps) {
-  const {
-    stage,
-    handleBackClick,
-    handleNextClick,
-    disableNext,
-    paginationIndex,
-    paginationLength,
-  } = props;
+  const { stage, handleBackClick, handleNextClick, disableNext, paginationIndex, paginationLength } = props;
 
   let title;
   let nextText;
@@ -39,16 +32,13 @@ export function Header(props: HeaderProps) {
       break;
 
     case STAGES.PREVIEW_OUTPUT:
-      title = `${UI_TEXT.TITLE_PREVIEW} ${
-        paginationIndex + 1
-      } of ${paginationLength}`;
+      title = `${UI_TEXT.TITLE_PREVIEW} ${paginationIndex + 1} of ${paginationLength}`;
       nextText = UI_TEXT.BUTTON_NEXT;
       backText = UI_TEXT.BUTTON_PREVIOUS;
       break;
 
     case STAGES.SAVE_OUTPUT:
       title = UI_TEXT.TILE_OUTPUT;
-      nextText = UI_TEXT.BUTTON_DOWNLOAD;
       backText = UI_TEXT.BUTTON_PREVIOUS;
       break;
   }
@@ -63,13 +53,11 @@ export function Header(props: HeaderProps) {
           </button>
         )}
 
-        <button
-          class="f2h__btn btn--primary"
-          onClick={handleNextClick}
-          disabled={disableNext}
-        >
-          {nextText}
-        </button>
+        {nextText && (
+          <button class="f2h__btn btn--primary" onClick={handleNextClick} disabled={disableNext}>
+            {nextText}
+          </button>
+        )}
       </nav>
     </header>
   );
