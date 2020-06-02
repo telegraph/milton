@@ -16,6 +16,31 @@ import uiCss from "./ui.css";
 // @ts-expect-error
 import embedCss from "./embed.css";
 
+function decodeSvgToString(svg: Uint8Array) {
+  let svgStr = new TextDecoder("utf-8").decode(svg);
+  // NOTE: Figma generates non-unique IDs for masks which can clash when
+  // embedding multiple SVGSs. We do a string replace for unique IDs
+  const regex = /id="(.+?)"/g;
+  const ids: string[] = [];
+  let matches;
+
+  while ((matches = regex.exec(svgStr))) {
+    const [, id] = matches;
+    ids.push(id);
+  }
+
+  ids.forEach((id) => {
+    const rnd = Math.random().toString(32).substr(2);
+    const randomId = `${id}-${rnd}`;
+    // Replace ID
+    svgStr = svgStr.replace(`id="${id}"`, `id="${randomId}"`);
+    // Replace anchor refs
+    svgStr = svgStr.replace(`#${id}`, `#${randomId}`);
+  });
+
+  return svgStr;
+}
+
 export type FrameDataType = {
   name: string;
   width: number;
@@ -39,7 +64,7 @@ export interface MsgFramesType {
 
 export interface MsgRenderType {
   type: MSG_EVENTS.RENDER;
-  svgStr: string;
+  svg: Uint8Array;
   frameId: string;
 }
 
@@ -88,10 +113,6 @@ export class App extends Component {
   };
 
   componentDidMount() {
-    console.log(navigator);
-    //     $("#txtSelectedColor").val(text).select();
-    // document.execCommand('copy');
-    // Register DOM and POST messags
     window.addEventListener("message", (e) => this.handleEvents(e.data.pluginMessage));
 
     // Send backend message that UI is ready
@@ -144,14 +165,17 @@ export class App extends Component {
         break;
 
       case MSG_EVENTS.RENDER:
-        const { frameId, svgStr } = data;
-        if (!frameId || !svgStr) {
+        const { frameId, svg } = data;
+
+        if (!frameId || !svg) {
           this.setState({ error: "Failed to render" });
           console.error("Post message: failed to render", data);
           return;
         }
 
         const targetFrame = this.state.frames[frameId];
+
+        const svgStr = decodeSvgToString(svg);
 
         this.setState({
           frames: {
@@ -253,7 +277,6 @@ export class App extends Component {
     const paddingHeight = 100;
     width = width + paddingWidth;
     height = height + paddingHeight;
-    console.log(height);
 
     return { width, height };
   };
@@ -372,7 +395,8 @@ export class App extends Component {
     selectedFrames = [...selectedFrames].sort((a, b) => (a.width <= b.width ? -1 : 1));
 
     // If previewing frame without a render then request if from the backend
-    if (stage === STAGES.PREVIEW_OUTPUT && !selectedFrames[previewIndex].svg) {
+    // TODO: Move out of render
+    if (!error && stage === STAGES.PREVIEW_OUTPUT && !selectedFrames[previewIndex].svg) {
       this.getOutputRender(selectedFrames[previewIndex].id);
     }
 

@@ -45,24 +45,23 @@ function getRootFrames() {
   } as MsgFramesType);
 }
 
-async function getFrameSvgAsString(frame: SceneNode): Promise<string> {
-  const svgBuff = await frame.exportAsync({
-    format: "SVG",
-    svgOutlineText: false,
-    svgSimplifyStroke: true,
-  });
-
-  return String.fromCharCode.apply(null, Array.from(svgBuff));
-}
-
 async function handleRender(frameId: string) {
   try {
-    const svgStr = await renderFrame(frameId);
+    const frame = figma.getNodeById(frameId);
+    if (!frame || frame.type !== "FRAME") {
+      throw new Error("Missing frame");
+    }
+
+    const svg = await frame.exportAsync({
+      format: "SVG",
+      svgOutlineText: false,
+      svgSimplifyStroke: true,
+    });
 
     figma.ui.postMessage({
       type: MSG_EVENTS.RENDER,
       frameId,
-      svgStr,
+      svg,
     } as MsgRenderType);
   } catch (err) {
     figma.ui.postMessage({
@@ -70,36 +69,6 @@ async function handleRender(frameId: string) {
       errorText: `Render failed: ${err ?? err.message}`,
     } as MsgErrorType);
   }
-}
-
-async function renderFrame(frameId: string) {
-  const frame = figma.getNodeById(frameId);
-  if (!frame || frame.type !== "FRAME") {
-    throw new Error("Missing frame");
-  }
-
-  let svgStr = await getFrameSvgAsString(frame);
-
-  // NOTE: Figma generates non-unique IDs for masks which can clash when
-  // embedding multiple SVGSs. We do a string replace for unique IDs
-  const regex = /id="(.+?)"/g;
-  const ids: string[] = [];
-  let matches;
-
-  while ((matches = regex.exec(svgStr))) {
-    const [, id] = matches;
-    ids.push(id);
-  }
-
-  ids.forEach((id) => {
-    const randomId = `${id}-${genRandomUid()}`;
-    // Replace ID
-    svgStr = svgStr.replace(`id="${id}"`, `id="${randomId}"`);
-    // Replace anchor refs
-    svgStr = svgStr.replace(`#${id}`, `#${randomId}`);
-  });
-
-  return svgStr;
 }
 
 export type textNodeSelectedProps = Pick<TextNode, "x" | "y" | "width" | "height" | "characters">;

@@ -36,25 +36,20 @@ export class Save extends Component<SaveProps, SaveState> {
       return;
     }
 
+    // Select text and copy to clipboard
     el.select();
     document.execCommand("copy");
-    console.log("Copied render to clipboard");
-
-    const { showToast } = this.state;
 
     // Only show toast if it isn't already active
+    const { showToast } = this.state;
     if (showToast) {
       return;
     }
 
-    this.setState({
-      showToast: true,
-    });
+    this.setState({ showToast: true });
 
     // Clear toast after a few seconds
-    setTimeout(() => {
-      this.setState({ showToast: false });
-    }, 2 * 1000);
+    setTimeout(() => this.setState({ showToast: false }), 2000);
   };
 
   render() {
