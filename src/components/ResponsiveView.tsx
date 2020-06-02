@@ -1,7 +1,7 @@
-import { h } from 'preact';
-import { renderInline } from '../outputRender';
-import { OUTPUT_FORMATS } from '../constants';
-import type { FrameDataType } from '../ui';
+import { h } from "preact";
+import { renderInline } from "../outputRender";
+import { OUTPUT_FORMATS } from "../constants";
+import type { FrameDataType } from "../ui";
 
 type ResponsiveViewProps = {
   frames: FrameDataType[];
@@ -27,7 +27,7 @@ export function ResponsiveView(props: ResponsiveViewProps) {
         </div>
 
         <iframe
-          style={`height: ${height}px; width: ${width}px;`}
+          // style={`height: ${height}px; width: ${width}px;`}
           class="f2h__responsive__sandbox"
           scrolling="no"
           srcDoc={rawHtml}
