@@ -1,8 +1,6 @@
 import { h, Component, render } from "preact";
-import { saveAs } from "file-saver";
 
-import { renderInline } from "./outputRender";
-import { MSG_EVENTS, STAGES, OUTPUT_FORMATS, UI_TEXT, INITIAL_UI_SIZE } from "./constants";
+import { MSG_EVENTS, STAGES, UI_TEXT, INITIAL_UI_SIZE } from "./constants";
 import { Header } from "./components/Header";
 import { FrameSelection } from "./components/FrameSelection";
 import { Preview } from "./components/Preview";
@@ -87,7 +85,6 @@ export type AppState = {
   frames: FrameCollection;
   stage: STAGES;
   previewIndex: number;
-  outputFormat: OUTPUT_FORMATS;
   isResizing: boolean;
   mouseStartX: number;
   mouseStartY: number;
@@ -103,7 +100,6 @@ export class App extends Component {
     frames: {},
     stage: STAGES.CHOOSE_FRAMES,
     previewIndex: 0,
-    outputFormat: OUTPUT_FORMATS.INLINE,
     isResizing: false,
     mouseStartX: 0,
     mouseStartY: 0,
@@ -281,23 +277,6 @@ export class App extends Component {
     return { width, height };
   };
 
-  setOutputFormat = (format: OUTPUT_FORMATS) => {
-    this.setState({
-      outputFormat: format,
-    });
-  };
-
-  saveBinaryFile = () => {
-    const { frames, outputFormat } = this.state;
-    const outputFrames = Object.values(frames).filter((f) => f.selected);
-
-    const filename = "figma-to-html-test.html";
-    const raw = renderInline(outputFrames, outputFormat);
-    const blob = new Blob([raw], { type: "text/html" });
-
-    saveAs(blob, filename);
-  };
-
   startResizing = (event: MouseEvent) => {
     const { isResizing } = this.state;
     console.log("starting resizing");
@@ -429,9 +408,7 @@ export class App extends Component {
 
           {ready && stage === STAGES.RESPONSIVE_PREVIEW && <ResponsiveView frames={selectedFrames} />}
 
-          {ready && stage === STAGES.SAVE_OUTPUT && (
-            <Save outputFormat={outputFormat} handleClick={this.setOutputFormat} frames={selectedFrames} />
-          )}
+          {ready && stage === STAGES.SAVE_OUTPUT && <Save frames={selectedFrames} />}
         </div>
 
         {/* <div class="f2h__resizer" onMouseDown={this.startResizing} onMouseUp={this.stopResizing}></div> */}

@@ -1,23 +1,25 @@
 import { h, Component, createRef } from "preact";
+import { saveAs } from "file-saver";
 import { OUTPUT_FORMATS } from "../constants";
 import { renderInline } from "../outputRender";
 import type { FrameDataType } from "../ui";
 
 type SaveProps = {
-  handleClick: Function;
-  outputFormat: OUTPUT_FORMATS;
   frames: FrameDataType[];
 };
 
 interface SaveState {
   advancedOpen: boolean;
   showToast: boolean;
+
+  outputFormat: OUTPUT_FORMATS;
 }
 
 export class Save extends Component<SaveProps, SaveState> {
   state: SaveState = {
     advancedOpen: false,
     showToast: false,
+    outputFormat: OUTPUT_FORMATS.INLINE,
   };
 
   textAreaEl = createRef<HTMLTextAreaElement>();
@@ -52,18 +54,41 @@ export class Save extends Component<SaveProps, SaveState> {
     setTimeout(() => this.setState({ showToast: false }), 2000);
   };
 
+  saveEmbedToClipboard = () => {
+    this.setState({ outputFormat: OUTPUT_FORMATS.INLINE }, this.saveToClipboard);
+  };
+
+  saveBinaryFile = () => {
+    const { frames } = this.props;
+    const outputFrames = Object.values(frames).filter((f) => f.selected);
+
+    const filename = "figma-to-html-test.html";
+    const raw = renderInline(outputFrames, OUTPUT_FORMATS.IFRAME);
+    const blob = new Blob([raw], { type: "text/html" });
+
+    saveAs(blob, filename);
+  };
+
+  handleFormatChange = (format: OUTPUT_FORMATS) => {
+    this.setState({
+      outputFormat: format,
+    });
+  };
+
   render() {
-    const { handleClick, outputFormat, frames } = this.props;
-    const { advancedOpen, showToast } = this.state;
+    const { frames } = this.props;
+    const { advancedOpen, showToast, outputFormat } = this.state;
     const raw = renderInline(frames, outputFormat);
 
     return (
       <div class="f2h__save">
         <div class="f2h__save_options">
-          <button class="f2h__save_btn" onClick={this.saveToClipboard}>
+          <button class="f2h__save_btn" onClick={this.saveEmbedToClipboard}>
             Copy embed to clipboard
           </button>
-          <button class="f2h__save_btn">Download iframe HTML file</button>
+          <button class="f2h__save_btn" onClick={this.saveBinaryFile}>
+            Download iframe HTML file
+          </button>
         </div>
 
         <h2 class="f2h__save__subhead f2h__save_advanced-header">
@@ -84,7 +109,7 @@ export class Save extends Component<SaveProps, SaveState> {
               id="f2h__input_inline"
               value={OUTPUT_FORMATS.INLINE}
               checked={outputFormat === OUTPUT_FORMATS.INLINE}
-              onClick={() => handleClick(OUTPUT_FORMATS.INLINE)}
+              onClick={() => this.handleFormatChange(OUTPUT_FORMATS.INLINE)}
             />
             Inline (default)
           </label>
@@ -97,7 +122,7 @@ export class Save extends Component<SaveProps, SaveState> {
               id="f2h__input_iframe"
               value={OUTPUT_FORMATS.IFRAME}
               checked={outputFormat === OUTPUT_FORMATS.IFRAME}
-              onClick={() => handleClick(OUTPUT_FORMATS.IFRAME)}
+              onClick={() => this.handleFormatChange(OUTPUT_FORMATS.IFRAME)}
             />
             iFrame
           </label>
