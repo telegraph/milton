@@ -76,7 +76,18 @@ async function handleRender(frameId: string) {
   }
 }
 
-export type textNodeSelectedProps = Pick<TextNode, "x" | "y" | "width" | "height" | "characters">;
+export type textNodeSelectedProps = Pick<
+  TextNode,
+  | "x"
+  | "y"
+  | "width"
+  | "height"
+  | "characters"
+  | "lineHeight"
+  | "letterSpacing"
+  | "textAlignHorizontal"
+  | "textAlignVertical"
+>;
 
 export interface textData extends textNodeSelectedProps {
   colour: { r: number; g: number; b: number; a: number };
@@ -93,7 +104,19 @@ function getTextNodes(frame: FrameNode): textData[] {
 
   return textNodes.map(
     (node): textData => {
-      const { absoluteTransform, width, height, fontSize: fontSizeData, fontName, fills, characters } = node;
+      const {
+        absoluteTransform,
+        width,
+        height,
+        fontSize: fontSizeData,
+        fontName,
+        fills,
+        characters,
+        lineHeight,
+        letterSpacing,
+        textAlignHorizontal,
+        textAlignVertical,
+      } = node;
 
       // NOTE: Figma node x, y are relative to first parent, we want them
       // relative to the root frame
@@ -116,12 +139,26 @@ function getTextNodes(frame: FrameNode): textData[] {
       }
 
       // Extract font family
+      // TODO: Confirm fallback fonts
       let fontFamily = "Arial";
       if (fontName !== figma.mixed) {
         fontFamily = fontName.family;
       }
 
-      return { x, y, width, height, fontSize, fontFamily, colour, characters };
+      return {
+        x,
+        y,
+        width,
+        height,
+        fontSize,
+        fontFamily,
+        colour,
+        characters,
+        lineHeight,
+        letterSpacing,
+        textAlignHorizontal,
+        textAlignVertical,
+      };
     }
   );
 }

@@ -25,7 +25,19 @@ function generateIframeHtml(body: string) {
 }
 
 function generateStyleText(node: textData, frameWidth: number, frameHeight: number) {
-  const { x, y, width, height, fontSize, fontFamily, colour } = node;
+  const {
+    x,
+    y,
+    width,
+    height,
+    fontSize,
+    fontFamily,
+    colour,
+    letterSpacing,
+    lineHeight,
+    textAlignHorizontal,
+    textAlignVertical,
+  } = node;
 
   // Position center aligned
   const left = `${((x + width / 2) / frameWidth) * 100}%`;
@@ -36,14 +48,74 @@ function generateStyleText(node: textData, frameWidth: number, frameHeight: numb
   const colourVals = [r, g, b].map((val = 0) => Math.round(val * 255));
   const textColour = `rgba(${colourVals.join(",")}, ${a})`;
 
+  const { unit: letterUnit, value: letterVal } = letterSpacing as { value: number; unit: "PIXELS" | "PERCENT" };
+  let letterSpaceValue = "0";
+  switch (letterUnit) {
+    case "PIXELS":
+      letterSpaceValue = `${letterVal}px`;
+      break;
+    case "PERCENT":
+      letterSpaceValue = `${letterVal / 100}em`;
+      break;
+    default:
+      letterSpaceValue = "0";
+      break;
+  }
+
+  const { unit: lineUnit, value: lineVal } = lineHeight as { value: number; unit: "AUTO" | "PIXELS" | "PERCENT" };
+  let lineHeightValue = "auto";
+  switch (lineUnit) {
+    case "PIXELS":
+      lineHeightValue = `${lineVal}px`;
+      break;
+    case "PERCENT":
+      lineHeightValue = `${lineVal}%`;
+      break;
+    case "AUTO":
+      lineHeightValue = "auto";
+      break;
+  }
+
+  let alignItemsValue = "auto";
+  switch (textAlignVertical) {
+    case "TOP":
+      alignItemsValue = "flex-start";
+      break;
+    case "CENTER":
+      alignItemsValue = "center";
+      break;
+    case "BOTTOM":
+      alignItemsValue = "flex-end";
+      break;
+  }
+
+  let justifyItemsValue = "auto";
+  switch (textAlignHorizontal) {
+    case "LEFT":
+      justifyItemsValue = "flex-start";
+      break;
+    case "CENTER":
+      justifyItemsValue = "center";
+      break;
+    case "RIGHT":
+      justifyItemsValue = "flex-end";
+      break;
+  }
+
   return `
         font-size: ${String(fontSize)}px;
         font-family: "${fontFamily}", Georgia, 'Times New Roman', Times, serif;
         position: absolute;
         color: ${textColour};
         width: ${width}px;
+        height: ${height}px;
         left: ${left};
         top: ${top};
+        line-height: ${lineHeightValue};
+        letter-spacing: ${letterSpaceValue};
+        justify-content: ${justifyItemsValue};
+        align-items: ${alignItemsValue};
+        display: flex;
       `;
 }
 
