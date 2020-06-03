@@ -20,16 +20,15 @@ export function ResponsiveView(props: ResponsiveViewProps) {
       <p>Use the window below to test how the frames behave when resizing.</p>
 
       <div class="f2h__responsive__wrapper">
-        <div class="f2h__ruler">
+        {/* <div class="f2h__ruler">
           <div class="f2h__ruler_break f2h__ruler_break--0"></div>
           <div class="f2h__ruler_break f2h__ruler_break--1"></div>
           <div class="f2h__ruler_break f2h__ruler_break--2"></div>
-        </div>
+        </div> */}
 
         <iframe
           // style={`height: ${height}px; width: ${width}px;`}
           class="f2h__responsive__sandbox"
-          scrolling="no"
           srcDoc={rawHtml}
           sandbox=""
         ></iframe>

@@ -25,6 +25,16 @@ export class Preview extends Component<PreviewProps, PreviewState> {
     this.setState({ nativeSize: scale >= 1 });
   }
 
+  componentDidUpdate(_previousProps: PreviewProps, previousState: PreviewState) {
+    const { nativeSize } = previousState;
+    const { scale } = this.getScale();
+    const isNativeSize = scale >= 1;
+
+    if (nativeSize !== isNativeSize) {
+      this.setState({ nativeSize: isNativeSize });
+    }
+  }
+
   getScale = () => {
     const { windowHeight, windowWidth, frame } = this.props;
     const { width, height } = frame;
@@ -32,7 +42,7 @@ export class Preview extends Component<PreviewProps, PreviewState> {
     // Frames can be larger than Figma's plugin UI window.
     // To allow the user to see the whole frame we need to scale it down to fit
     // TODO: Get real UI header height?
-    const WINDOW_HEADER_HEIGHT = 200;
+    const WINDOW_HEADER_HEIGHT = 140;
     const heightRatio = (windowHeight - WINDOW_HEADER_HEIGHT) / height;
 
     const WINDOW_SIDE_MARGINS = 120;
