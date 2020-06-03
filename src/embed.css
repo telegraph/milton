@@ -11,6 +11,11 @@
   overflow: hidden;
 }
 
+.f2h__render svg {
+  display: block;
+  margin: 0;
+}
+
 .f2h__render svg text {
   display: none;
 }
