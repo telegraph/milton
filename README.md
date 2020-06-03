@@ -16,6 +16,7 @@ Figma plug-in that helps generate HTML embeds.
 
 ## Tasks
 
+- [BUG] Incorrect percentage based line-height
 - [Improvement] Optional headline, sub and source text
 - [Improvement] In situ preview mode
 - [BUG] Wide responsive preview breaks text layout

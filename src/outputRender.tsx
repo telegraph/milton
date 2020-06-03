@@ -69,10 +69,10 @@ function generateStyleText(node: textData, frameWidth: number, frameHeight: numb
       lineHeightValue = `${lineVal}px`;
       break;
     case "PERCENT":
-      lineHeightValue = `${lineVal}%`;
+      lineHeightValue = `${lineVal * 1.15}%`;
       break;
     case "AUTO":
-      lineHeightValue = "auto";
+      lineHeightValue = "1.2";
       break;
   }
 
@@ -102,12 +102,14 @@ function generateStyleText(node: textData, frameWidth: number, frameHeight: numb
       break;
   }
 
+  const WIDTH_BUFFER = 3;
+
   return `
         font-size: ${String(fontSize)}px;
         font-family: "${fontFamily}", Georgia, 'Times New Roman', Times, serif;
         position: absolute;
         color: ${textColour};
-        width: ${width}px;
+        width: ${width + WIDTH_BUFFER}px;
         height: ${height}px;
         left: ${left};
         top: ${top};
