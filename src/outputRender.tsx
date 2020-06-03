@@ -66,7 +66,7 @@ function Text(props: TextProps) {
 }
 
 interface FrameContainerProps extends FrameDataType {
-  scale?: number;
+  scale?: number | false;
 }
 export function FrameContainer(props: FrameContainerProps) {
   const { uid, width, height, textNodes, svg = "", responsive, scale } = props;

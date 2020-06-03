@@ -45,7 +45,7 @@ export function FrameSelection(props: FrameSelectionProps) {
         Responsive
       </label>
 
-      {frames.map(({ name, id, width, selected, responsive }) => (
+      {frames.map(({ name, id, width, height, selected, responsive }) => (
         <Fragment>
           <label class="f2h__label f2h__label--name">
             <input
@@ -58,7 +58,9 @@ export function FrameSelection(props: FrameSelectionProps) {
             />
             {name}
 
-            <span class="f2h__sel_width">{width}px</span>
+            <span class="f2h__sel_width">
+              {width} x {height}
+            </span>
           </label>
 
           <input

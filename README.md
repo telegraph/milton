@@ -16,6 +16,7 @@ Figma plug-in that helps generate HTML embeds.
 
 ## Tasks
 
+- [Improvement] Optional headline, sub and source text
 - [Improvement] In situ preview mode
 - [BUG] Wide responsive preview breaks text layout
 - [BUG] Very wide or tall frames break UI window
@@ -30,6 +31,7 @@ Figma plug-in that helps generate HTML embeds.
 - [Figma] ...
 - [Improvement] File size wanring. Information about large shapes?
 - [Improvement] Optimise images and SVG
+- [Improvement] Add drag scroll to preview
 - [Improvement] ZIP download
 - [Improvement] Tidy-up code
 

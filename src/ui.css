@@ -64,6 +64,10 @@ body {
   --padding-large: 24px;
   --padding-huge: 48px;
 
+  --border-radius-small: 3px;
+  --border-radius-medium: 6px;
+  --border-radius-large: 12px;
+
   --colours-grey-0: rgb(33, 33, 33);
   --colours-grey-1: rgb(74, 74, 74);
   --colours-grey-2: rgb(133, 133, 133);
@@ -73,6 +77,7 @@ body {
   --colours-main: rgb(72, 202, 126);
   --colours-main-light: rgb(208, 242, 222);
   --colours-main-dark: rgb(44, 75, 57);
+  --colours-warning: rgb(255, 242, 175);
 
   --font-family-sans-serif: Arial, Helvetica, sans-serif;
   --font-famailt-serif: Georgia, "Times New Roman", Times, serif;
@@ -102,7 +107,7 @@ button {
   background: #fff;
   padding: var(--padding-small, 0) var(--padding-medium, 0);
   cursor: pointer;
-  border-radius: 2px;
+  border-radius: var(--border-radius-small, 0);
   outline: none;
   border: 1px solid transparent;
 
@@ -139,6 +144,8 @@ button:hover {
   overflow: hidden;
 }
 
+/* [Header] */
+
 .f2h__header {
   display: flex;
   flex-direction: row;
@@ -146,6 +153,28 @@ button:hover {
   padding: var(--padding-small, 0) var(--padding-medium, 0);
   border-bottom: 1px solid #e4e4e4;
   background: #f9f9f9;
+}
+.f2h__nav {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.f2h__title {
+  font-family: var(--font-family-sans-serif, sans-serif);
+  font-size: var(--font-size--medium, 1em);
+}
+.f2h__info {
+  margin-left: var(--padding-medium, 0);
+}
+.f2h__info_meta {
+  font-size: var(--font-size--medium, 1em);
+  padding-left: var(--padding-small, 0);
+  margin-left: var(--padding-small, 0);
+  border-left: 1px solid var(--colours-grey-4, #f0f);
+}
+.f2h__info_responsive--no {
+  text-decoration: line-through;
 }
 
 .f2h__body {
@@ -222,14 +251,15 @@ button:hover {
   color: var(--colours-grey-2, #f0f);
 }
 
-.f2h__title {
-  font-family: var(--font-family-sans-serif, sans-serif);
-  font-size: var(--font-size--medium, 1em);
-  flex: 1;
-}
-
 /* [Preview]  */
-
+.f2h__preview {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 .f2h__preview_title {
   font-size: var(--font-size--medium, 1);
   margin: var(--padding-small, 0) 0;
@@ -237,6 +267,15 @@ button:hover {
 }
 .f2h__preview_name {
   flex: 1;
+}
+
+.f2h__preview_inner {
+  overflow: auto;
+  max-height: 100%;
+  max-width: 100%;
+}
+.f2h__preview_inner--scaled {
+  overflow: hidden;
 }
 
 .f2h__preview_wrapper {
@@ -252,20 +291,15 @@ button:hover {
   padding-left: var(--padding-small, 0);
 }
 
-.f2h__size_warning {
-  background: #fff6c9;
-  padding: 6px 12px;
-  margin-left: -12px;
-  font-size: 12px;
+.f2h__notice--warning {
+  background: var(--colours-warning, #f0f);
+  padding: var(--padding-small, 0) var(--padding-medium, 0);
+  margin: var(--padding-small, 0) 0;
+  font-size: var(--font-size--medium, 1em);
+  border-radius: var(--border-radius-medium, 0);
 }
 
-.f2h__file_size {
-  font-size: 11px;
-  padding: 0 3px;
-  border-radius: 3px;
-}
-
-.f2h__file_size--large {
+.f2h__notice--error {
   font-weight: bold;
   background: #ffeded;
   color: #a70f0f;
@@ -282,7 +316,7 @@ button:hover {
 
 .error {
   background-color: var(--colours-grey-5, #f0f);
-  border-radius: 2px;
+  border-radius: var(--border-radius-small, 0);
   padding: var(--padding-medium, 0) var(--padding-small, 0);
   text-align: center;
   color: var(--colours-grey-0, #f0f);
@@ -291,7 +325,7 @@ button:hover {
   align-self: center;
 }
 
-/* Save */
+/* [Save] */
 .f2h__save {
   display: flex;
   flex-direction: column;
@@ -303,7 +337,7 @@ button:hover {
 .f2h__save_btn {
   font-size: var(--font-size--large, 1em);
   color: #fff;
-  border-radius: var(--padding-small, 0);
+  border-radius: var(--border-radius-small, 0);
   padding: var(--padding-medium, 0);
   margin-right: var(--padding-medium, 0);
   border-bottom: 2px solid var(--colours-main-dark, #f0f);
@@ -381,7 +415,7 @@ button:hover {
 .f2h__toast {
   background-color: var(--colours-grey-1, #f0f);
   color: #fff;
-  border-radius: var(--padding-medium, 0);
+  border-radius: var(--border-radius-small, 0);
   padding: var(--padding-medium, 0);
   position: absolute;
   bottom: 0;

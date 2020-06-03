@@ -358,6 +358,8 @@ export class App extends Component {
     // Sort frames
     selectedFrames = [...selectedFrames].sort((a, b) => (a.width <= b.width ? -1 : 1));
 
+    const selectedFrame = stage === STAGES.PREVIEW_OUTPUT && selectedFrames[previewIndex];
+
     // If previewing frame without a render then request if from the backend
     // TODO: Move out of render
     if (!error && stage === STAGES.PREVIEW_OUTPUT && !selectedFrames[previewIndex].svg) {
@@ -373,6 +375,7 @@ export class App extends Component {
           handleBackClick={this.goBack}
           handleNextClick={this.goNext}
           disableNext={selectedCount < 1}
+          frame={selectedFrame}
         />
         <div class="f2h__body">
           {error && <div class="error">{error}</div>}
@@ -387,8 +390,8 @@ export class App extends Component {
             />
           )}
 
-          {ready && selectedFrames[previewIndex] && stage === STAGES.PREVIEW_OUTPUT && (
-            <Preview frame={selectedFrames[previewIndex]} windowHeight={windowHeight} windowWidth={windowWidth} />
+          {ready && selectedFrame && stage === STAGES.PREVIEW_OUTPUT && (
+            <Preview frame={selectedFrame} windowHeight={windowHeight} windowWidth={windowWidth} />
           )}
 
           {ready && stage === STAGES.RESPONSIVE_PREVIEW && <ResponsiveView frames={selectedFrames} />}
