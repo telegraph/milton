@@ -103,14 +103,14 @@ function generateStyleText(node: textData, frameWidth: number, frameHeight: numb
   }
 
   const WIDTH_BUFFER = 3;
-
+  //  width: ${width + WIDTH_BUFFER}px;
   return `
         font-size: ${String(fontSize)}px;
         font-family: "${fontFamily}", Georgia, 'Times New Roman', Times, serif;
         position: absolute;
         color: ${textColour};
-        width: ${width + WIDTH_BUFFER}px;
-        height: ${height}px;
+        width: ${(width / (frameWidth + WIDTH_BUFFER)) * 100}%;
+        height: ${(height / frameHeight) * 100}%;
         left: ${left};
         top: ${top};
         line-height: ${lineHeightValue};
