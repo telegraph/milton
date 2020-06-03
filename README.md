@@ -28,7 +28,7 @@ Figma plug-in that helps generate HTML embeds.
 - [QA] Create test case Figma designs
 - [QA] Test embedding in particle CMS
 - [QA] Check for CSS
-- [Figma] ...
+- [Improvement] Remove text nodes from SVG?
 - [Improvement] File size wanring. Information about large shapes?
 - [Improvement] Optimise images and SVG
 - [Improvement] Add drag scroll to preview

@@ -90,9 +90,9 @@ export class Preview extends Component<PreviewProps, PreviewState> {
     if (scale < 1) {
       scaleWarning = (
         <p class="f2h__scale_warning f2h__notice--warning">
-          {!nativeSize && <span>Zoomed {Math.round(scale * 100)}% to fit view. </span>}
+          {!nativeSize && <span>Zoomed {Math.round(scale * 100)}% . </span>}
           <label>
-            Show native size <input type="checkbox" checked={nativeSize} onClick={this.toggleZoomed} />
+            Show native <input type="checkbox" checked={nativeSize} onClick={this.toggleZoomed} />
           </label>
         </p>
       );

@@ -166,7 +166,15 @@ button:hover {
 }
 .f2h__info {
   margin-left: var(--padding-medium, 0);
+  display: flex;
+  max-width: 60%;
+  white-space: nowrap;
 }
+.f2h__info_title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .f2h__info_meta {
   font-size: var(--font-size--medium, 1em);
   padding-left: var(--padding-small, 0);
@@ -219,6 +227,12 @@ button:hover {
   grid-column: 1/2;
   align-items: baseline;
 }
+.f2h__label--name-text {
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .f2h__input--responsive {
   grid-column: 2/3;
@@ -231,12 +245,14 @@ button:hover {
   cursor: pointer;
   padding: var(--padding-small) 0;
   align-items: center;
+  min-width: 0;
 }
 
 .f2h__sel_width {
   font-size: var(--font-size--small, 1em);
   color: var(--colours-grey-3, #f0f);
   padding-left: var(--padding-small, 0);
+  white-space: nowrap;
 }
 
 .f2h__checkbox,

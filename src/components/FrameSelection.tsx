@@ -47,7 +47,7 @@ export function FrameSelection(props: FrameSelectionProps) {
 
       {frames.map(({ name, id, width, height, selected, responsive }) => (
         <Fragment>
-          <label class="f2h__label f2h__label--name">
+          <p class="f2h__label f2h__label--name">
             <input
               class="f2h__checkbox"
               type="checkbox"
@@ -56,12 +56,13 @@ export function FrameSelection(props: FrameSelectionProps) {
               id={name}
               name={name}
             />
-            {name}
-
+            <label class="f2h__label--name-text" for={name}>
+              {name}
+            </label>
             <span class="f2h__sel_width">
               {width} x {height}
             </span>
-          </label>
+          </p>
 
           <input
             class="f2h__checkbox f2h__input--responsive"
