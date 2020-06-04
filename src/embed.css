@@ -1,5 +1,10 @@
 @import url("https://cf.eip.telegraph.co.uk/assets/_css/fontsv02.css");
 
+html,
+body {
+  margin: 0;
+}
+
 .f2h__text {
   margin: 0;
   font-family: sans-serif;
