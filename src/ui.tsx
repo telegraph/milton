@@ -36,6 +36,9 @@ function decodeSvgToString(svg: Uint8Array) {
     svgStr = svgStr.replace(`#${id}`, `#${randomId}`);
   });
 
+  // Update HTTP links to HTTPS
+  svgStr = svgStr.replace(/http:\/\//g, "https://");
+
   return svgStr;
 }
 
@@ -264,7 +267,7 @@ export class App extends Component {
 
   startResizing = (event: MouseEvent) => {
     const { isResizing } = this.state;
-    console.log("starting resizing");
+    console.log("starting resizi\ng");
 
     if (!isResizing) {
       const { x, y } = event;
