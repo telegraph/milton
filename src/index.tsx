@@ -93,6 +93,7 @@ export interface textData extends textNodeSelectedProps {
   colour: { r: number; g: number; b: number; a: number };
   fontSize: number;
   fontFamily: string;
+  fontStyle: string;
 }
 
 // Extract object properties from textNode for passing via postMessage
@@ -141,9 +142,14 @@ function getTextNodes(frame: FrameNode): textData[] {
       // Extract font family
       // TODO: Confirm fallback fonts
       let fontFamily = "Arial";
+      let fontStyle = "Regular";
       if (fontName !== figma.mixed) {
+        console.log(fontName);
         fontFamily = fontName.family;
+        fontStyle = fontName.style;
       }
+
+      console.log(fontFamily);
 
       return {
         x,
@@ -152,6 +158,7 @@ function getTextNodes(frame: FrameNode): textData[] {
         height,
         fontSize,
         fontFamily,
+        fontStyle,
         colour,
         characters,
         lineHeight,

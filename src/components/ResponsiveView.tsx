@@ -30,7 +30,6 @@ export function ResponsiveView(props: ResponsiveViewProps) {
           // style={`height: ${height}px; width: ${width}px;`}
           class="f2h__responsive__sandbox"
           srcDoc={rawHtml}
-          sandbox=""
         ></iframe>
       </div>
     </div>

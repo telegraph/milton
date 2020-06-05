@@ -37,6 +37,7 @@ function generateStyleText(node: textData, frameWidth: number, frameHeight: numb
     lineHeight,
     textAlignHorizontal,
     textAlignVertical,
+    fontStyle,
   } = node;
 
   // Position center aligned
@@ -47,6 +48,23 @@ function generateStyleText(node: textData, frameWidth: number, frameHeight: numb
   const { r, g, b, a } = colour;
   const colourVals = [r, g, b].map((val = 0) => Math.round(val * 255));
   const textColour = `rgba(${colourVals.join(",")}, ${a})`;
+
+  let fontName = `${fontFamily} ${fontStyle}`;
+
+  // Font family
+  // Austin News Deck
+  // Austin News Text
+  // Telesans Text
+  // Austin News Deck
+
+  // "Austin News Deck Semibold"
+  // "Austin News Deck Medium"
+  // "Austin News Text Roman"
+  // Telesans Text Regular
+
+  // Regular, Medium, Roman, Semibold
+
+  console.log(node);
 
   const { unit: letterUnit, value: letterVal } = letterSpacing as { value: number; unit: "PIXELS" | "PERCENT" };
   let letterSpaceValue = "0";
@@ -106,7 +124,8 @@ function generateStyleText(node: textData, frameWidth: number, frameHeight: numb
   //  width: ${width + WIDTH_BUFFER}px;
   return `
         font-size: ${String(fontSize)}px;
-        font-family: "${fontFamily}", Georgia, 'Times New Roman', Times, serif;
+        font-family: "${fontName}", Georgia, 'Times New Roman', Times, serif;
+        font-weight: normal;
         position: absolute;
         color: ${textColour};
         width: ${(width / (frameWidth + WIDTH_BUFFER)) * 100}%;

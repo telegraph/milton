@@ -22,7 +22,7 @@ body {
 }
 
 .f2h__render svg text {
-  display: none;
+  /* display: none; */
 }
 
 .f2h__render--responsive {
