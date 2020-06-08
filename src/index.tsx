@@ -144,12 +144,9 @@ function getTextNodes(frame: FrameNode): textData[] {
       let fontFamily = "Arial";
       let fontStyle = "Regular";
       if (fontName !== figma.mixed) {
-        console.log(fontName);
         fontFamily = fontName.family;
         fontStyle = fontName.style;
       }
-
-      console.log(fontFamily);
 
       return {
         x,

@@ -12,6 +12,8 @@ import { ResponsiveView } from "./components/ResponsiveView";
 // @ts-expect-error
 import uiCss from "./ui.css";
 // @ts-expect-error
+import fontsCss from "./fonts.css";
+// @ts-expect-error
 import embedCss from "./embed.css";
 
 function decodeSvgToString(svg: Uint8Array) {
@@ -267,7 +269,6 @@ export class App extends Component {
 
   startResizing = (event: MouseEvent) => {
     const { isResizing } = this.state;
-    console.log("starting resizi\ng");
 
     if (!isResizing) {
       const { x, y } = event;
@@ -417,6 +418,7 @@ function injectCss(css: string) {
 
 injectCss(uiCss);
 injectCss(embedCss);
+injectCss(fontsCss);
 
 // Render app
 render(<App />, document.body);

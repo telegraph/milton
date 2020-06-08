@@ -7,6 +7,8 @@ import { OUTPUT_FORMATS } from "./constants";
 // Import CSS file as plain text via esbuild loader option
 // @ts-expect-error
 import embedCss from "./embed.css";
+// @ts-expect-error
+import fontsCss from "./fonts.css";
 
 function generateIframeHtml(body: string) {
   return `
@@ -56,27 +58,48 @@ function generateStyleText(node: textData, frameWidth: number, frameHeight: numb
   // Austin News Text
   // Telesans Text
   // Austin News Deck
+  // Telesans Agate
 
   // "Austin News Deck Semibold"
   // "Austin News Deck Medium"
   // "Austin News Text Roman"
-  // Telesans Text Regular
+  // "Telesans Text Regular"
+  // "Telesans Agate"
 
   // Regular, Medium, Roman, Semibold
-
-  console.log(node);
 
   const { unit: letterUnit, value: letterVal } = letterSpacing as { value: number; unit: "PIXELS" | "PERCENT" };
   let letterSpaceValue = "0";
   switch (letterUnit) {
     case "PIXELS":
-      letterSpaceValue = `${letterVal}px`;
+      // TODO: FIX ME
+      if (fontFamily === "Telesans Text") {
+        letterSpaceValue = `${letterVal - 0.33}px`;
+      } else if (fontFamily === "Telesans Agate") {
+        letterSpaceValue = `${letterVal - 0.19}px`;
+      } else {
+        letterSpaceValue = `${letterVal}px`;
+      }
       break;
     case "PERCENT":
       letterSpaceValue = `${letterVal / 100}em`;
+
+      if (fontFamily === "Telesans Text") {
+        letterSpaceValue = `${letterVal / 100 - 0.022}em`;
+      } else if (fontFamily === "Telesans Agate") {
+        letterSpaceValue = `${letterVal / 100 - 0.015}em`;
+      } else {
+        letterSpaceValue = `${letterVal / 100}em`;
+      }
       break;
     default:
-      letterSpaceValue = "0";
+      if (fontFamily === "Telesans Text") {
+        letterSpaceValue = "-0.37px";
+      } else if (fontFamily === "Telesans Agate") {
+        letterSpaceValue = "-0.19}px";
+      } else {
+        letterSpaceValue = `0`;
+      }
       break;
   }
 
@@ -120,15 +143,15 @@ function generateStyleText(node: textData, frameWidth: number, frameHeight: numb
       break;
   }
 
-  const WIDTH_BUFFER = 3;
-  //  width: ${width + WIDTH_BUFFER}px;
+  const newWidth = Math.ceil((width / frameWidth) * 100);
+
   return `
         font-size: ${String(fontSize)}px;
         font-family: "${fontName}", Georgia, 'Times New Roman', Times, serif;
         font-weight: normal;
         position: absolute;
         color: ${textColour};
-        width: ${(width / (frameWidth + WIDTH_BUFFER)) * 100}%;
+        width: ${newWidth}%;
         height: ${(height / frameHeight) * 100}%;
         left: ${left};
         top: ${top};
@@ -186,10 +209,15 @@ export function renderInline(frames: FrameDataType[], iframe: OUTPUT_FORMATS) {
 
   let html = render(
     <div class="f2h__embed">
-      <style>
-        {embedCss}
-        {mediaQuery}
-      </style>
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+       ${fontsCss}
+       ${embedCss}
+       ${mediaQuery}
+      `,
+        }}
+      ></style>
       {renderedFrames}
     </div>
   );
@@ -198,7 +226,8 @@ export function renderInline(frames: FrameDataType[], iframe: OUTPUT_FORMATS) {
     html = generateIframeHtml(html);
   }
 
-  return html.replace(/\n|\r|\s{2,}/g, "");
+  return html;
+  // return html.replace(/\n|\r|\s{2,}/g, "");
 }
 
 function genreateMediaQueries(frames: FrameDataType[]) {

@@ -1,5 +1,3 @@
-@import url("https://cf.eip.telegraph.co.uk/assets/_css/fontsv02.css");
-
 html,
 body {
   margin: 0;
@@ -9,6 +7,10 @@ body {
   margin: 0;
   font-family: sans-serif;
   transform: translate(-50%, -50%);
+  /* white-space: pre; */
+
+  /* DEBUG */
+  /* color: rgba(255, 0, 0, 0.34) !important; */
 }
 
 .f2h__render {
@@ -22,7 +24,8 @@ body {
 }
 
 .f2h__render svg text {
-  /* display: none; */
+  /* DEBUG */
+  display: none;
 }
 
 .f2h__render--responsive {
