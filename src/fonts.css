@@ -1,31 +1,8 @@
-/* Local copies of fonts */
-@font-face {
-  font-family: "Austin News Deck Bold";
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Bold.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Bold.ttf") format("truetype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Bold.eot"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Bold.eot?#iefix") format("embedded-opentype");
-  font-display: "swap";
-}
-@font-face {
-  font-family: "Austin News Deck Fat";
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Fat.woff2") format("woff2"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Fat.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Fat.ttf") format("truetype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Fat.eot"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Fat.svg") format("svg"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Fat.eot?#iefix") format("embedded-opentype");
-  font-display: "swap";
-}
 @font-face {
   font-family: "Austin News Deck Semibold";
   src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Semibold.woff2") format("woff2"),
     url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Semibold.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Semibold.ttf") format("truetype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Semibold.eot"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Semibold.svg") format("svg"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Semibold.eot?#iefix")
-      format("embedded-opentype");
+    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Semibold.ttf") format("truetype");
   font-weight: 700;
   font-display: "swap";
 }
@@ -33,11 +10,7 @@
   font-family: "Austin News Deck Medium";
   src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Medium.woff2") format("woff2"),
     url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Medium.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Medium.ttf") format("truetype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Medium.eot"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Medium.svg") format("svg"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Medium.eot?#iefix")
-      format("embedded-opentype");
+    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Medium.ttf") format("truetype");
   font-weight: 700;
   font-display: "swap";
 }
@@ -45,60 +18,16 @@
   font-family: "Austin News Deck Roman";
   src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Roman.woff2") format("woff2"),
     url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Roman.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Roman.ttf") format("truetype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Roman.eot"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Roman.svg") format("svg"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Roman.eot?#iefix")
-      format("embedded-opentype");
+    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Roman.ttf") format("truetype");
   font-weight: 400;
   font-display: "swap";
 }
-@font-face {
-  font-family: "Austin News Deck Italic";
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin+News+Deck+Web-Italic.eot");
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin+News+Deck+Web-Italic.eot?#iefix")
-      format("embedded-opentype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin+News+Deck+Web-Italic.woff2") format("woff2"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin+News+Deck+Web-Italic.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin+News+Deck+Web-Italic.ttf") format("truetype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin+News+Deck+Web-Italic.svg#Austin+News+Deck+Web-Italic")
-      format("svg");
-  font-weight: 400;
-  font-style: italic;
-  font-stretch: normal;
-}
-@font-face {
-  font-family: "Austin News Text Semibold";
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Semibold.woff2") format("woff2"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Semibold.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Semibold.ttf") format("truetype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Semibold.eot"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Semibold.svg") format("svg"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Semibold.eot?#iefix")
-      format("embedded-opentype");
-  font-weight: 700;
-  font-display: "swap";
-}
+
 @font-face {
   font-family: "Austin News Text Roman";
   src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Roman.woff2") format("woff2"),
     url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Roman.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Roman.ttf") format("truetype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Roman.eot"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Roman.svg") format("svg"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Roman.eot?#iefix")
-      format("embedded-opentype");
-  font-weight: 700;
-  font-display: "swap";
-}
-@font-face {
-  font-family: "Telesans Text Bold";
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Bold.woff2") format("woff2"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Bold.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Bold.ttf") format("truetype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Bold.eot"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Bold.svg") format("svg"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Bold.eot?#iefix") format("embedded-opentype");
+    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Text Web-Roman.ttf") format("truetype");
   font-weight: 700;
   font-display: "swap";
 }
@@ -106,37 +35,14 @@
   font-family: "Telesans Text Regular";
   src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Regular.woff2") format("woff2"),
     url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Regular.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Regular.ttf") format("truetype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Regular.eot"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Regular.svg") format("svg"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Regular.eot?#iefix") format("embedded-opentype");
+    url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Text Web-Regular.ttf") format("truetype");
   font-weight: 400;
   font-display: "swap";
 }
 @font-face {
   font-family: "Telesans Agate Regular";
-  letter-spacing: -0.19px;
   font-style: "normal";
   font-weight: 500;
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/TelesansAgate-Medium.eot");
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/TelesansAgate-Medium.eot?#iefix") format("embedded-opentype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/TelesansAgate-Medium.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/TelesansAgate-Medium.svg#TelesansAgate-Medium") format("svg"),
+  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/TelesansAgate-Medium.woff") format("woff"),
     url("https://cf.eip.telegraph.co.uk/assets/_fonts/TelesansAgate-Medium.ttf") format("truetype");
-}
-@font-face {
-  font-family: "iconfont";
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/iconfont.woff2") format("woff2"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/iconfont.woff") format("woff"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/iconfont.ttf") format("truetype"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/iconfont.eot"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/iconfont.svg") format("svg"),
-    url("https://cf.eip.telegraph.co.uk/assets/_fonts/iconfont.eot?#iefix") format("embedded-opentype");
-  font-weight: 400;
-  font-display: "swap";
-}
-@font-face {
-  font-family: "Monospace Numerals";
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/AustinNewsText-MediumMono.otf") format("opentype");
-  font-display: "swap";
 }
