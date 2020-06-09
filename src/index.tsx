@@ -27,6 +27,9 @@ function getRootFrames() {
     return;
   }
 
+  const headlinesAndSource = getHeadlinesAndSource(currentPage);
+  console.log(headlinesAndSource);
+
   const framesData = rootFrames.map((frame) => {
     const { name, width, height, id } = frame;
     const textNodes = getTextNodes(frame);
@@ -165,6 +168,19 @@ function getTextNodes(frame: FrameNode): textData[] {
       };
     }
   );
+}
+
+function getHeadlinesAndSource(pageNode: PageNode) {
+  const NODE_NAMES = ["headline", "subhead", "source"];
+
+  const result: { [id: string]: string | undefined } = {};
+  for (const name of NODE_NAMES) {
+    const node = pageNode.findChild((node) => node.name === name && node.type === "TEXT") as TextNode | null;
+
+    result[name] = node?.characters;
+  }
+
+  return result;
 }
 
 export interface PostMsg {

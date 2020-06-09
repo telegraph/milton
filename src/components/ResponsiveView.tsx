@@ -5,15 +5,18 @@ import type { FrameDataType } from "../ui";
 
 type ResponsiveViewProps = {
   frames: FrameDataType[];
+  headline?: string | undefined;
+  subhead?: string | undefined;
+  source?: string | undefined;
 };
 
 export function ResponsiveView(props: ResponsiveViewProps) {
-  const { frames } = props;
+  const { frames, headline, subhead, source } = props;
 
   const width = frames.reduce((p, { width }) => (width > p ? width : p), 0);
   const height = frames.reduce((p, { height }) => (height > p ? height : p), 0);
 
-  const rawHtml = renderInline(frames, OUTPUT_FORMATS.IFRAME);
+  const rawHtml = renderInline({ frames, iframe: OUTPUT_FORMATS.IFRAME, headline, subhead, source });
 
   return (
     <div class="f2h__responsive_preview">

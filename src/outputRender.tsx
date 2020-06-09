@@ -196,13 +196,20 @@ export function FrameContainer(props: FrameContainerProps) {
   return (
     <div class={classNames} style={style} id={uid}>
       <div class="f2h__svg_container" dangerouslySetInnerHTML={{ __html: svg }} />
-
       <div class="f2h__text_container">{textEls}</div>
     </div>
   );
 }
 
-export function renderInline(frames: FrameDataType[], iframe: OUTPUT_FORMATS) {
+interface renderInlineProps {
+  frames: FrameDataType[];
+  iframe: OUTPUT_FORMATS;
+  headline?: string | undefined;
+  subhead?: string | undefined;
+  source?: string | undefined;
+}
+export function renderInline(props: renderInlineProps) {
+  const { frames, iframe, headline, subhead, source } = props;
   const mediaQuery = genreateMediaQueries(frames);
 
   const renderedFrames = frames.map((frame) => <FrameContainer {...frame} />);
@@ -218,7 +225,21 @@ export function renderInline(frames: FrameDataType[], iframe: OUTPUT_FORMATS) {
       `,
         }}
       ></style>
+
+      {(headline || subhead) && (
+        <header class="f2h_header">
+          {headline && <h1 class="f2h_headline">{headline}</h1>}
+          {subhead && <p class="f2h_subbhead">subhead</p>}
+        </header>
+      )}
+
       {renderedFrames}
+
+      {source && (
+        <footer>
+          <p class="f2h_source">{source}</p>
+        </footer>
+      )}
     </div>
   );
 

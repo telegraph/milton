@@ -96,6 +96,9 @@ export type AppState = {
   windowWidth: number;
   windowHeight: number;
   responsive: boolean;
+  headline: string | undefined;
+  subhead: string | undefined;
+  source: string | undefined;
 };
 
 export class App extends Component {
@@ -111,6 +114,9 @@ export class App extends Component {
     windowWidth: INITIAL_UI_SIZE.width,
     windowHeight: INITIAL_UI_SIZE.height,
     responsive: true,
+    headline: "THIS IS A SAMPLE HEADLINE",
+    subhead: "SUBHEAD IS HERE",
+    source: "SOURCE IS IN HERE",
   };
 
   componentDidMount() {
@@ -350,7 +356,18 @@ export class App extends Component {
   };
 
   render() {
-    const { error, ready, frames, stage, previewIndex, windowHeight, windowWidth } = this.state;
+    const {
+      error,
+      ready,
+      frames,
+      stage,
+      previewIndex,
+      windowHeight,
+      windowWidth,
+      headline,
+      subhead,
+      source,
+    } = this.state;
 
     console.log(this.state);
 
@@ -398,9 +415,13 @@ export class App extends Component {
             <Preview frame={selectedFrame} windowHeight={windowHeight} windowWidth={windowWidth} />
           )}
 
-          {ready && stage === STAGES.RESPONSIVE_PREVIEW && <ResponsiveView frames={selectedFrames} />}
+          {ready && stage === STAGES.RESPONSIVE_PREVIEW && (
+            <ResponsiveView frames={selectedFrames} headline={headline} subhead={subhead} source={source} />
+          )}
 
-          {ready && stage === STAGES.SAVE_OUTPUT && <Save frames={selectedFrames} />}
+          {ready && stage === STAGES.SAVE_OUTPUT && (
+            <Save frames={selectedFrames} headline={headline} subhead={subhead} source={source} />
+          )}
         </div>
 
         {/* <div class="f2h__resizer" onMouseDown={this.startResizing} onMouseUp={this.stopResizing}></div> */}

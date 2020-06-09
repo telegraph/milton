@@ -6,6 +6,9 @@ import type { FrameDataType } from "../ui";
 
 type SaveProps = {
   frames: FrameDataType[];
+  headline?: string | undefined;
+  subhead?: string | undefined;
+  source?: string | undefined;
 };
 
 interface SaveState {
@@ -59,11 +62,11 @@ export class Save extends Component<SaveProps, SaveState> {
   };
 
   saveBinaryFile = () => {
-    const { frames } = this.props;
+    const { frames, headline, subhead, source } = this.props;
     const outputFrames = Object.values(frames).filter((f) => f.selected);
 
     const filename = "figma-to-html-test.html";
-    const raw = renderInline(outputFrames, OUTPUT_FORMATS.IFRAME);
+    const raw = renderInline({ frames: outputFrames, iframe: OUTPUT_FORMATS.IFRAME, headline, subhead, source });
     const blob = new Blob([raw], { type: "text/html" });
 
     saveAs(blob, filename);
@@ -76,9 +79,9 @@ export class Save extends Component<SaveProps, SaveState> {
   };
 
   render() {
-    const { frames } = this.props;
+    const { frames, headline, subhead, source } = this.props;
     const { advancedOpen, showToast, outputFormat } = this.state;
-    const raw = renderInline(frames, outputFormat);
+    const raw = renderInline({ frames, iframe: outputFormat, headline, subhead, source });
 
     return (
       <div class="f2h__save">
