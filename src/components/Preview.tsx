@@ -75,7 +75,7 @@ export class Preview extends Component<PreviewProps, PreviewState> {
   };
 
   render() {
-    const { frame, headline, subhead, source } = this.props;
+    const { frame } = this.props;
     const { svg } = frame;
 
     const renderCharCount = svg?.length || 0;
@@ -114,13 +114,7 @@ export class Preview extends Component<PreviewProps, PreviewState> {
             class={`f2h__preview_inner ${!nativeSize ? "f2h__preview_inner--scaled" : ""}`}
             style={previewWrapperStyles}
           >
-            <FrameContainer
-              {...frame}
-              scale={!nativeSize && scale}
-              headline={headline}
-              subhead={subhead}
-              source={source}
-            />
+            <FrameContainer {...frame} scale={!nativeSize && scale} />
           </div>
         ) : (
           <p class="f2h__preview_loading">Loading...</p>

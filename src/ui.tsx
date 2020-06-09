@@ -117,9 +117,9 @@ export class App extends Component {
     windowWidth: INITIAL_UI_SIZE.width,
     windowHeight: INITIAL_UI_SIZE.height,
     responsive: true,
-    headline: "THIS IS A SAMPLE HEADLINE",
-    subhead: "SUBHEAD IS HERE",
-    source: "SOURCE IS IN HERE",
+    headline: undefined,
+    subhead: undefined,
+    source: undefined,
   };
 
   componentDidMount() {
@@ -374,31 +374,14 @@ export class App extends Component {
     );
   };
 
-  render() {
-    const {
-      error,
-      ready,
-      frames,
-      stage,
-      previewIndex,
-      windowHeight,
-      windowWidth,
-      headline,
-      subhead,
-      source,
-    } = this.state;
-
-    console.log(this.state);
+  switchView = () => {
+    const { frames, stage, previewIndex, windowHeight, windowWidth, headline, subhead, source, error } = this.state;
 
     const framesArr = Object.values(frames).sort((a, b) => (a.width <= b.width ? -1 : 1));
-
     let selectedFrames = framesArr.filter((frame) => frame.selected);
-    const selectedCount = selectedFrames.length;
 
     // Sort frames
     selectedFrames = [...selectedFrames].sort((a, b) => (a.width <= b.width ? -1 : 1));
-
-    const selectedFrame = stage === STAGES.PREVIEW_OUTPUT && selectedFrames[previewIndex];
 
     // If previewing frame without a render then request if from the backend
     // TODO: Move out of render
@@ -406,48 +389,51 @@ export class App extends Component {
       this.getOutputRender(selectedFrames[previewIndex].id);
     }
 
+    switch (stage) {
+      case STAGES.CHOOSE_FRAMES:
+        return (
+          <FrameSelection
+            frames={framesArr}
+            handleClick={this.handleFrameSelectionChange}
+            toggleResonsive={this.toggleResonsive}
+            toggleSelectAll={this.toggleSelectAll}
+            toggleResponsiveAll={this.toggleResponsiveAll}
+            headline={headline}
+            subhead={subhead}
+            source={source}
+            handleFormUpdate={this.handleFormUpdate}
+          />
+        );
+
+      case STAGES.PREVIEW_OUTPUT:
+        const selectedFrame = selectedFrames[previewIndex];
+        return <Preview frame={selectedFrame} windowHeight={windowHeight} windowWidth={windowWidth} />;
+
+      case STAGES.RESPONSIVE_PREVIEW:
+        return <ResponsiveView frames={selectedFrames} headline={headline} subhead={subhead} source={source} />;
+
+      case STAGES.SAVE_OUTPUT:
+        return <Save frames={selectedFrames} headline={headline} subhead={subhead} source={source} />;
+
+      default:
+        return <div>Loading...</div>;
+    }
+  };
+
+  render() {
+    const { error, frames, stage, previewIndex } = this.state;
+
     return (
       <div class="f2h" onMouseLeave={this.stopResizing}>
         <Header
           stage={stage}
-          paginationLength={selectedCount}
-          paginationIndex={previewIndex}
           handleBackClick={this.goBack}
           handleNextClick={this.goNext}
-          disableNext={selectedCount < 1}
-          frame={selectedFrame}
+          disableNext={stage === STAGES.SAVE_OUTPUT}
+          frame={Object.values(frames)[previewIndex]}
         />
-        <div class="f2h__body">
-          {error && <div class="error">{error}</div>}
 
-          {ready && stage === STAGES.CHOOSE_FRAMES && (
-            <FrameSelection
-              frames={framesArr}
-              handleClick={this.handleFrameSelectionChange}
-              toggleResonsive={this.toggleResonsive}
-              toggleSelectAll={this.toggleSelectAll}
-              toggleResponsiveAll={this.toggleResponsiveAll}
-              headline={headline}
-              subhead={subhead}
-              source={source}
-              handleFormUpdate={this.handleFormUpdate}
-            />
-          )}
-
-          {ready && selectedFrame && stage === STAGES.PREVIEW_OUTPUT && (
-            <Preview frame={selectedFrame} windowHeight={windowHeight} windowWidth={windowWidth} />
-          )}
-
-          {ready && stage === STAGES.RESPONSIVE_PREVIEW && (
-            <ResponsiveView frames={selectedFrames} headline={headline} subhead={subhead} source={source} />
-          )}
-
-          {ready && stage === STAGES.SAVE_OUTPUT && (
-            <Save frames={selectedFrames} headline={headline} subhead={subhead} source={source} />
-          )}
-        </div>
-
-        {/* <div class="f2h__resizer" onMouseDown={this.startResizing} onMouseUp={this.stopResizing}></div> */}
+        <div class="f2h__body">{error ? <div class="error">{error}</div> : this.switchView()}</div>
       </div>
     );
   }

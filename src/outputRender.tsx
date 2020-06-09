@@ -189,7 +189,6 @@ export function FrameContainer(props: FrameContainerProps) {
   const textEls = textNodes.map((node) => <Text node={node} width={width} height={height} />);
   const classNames = `f2h__render ${responsive ? "f2h__render--responsive" : ""}`;
 
-  //
   let style = responsive ? "" : `width: ${width}px;`;
   style = scale ? `${style} transform: scale(${scale});` : style;
 

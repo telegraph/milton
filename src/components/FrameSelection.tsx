@@ -55,6 +55,7 @@ export class FrameSelection extends Component<FrameSelectionProps> {
             <input
               class="f2h__info_form__input f2h__info_form__input--headline"
               type="text"
+              spellcheck={true}
               value={headline}
               ref={this.headlineInput}
               onChange={this.sendFormValues}
@@ -66,6 +67,7 @@ export class FrameSelection extends Component<FrameSelectionProps> {
             <input
               class="f2h__info_form__input f2h__info_form__input--headline"
               type="text"
+              spellcheck={true}
               value={subhead}
               ref={this.subheadInput}
               onChange={this.sendFormValues}
@@ -77,6 +79,7 @@ export class FrameSelection extends Component<FrameSelectionProps> {
             <input
               class="f2h__info_form__input f2h__info_form__input--headline"
               type="text"
+              spellcheck={true}
               value={source}
               ref={this.sourceInput}
               onChange={this.sendFormValues}

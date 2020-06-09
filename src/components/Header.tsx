@@ -2,9 +2,10 @@ import { h } from "preact";
 import { STAGES, UI_TEXT, FRAME_WARNING_SIZE } from "../constants";
 import type { App, FrameDataType } from "../ui";
 
-function FrameInfo(props: { frame: FrameDataType }) {
-  const { name, width, height, svg, responsive } = props.frame;
+function FrameInfo(props: { frame: FrameDataType | false }) {
+  if (!props.frame) return null;
 
+  const { name, width, height, svg, responsive } = props.frame;
   const renderCharCount = svg?.length || 0;
   const fileKbSize = Math.ceil(renderCharCount / 1000);
   const isFileLarge = fileKbSize > FRAME_WARNING_SIZE;
@@ -23,16 +24,14 @@ function FrameInfo(props: { frame: FrameDataType }) {
 
 type HeaderProps = {
   stage: STAGES;
-  frame: FrameDataType | false;
   handleNextClick: App["goNext"];
   handleBackClick: App["goBack"];
   disableNext: boolean;
-  paginationIndex: number;
-  paginationLength: number;
+  frame: FrameDataType;
 };
 
 export function Header(props: HeaderProps) {
-  const { stage, handleBackClick, handleNextClick, disableNext, paginationIndex, paginationLength, frame } = props;
+  const { stage, handleBackClick, handleNextClick, disableNext, frame } = props;
 
   let title;
   let nextText;
@@ -52,7 +51,7 @@ export function Header(props: HeaderProps) {
       break;
 
     case STAGES.PREVIEW_OUTPUT:
-      title = `${UI_TEXT.TITLE_PREVIEW} ${paginationIndex + 1} of ${paginationLength}`;
+      title = `${UI_TEXT.TITLE_PREVIEW}`;
       nextText = UI_TEXT.BUTTON_NEXT;
       backText = UI_TEXT.BUTTON_PREVIOUS;
       break;
@@ -67,7 +66,7 @@ export function Header(props: HeaderProps) {
     <header class="f2h__header">
       <h1 class="f2h__title">{title}</h1>
 
-      {frame && <FrameInfo frame={frame} />}
+      {stage === STAGES.PREVIEW_OUTPUT && <FrameInfo frame={frame} />}
 
       <nav class="f2h__nav">
         {stage !== STAGES.CHOOSE_FRAMES && (
