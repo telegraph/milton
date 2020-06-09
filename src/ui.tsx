@@ -375,17 +375,14 @@ export class App extends Component {
   };
 
   switchView = () => {
-    const { frames, stage, previewIndex, windowHeight, windowWidth, headline, subhead, source, error } = this.state;
+    const { frames, stage, previewIndex, windowHeight, windowWidth, headline, subhead, source } = this.state;
 
     const framesArr = Object.values(frames).sort((a, b) => (a.width <= b.width ? -1 : 1));
     let selectedFrames = framesArr.filter((frame) => frame.selected);
 
-    // Sort frames
-    selectedFrames = [...selectedFrames].sort((a, b) => (a.width <= b.width ? -1 : 1));
-
     // If previewing frame without a render then request if from the backend
     // TODO: Move out of render
-    if (!error && stage === STAGES.PREVIEW_OUTPUT && !selectedFrames[previewIndex].svg) {
+    if (stage === STAGES.PREVIEW_OUTPUT && !selectedFrames[previewIndex].svg) {
       this.getOutputRender(selectedFrames[previewIndex].id);
     }
 
