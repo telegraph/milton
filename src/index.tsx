@@ -28,7 +28,6 @@ function getRootFrames() {
   }
 
   const headlinesAndSource = getHeadlinesAndSource(currentPage);
-  console.log(headlinesAndSource);
 
   const framesData = rootFrames.map((frame) => {
     const { name, width, height, id } = frame;
@@ -50,6 +49,7 @@ function getRootFrames() {
     frames: framesData,
     windowWidth: initialWindowWidth,
     windowHeight: initialWindowHeight,
+    ...headlinesAndSource,
   } as MsgFramesType);
 }
 

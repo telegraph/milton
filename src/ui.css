@@ -145,7 +145,6 @@ button:hover {
 }
 
 /* [Header] */
-
 .f2h__header {
   display: flex;
   flex-direction: row;
@@ -194,7 +193,28 @@ button:hover {
   background-color: var(--colours-grey-5, #f0f);
 }
 
-/* [ Frame selection ] */
+/* [ Frame selection and Form ] */
+.f2h__choose_frames {
+  min-width: 50%;
+}
+.f2h__info_form {
+  margin-bottom: var(--padding-large, 0);
+}
+.f2h__info_form__item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--padding-medium, 0);
+}
+.f2h__info_form__label {
+  font-size: var(--font-size--small, 1em);
+  font-family: var(--font-family-sans-serif, sans-serif);
+}
+.f2h__info_form__input {
+  font-size: var(--font-size--medium, 1em);
+  font-family: var(--font-family-sans-serif, sans-serif);
+  padding: var(--padding-small, 0) var(--padding-medium, 0);
+}
+
 .f2h__frame_selection {
   display: grid;
   grid-template-columns: 1fr min-content;

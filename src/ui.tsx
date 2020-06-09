@@ -1,4 +1,4 @@
-import { h, Component, render } from "preact";
+import { h, Component, render, Fragment, createRef, RefObject } from "preact";
 
 import { MSG_EVENTS, STAGES, UI_TEXT, INITIAL_UI_SIZE } from "./constants";
 import { Header } from "./components/Header";
@@ -63,6 +63,9 @@ export interface MsgFramesType {
   frames: Omit<FrameDataType, "uid">[];
   windowWidth: number;
   windowHeight: number;
+  headline: string | undefined;
+  subhead: string | undefined;
+  source: string | undefined;
 }
 
 export interface MsgRenderType {
@@ -119,6 +122,10 @@ export class App extends Component {
     source: "SOURCE IS IN HERE",
   };
 
+  private headlineInput: RefObject<HTMLInputElement> = createRef();
+  private subheadInput: RefObject<HTMLInputElement> = createRef();
+  private sourceInput: RefObject<HTMLInputElement> = createRef();
+
   componentDidMount() {
     window.addEventListener("message", (e) => this.handleEvents(e.data.pluginMessage));
 
@@ -127,7 +134,7 @@ export class App extends Component {
   }
 
   updateInitialState = (data: MsgFramesType) => {
-    let { frames, windowHeight, windowWidth } = data;
+    let { frames, windowHeight, windowWidth, headline, subhead, source } = data;
 
     if (!Array.isArray(frames) || frames?.length < 1) {
       this.setState({ error: "No frames!" });
@@ -147,6 +154,9 @@ export class App extends Component {
       ready: true,
       windowWidth,
       windowHeight,
+      headline,
+      subhead,
+      source,
     });
   };
 
@@ -355,6 +365,23 @@ export class App extends Component {
     this.setState({ frames: newFrames });
   };
 
+  handleFormUpdate = () => {
+    const headline = this.headlineInput.current?.value;
+    const subhead = this.subheadInput.current?.value;
+    const source = this.sourceInput.current?.value;
+
+    this.setState(
+      {
+        headline,
+        subhead,
+        source,
+      },
+      () => {
+        console.log("send to backend");
+      }
+    );
+  };
+
   render() {
     const {
       error,
@@ -402,13 +429,50 @@ export class App extends Component {
           {error && <div class="error">{error}</div>}
 
           {ready && stage === STAGES.CHOOSE_FRAMES && (
-            <FrameSelection
-              frames={framesArr}
-              handleClick={this.handleFrameSelectionChange}
-              toggleResonsive={this.toggleResonsive}
-              toggleSelectAll={this.toggleSelectAll}
-              toggleResponsiveAll={this.toggleResponsiveAll}
-            />
+            <div class="f2h__choose_frames">
+              <div class="f2h__info_form">
+                <p class="f2h__info_form__item f2h__info_form__item--headline">
+                  <label class="f2h__info_form__label">Headline</label>
+                  <input
+                    class="f2h__info_form__input f2h__info_form__input--headline"
+                    type="text"
+                    value={headline}
+                    ref={this.headlineInput}
+                    onChange={this.handleFormUpdate}
+                  />
+                </p>
+
+                <p class="f2h__info_form__item f2h__info_form__item--headline">
+                  <label class="f2h__info_form__label">Subhead</label>
+                  <input
+                    class="f2h__info_form__input f2h__info_form__input--headline"
+                    type="text"
+                    value={subhead}
+                    ref={this.subheadInput}
+                    onChange={this.handleFormUpdate}
+                  />
+                </p>
+
+                <p class="f2h__info_form__item f2h__info_form__item--headline">
+                  <label class="f2h__info_form__label">Source</label>
+                  <input
+                    class="f2h__info_form__input f2h__info_form__input--headline"
+                    type="text"
+                    value={source}
+                    ref={this.sourceInput}
+                    onChange={this.handleFormUpdate}
+                  />
+                </p>
+              </div>
+
+              <FrameSelection
+                frames={framesArr}
+                handleClick={this.handleFrameSelectionChange}
+                toggleResonsive={this.toggleResonsive}
+                toggleSelectAll={this.toggleSelectAll}
+                toggleResponsiveAll={this.toggleResponsiveAll}
+              />
+            </div>
           )}
 
           {ready && selectedFrame && stage === STAGES.PREVIEW_OUTPUT && (
