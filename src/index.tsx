@@ -183,15 +183,66 @@ function getHeadlinesAndSource(pageNode: PageNode) {
   return result;
 }
 
+enum HEADLINE_NODES {
+  HEADLINE = "headline",
+  SUBHEAD = "subhead",
+  SOURCE = "source",
+}
+interface setHeadlinesAndSourceProps {
+  pageNode: PageNode;
+  headline: string | undefined;
+  subhead: string | undefined;
+  source: string | undefined;
+}
+async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
+  const { pageNode } = props;
+
+  const mostLeftPos = Math.min(...pageNode.children.map((node) => node.x));
+  const mostTopPos = Math.min(...pageNode.children.map((node) => node.y));
+
+  Object.values(HEADLINE_NODES).forEach(async (name, i) => {
+    let node = pageNode.findChild((node) => node.name === name && node.type === "TEXT") as TextNode | null;
+    const textContent = props[name];
+
+    // Remove node if there's no text content
+    if (!textContent) {
+      if (node) node.remove();
+      return;
+    }
+
+    // Create node if it doesn't exist
+    if (!node) {
+      node = figma.createText();
+      node.name = name;
+      node.x = mostLeftPos;
+      node.y = mostTopPos - 20 * (i + 1) - 30;
+    }
+
+    // Ensure text node is locked
+    node.locked = true;
+
+    // Load font
+    const fontName = node.fontName !== figma.mixed ? node.fontName.family : "Roboto";
+    const fontStyle = node.fontName !== figma.mixed ? node.fontName.style : "Regular";
+    await figma.loadFontAsync({ family: fontName, style: fontStyle });
+
+    // Set text node content
+    node.characters = props[name] || "";
+  });
+}
+
 export interface PostMsg {
   type: MSG_EVENTS;
   frameId: string;
   width: number;
   height: number;
+  headline: string | undefined;
+  subhead: string | undefined;
+  source: string | undefined;
 }
 // Handle messages from the UI
 function handleReceivedMsg(msg: PostMsg) {
-  const { type, width, height, frameId } = msg;
+  const { type, width, height, frameId, headline, subhead, source } = msg;
 
   switch (type) {
     case MSG_EVENTS.ERROR:
@@ -216,6 +267,16 @@ function handleReceivedMsg(msg: PostMsg) {
     case MSG_EVENTS.RESIZE:
       console.log("plugin msg: resize");
       figma.ui.resize(width, height);
+      break;
+
+    case MSG_EVENTS.UPDATE_HEADLINES:
+      console.log("UpdatingHeadlines", headline, subhead, source);
+      setHeadlinesAndSource({
+        pageNode: figma.currentPage,
+        headline,
+        subhead,
+        source,
+      });
       break;
 
     default:

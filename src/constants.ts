@@ -13,6 +13,7 @@ export enum MSG_EVENTS {
   RENDER,
   CLOSE,
   ERROR,
+  UPDATE_HEADLINES,
 }
 
 export enum OUTPUT_FORMATS {

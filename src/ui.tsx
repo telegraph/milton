@@ -377,7 +377,7 @@ export class App extends Component {
         source,
       },
       () => {
-        console.log("send to backend");
+        parent.postMessage({ pluginMessage: { type: MSG_EVENTS.UPDATE_HEADLINES, headline, subhead, source } }, "*");
       }
     );
   };
