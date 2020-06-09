@@ -60,7 +60,11 @@ async function handleRender(frameId: string) {
       throw new Error("Missing frame");
     }
 
-    const svg = await frame.exportAsync({
+    const clone = frame.clone();
+    const cloneTextNodes = clone.findChildren((node) => node.type === "TEXT");
+    cloneTextNodes.forEach((node) => node.remove());
+
+    const svg = await clone.exportAsync({
       format: "SVG",
       svgOutlineText: false,
       svgSimplifyStroke: true,
