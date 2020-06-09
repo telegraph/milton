@@ -1,4 +1,4 @@
-import { h, Component, render, Fragment, createRef, RefObject } from "preact";
+import { h, Component, render } from "preact";
 
 import { MSG_EVENTS, STAGES, UI_TEXT, INITIAL_UI_SIZE } from "./constants";
 import { Header } from "./components/Header";
@@ -121,10 +121,6 @@ export class App extends Component {
     subhead: "SUBHEAD IS HERE",
     source: "SOURCE IS IN HERE",
   };
-
-  private headlineInput: RefObject<HTMLInputElement> = createRef();
-  private subheadInput: RefObject<HTMLInputElement> = createRef();
-  private sourceInput: RefObject<HTMLInputElement> = createRef();
 
   componentDidMount() {
     window.addEventListener("message", (e) => this.handleEvents(e.data.pluginMessage));
@@ -365,11 +361,7 @@ export class App extends Component {
     this.setState({ frames: newFrames });
   };
 
-  handleFormUpdate = () => {
-    const headline = this.headlineInput.current?.value;
-    const subhead = this.subheadInput.current?.value;
-    const source = this.sourceInput.current?.value;
-
+  handleFormUpdate = (headline: string | undefined, subhead: string | undefined, source: string | undefined) => {
     this.setState(
       {
         headline,
@@ -429,50 +421,17 @@ export class App extends Component {
           {error && <div class="error">{error}</div>}
 
           {ready && stage === STAGES.CHOOSE_FRAMES && (
-            <div class="f2h__choose_frames">
-              <div class="f2h__info_form">
-                <p class="f2h__info_form__item f2h__info_form__item--headline">
-                  <label class="f2h__info_form__label">Headline</label>
-                  <input
-                    class="f2h__info_form__input f2h__info_form__input--headline"
-                    type="text"
-                    value={headline}
-                    ref={this.headlineInput}
-                    onChange={this.handleFormUpdate}
-                  />
-                </p>
-
-                <p class="f2h__info_form__item f2h__info_form__item--headline">
-                  <label class="f2h__info_form__label">Subhead</label>
-                  <input
-                    class="f2h__info_form__input f2h__info_form__input--headline"
-                    type="text"
-                    value={subhead}
-                    ref={this.subheadInput}
-                    onChange={this.handleFormUpdate}
-                  />
-                </p>
-
-                <p class="f2h__info_form__item f2h__info_form__item--headline">
-                  <label class="f2h__info_form__label">Source</label>
-                  <input
-                    class="f2h__info_form__input f2h__info_form__input--headline"
-                    type="text"
-                    value={source}
-                    ref={this.sourceInput}
-                    onChange={this.handleFormUpdate}
-                  />
-                </p>
-              </div>
-
-              <FrameSelection
-                frames={framesArr}
-                handleClick={this.handleFrameSelectionChange}
-                toggleResonsive={this.toggleResonsive}
-                toggleSelectAll={this.toggleSelectAll}
-                toggleResponsiveAll={this.toggleResponsiveAll}
-              />
-            </div>
+            <FrameSelection
+              frames={framesArr}
+              handleClick={this.handleFrameSelectionChange}
+              toggleResonsive={this.toggleResonsive}
+              toggleSelectAll={this.toggleSelectAll}
+              toggleResponsiveAll={this.toggleResponsiveAll}
+              headline={headline}
+              subhead={subhead}
+              source={source}
+              handleFormUpdate={this.handleFormUpdate}
+            />
           )}
 
           {ready && selectedFrame && stage === STAGES.PREVIEW_OUTPUT && (
