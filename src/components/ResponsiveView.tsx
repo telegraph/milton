@@ -13,8 +13,9 @@ type ResponsiveViewProps = {
 export function ResponsiveView(props: ResponsiveViewProps) {
   const { frames, headline, subhead, source } = props;
 
-  const width = frames.reduce((p, { width }) => (width > p ? width : p), 0);
-  const height = frames.reduce((p, { height }) => (height > p ? height : p), 0);
+  const maxFramesWidth = frames.reduce((p, { width }) => (width > p ? width : p), 0);
+  const minFrameHeight = frames.reduce((p, { height }) => (height > p ? height : p), 0);
+  const height = minFrameHeight + (headline || subhead || source ? 100 : 0);
 
   const rawHtml = renderInline({ frames, iframe: OUTPUT_FORMATS.IFRAME, headline, subhead, source });
 
@@ -23,14 +24,8 @@ export function ResponsiveView(props: ResponsiveViewProps) {
       <p>Use the window below to test how the frames behave when resizing.</p>
 
       <div class="f2h__responsive__wrapper">
-        {/* <div class="f2h__ruler">
-          <div class="f2h__ruler_break f2h__ruler_break--0"></div>
-          <div class="f2h__ruler_break f2h__ruler_break--1"></div>
-          <div class="f2h__ruler_break f2h__ruler_break--2"></div>
-        </div> */}
-
         <iframe
-          // style={`height: ${height}px; width: ${width}px;`}
+          style={`height: ${height}px; width: ${maxFramesWidth}px;`}
           class="f2h__responsive__sandbox"
           srcDoc={rawHtml}
         ></iframe>
