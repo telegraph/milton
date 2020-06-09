@@ -196,9 +196,9 @@ interface setHeadlinesAndSourceProps {
 }
 async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
   const { pageNode } = props;
-
-  const mostLeftPos = Math.min(...pageNode.children.map((node) => node.x));
-  const mostTopPos = Math.min(...pageNode.children.map((node) => node.y));
+  const frames = pageNode.findChildren((node) => node.type === "FRAME");
+  const mostLeftPos = Math.min(...frames.map((node) => node.x));
+  const mostTopPos = Math.min(...frames.map((node) => node.y));
 
   Object.values(HEADLINE_NODES).forEach(async (name, i) => {
     let node = pageNode.findChild((node) => node.name === name && node.type === "TEXT") as TextNode | null;
@@ -214,8 +214,21 @@ async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
     if (!node) {
       node = figma.createText();
       node.name = name;
-      node.x = mostLeftPos;
-      node.y = mostTopPos - 20 * (i + 1) - 30;
+      let y = mostTopPos - 60;
+      switch (name) {
+        case HEADLINE_NODES.HEADLINE:
+          y -= 60;
+          break;
+
+        case HEADLINE_NODES.SUBHEAD:
+          y -= 30;
+          break;
+      }
+
+      node.relativeTransform = [
+        [1, 0, mostLeftPos],
+        [0, 1, y],
+      ];
     }
 
     // Ensure text node is locked
