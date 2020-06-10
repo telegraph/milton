@@ -1,23 +1,38 @@
 import { h } from "preact";
 import { renderInline } from "../outputRender";
 import { OUTPUT_FORMATS } from "../constants";
-import type { FrameDataType } from "../ui";
+import type { FrameDataType, AppState } from "../ui";
 
-type ResponsiveViewProps = {
+interface ResponsiveViewProps
+  extends Pick<
+    AppState,
+    "source" | "headline" | "subhead" | "windowWidth" | "windowHeight"
+  > {
   frames: FrameDataType[];
-  headline?: string | undefined;
-  subhead?: string | undefined;
-  source?: string | undefined;
-};
+}
 
 export function ResponsiveView(props: ResponsiveViewProps) {
-  const { frames, headline, subhead, source } = props;
+  const {
+    frames,
+    headline,
+    subhead,
+    source,
+    windowHeight,
+    windowWidth,
+  } = props;
 
-  const maxFramesWidth = frames.reduce((p, { width }) => (width > p ? width : p), 0);
-  const minFrameHeight = frames.reduce((p, { height }) => (height > p ? height : p), 0);
-  const height = minFrameHeight + (headline || subhead || source ? 100 : 0);
+  const maxWidth = Math.max(...frames.map((f) => f.width));
+  const maxHeight = Math.max(...frames.map((f) => f.height));
+  const minWidth = Math.min(windowWidth - 100, maxWidth);
+  const minHeight = Math.min(windowHeight - 160, maxHeight);
 
-  const rawHtml = renderInline({ frames, iframe: OUTPUT_FORMATS.IFRAME, headline, subhead, source });
+  const rawHtml = renderInline({
+    frames,
+    iframe: OUTPUT_FORMATS.IFRAME,
+    headline,
+    subhead,
+    source,
+  });
 
   return (
     <div class="f2h__responsive_preview">
@@ -25,7 +40,7 @@ export function ResponsiveView(props: ResponsiveViewProps) {
 
       <div class="f2h__responsive__wrapper">
         <iframe
-          style={`height: ${height}px; width: ${maxFramesWidth}px;`}
+          style={`height: ${minHeight}px; width: ${minWidth}px;`}
           class="f2h__responsive__sandbox"
           srcDoc={rawHtml}
         ></iframe>

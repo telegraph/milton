@@ -1,5 +1,7 @@
 import { h, Component, render } from "preact";
 
+import Compressor from "compressorjs";
+
 import { MSG_EVENTS, STAGES, UI_TEXT, INITIAL_UI_SIZE } from "./constants";
 import { Header } from "./components/Header";
 import { FrameSelection } from "./components/FrameSelection";
@@ -56,7 +58,12 @@ export type FrameDataType = {
   svg?: string;
 };
 
-type MsgEventType = MsgFramesType | MsgRenderType | MsgNoFramesType | MsgErrorType;
+type MsgEventType =
+  | MsgFramesType
+  | MsgRenderType
+  | MsgNoFramesType
+  | MsgErrorType
+  | MsgCompressImageType;
 
 export interface MsgFramesType {
   type: MSG_EVENTS.FOUND_FRAMES;
@@ -83,6 +90,21 @@ export interface MsgErrorType {
   errorText: string;
 }
 
+export interface MsgCompressImageType {
+  type: MSG_EVENTS.COMPRESS_IMAGE;
+  image: Uint8Array;
+  width: number;
+  height: number;
+  quality: number;
+  uid: string;
+}
+
+export interface MsgCompressedImageType {
+  type: MSG_EVENTS.COMPRESSED_IMAGE;
+  image: Uint8Array;
+  uid: string;
+}
+
 export interface FrameCollection {
   [id: string]: FrameDataType;
 }
@@ -102,6 +124,7 @@ export type AppState = {
   headline: string | undefined;
   subhead: string | undefined;
   source: string | undefined;
+  loading: boolean;
 };
 
 export class App extends Component {
@@ -120,10 +143,13 @@ export class App extends Component {
     headline: undefined,
     subhead: undefined,
     source: undefined,
+    loading: false,
   };
 
   componentDidMount() {
-    window.addEventListener("message", (e) => this.handleEvents(e.data.pluginMessage));
+    window.addEventListener("message", (e) =>
+      this.handleEvents(e.data.pluginMessage)
+    );
 
     // Send backend message that UI is ready
     parent.postMessage({ pluginMessage: { type: MSG_EVENTS.DOM_READY } }, "*");
@@ -156,16 +182,67 @@ export class App extends Component {
     });
   };
 
+  compressImage = (msg: MsgCompressImageType) => {
+    const { image, width, height, uid } = msg;
+
+    // Create image from blob to access native image sizes the resize and
+    // compress
+    const blob = new Blob([image], { type: "image/png" });
+    const imgUrl = URL.createObjectURL(blob);
+    const img = new Image();
+    img.src = imgUrl;
+    img.addEventListener("load", () => {
+      let targetWidth = 0;
+      let targetHeight = 0;
+
+      // Don't scale image up if node is larger than image
+      if (width > img.width || height > img.height) {
+        targetWidth = img.width;
+        targetHeight = img.height;
+      } else {
+        // Scale to largest dimension
+        const aspectRatio = img.width / img.height;
+        targetWidth = aspectRatio >= 1 ? height * aspectRatio : width;
+        targetHeight = aspectRatio >= 1 ? height : width / aspectRatio;
+      }
+
+      new Compressor(blob, {
+        width: targetWidth,
+        height: targetHeight,
+        quality: 0.7,
+        convertSize: 100000,
+        success: async (newImage) => {
+          const buf = await newImage.arrayBuffer();
+          const data = new Uint8Array(buf);
+          parent.postMessage(
+            {
+              pluginMessage: {
+                type: MSG_EVENTS.COMPRESSED_IMAGE,
+                image: data,
+                uid: uid,
+              },
+            },
+            "*"
+          );
+        },
+      });
+    });
+
+    img.addEventListener("error", (err) => {
+      this.setState({ error: "Failed to compress image" });
+      console.error(err);
+    });
+  };
+
   handleRenderMessage = (data: MsgRenderType) => {
     const { frameId, svg } = data;
     if (!frameId || !svg) {
-      this.setState({ error: "Failed to render" });
+      this.setState({ error: "Failed to render", loading: false });
       console.error("Post message: failed to render", data);
       return;
     }
 
     const targetFrame = this.state.frames[frameId];
-
     const svgStr = decodeSvgToString(svg);
 
     this.setState({
@@ -173,10 +250,12 @@ export class App extends Component {
         ...this.state.frames,
         [frameId]: { ...targetFrame, svg: svgStr },
       },
+      loading: false,
     });
   };
 
   handleEvents = (data: MsgEventType) => {
+    console.log("UI post", data);
     switch (data.type) {
       case MSG_EVENTS.FOUND_FRAMES:
         this.updateInitialState(data);
@@ -187,6 +266,7 @@ export class App extends Component {
         break;
 
       case MSG_EVENTS.ERROR:
+        console.error("UI post message error", data);
         this.setState({
           error: `${UI_TEXT.ERROR_UNEXPECTED}: ${data.errorText}`,
         });
@@ -194,6 +274,10 @@ export class App extends Component {
 
       case MSG_EVENTS.RENDER:
         this.handleRenderMessage(data);
+        break;
+
+      case MSG_EVENTS.COMPRESS_IMAGE:
+        this.compressImage(data);
         break;
 
       default:
@@ -220,63 +304,62 @@ export class App extends Component {
 
   goNext = () => {
     const { stage, previewIndex, frames } = this.state;
-    const selectedCount = Object.values(frames).filter((f) => f.selected);
+    const { length } = Object.values(frames).filter((f) => f.selected);
 
-    if (selectedCount.length < 1) {
+    if (length === 0) {
       return;
     }
 
-    if (stage === STAGES.CHOOSE_FRAMES) {
-      this.setState({ stage: STAGES.PREVIEW_OUTPUT });
-      return;
-    }
+    switch (stage) {
+      case STAGES.CHOOSE_FRAMES:
+        return this.setState({ stage: STAGES.PREVIEW_OUTPUT });
 
-    if (stage === STAGES.PREVIEW_OUTPUT && previewIndex < selectedCount.length - 1) {
-      this.setState({ previewIndex: previewIndex + 1 });
-      return;
-    }
+      case STAGES.PREVIEW_OUTPUT:
+        const nextIndex = previewIndex + 1;
+        if (length === nextIndex) {
+          return this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
+        } else {
+          return this.setState({ previewIndex: nextIndex });
+        }
 
-    if (stage === STAGES.PREVIEW_OUTPUT && previewIndex === selectedCount.length - 1) {
-      this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
-      return;
-    }
+      case STAGES.RESPONSIVE_PREVIEW:
+        return this.setState({ stage: STAGES.SAVE_OUTPUT });
 
-    if (stage === STAGES.RESPONSIVE_PREVIEW) {
-      this.setState({ stage: STAGES.SAVE_OUTPUT });
-      return;
+      case STAGES.SAVE_OUTPUT:
+        return;
     }
   };
 
   goBack = () => {
     const { stage, previewIndex } = this.state;
 
-    if (stage === STAGES.CHOOSE_FRAMES) {
-      return;
-    }
+    switch (stage) {
+      case STAGES.CHOOSE_FRAMES:
+        return;
 
-    if (stage === STAGES.PREVIEW_OUTPUT && previewIndex > 0 && previewIndex) {
-      this.setState({ previewIndex: previewIndex - 1 });
-      return;
-    }
+      case STAGES.PREVIEW_OUTPUT:
+        if (previewIndex === 0) {
+          this.setState({ stage: STAGES.CHOOSE_FRAMES });
+        } else {
+          this.setState({ previewIndex: previewIndex - 1 });
+        }
+        return;
 
-    if (stage === STAGES.PREVIEW_OUTPUT && previewIndex === 0) {
-      this.setState({ stage: STAGES.CHOOSE_FRAMES });
-      return;
-    }
+      case STAGES.RESPONSIVE_PREVIEW:
+        return this.setState({ stage: STAGES.PREVIEW_OUTPUT });
 
-    if (stage === STAGES.RESPONSIVE_PREVIEW) {
-      this.setState({ stage: STAGES.PREVIEW_OUTPUT });
-      return;
-    }
-
-    if (stage === STAGES.SAVE_OUTPUT) {
-      this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
-      return;
+      case STAGES.SAVE_OUTPUT:
+        return this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
     }
   };
 
   getOutputRender = (frameId: String) => {
-    parent.postMessage({ pluginMessage: { type: MSG_EVENTS.RENDER, frameId } }, "*");
+    this.setState({ loading: true });
+
+    parent.postMessage(
+      { pluginMessage: { type: MSG_EVENTS.RENDER, frameId } },
+      "*"
+    );
   };
 
   startResizing = (event: MouseEvent) => {
@@ -290,7 +373,13 @@ export class App extends Component {
   };
 
   handleResize = (event: MouseEvent) => {
-    const { isResizing, mouseStartX, mouseStartY, windowWidth, windowHeight } = this.state;
+    const {
+      isResizing,
+      mouseStartX,
+      mouseStartY,
+      windowWidth,
+      windowHeight,
+    } = this.state;
 
     if (isResizing) {
       const { x, y } = event;
@@ -343,25 +432,37 @@ export class App extends Component {
 
   toggleSelectAll = () => {
     const { frames } = this.state;
-    const shouldDeselectAll = Object.values(frames).some((frame) => frame.selected);
+    const shouldDeselectAll = Object.values(frames).some(
+      (frame) => frame.selected
+    );
 
     const newFrames: FrameCollection = JSON.parse(JSON.stringify(frames));
-    Object.values(newFrames).forEach((frame) => (frame.selected = !shouldDeselectAll));
+    Object.values(newFrames).forEach(
+      (frame) => (frame.selected = !shouldDeselectAll)
+    );
 
     this.setState({ frames: newFrames });
   };
 
   toggleResponsiveAll = () => {
     const { frames } = this.state;
-    const shouldDeselectAll = Object.values(frames).some((frame) => frame.responsive);
+    const shouldDeselectAll = Object.values(frames).some(
+      (frame) => frame.responsive
+    );
 
     const newFrames: FrameCollection = JSON.parse(JSON.stringify(frames));
-    Object.values(newFrames).forEach((frame) => (frame.responsive = !shouldDeselectAll));
+    Object.values(newFrames).forEach(
+      (frame) => (frame.responsive = !shouldDeselectAll)
+    );
 
     this.setState({ frames: newFrames });
   };
 
-  handleFormUpdate = (headline: string | undefined, subhead: string | undefined, source: string | undefined) => {
+  handleFormUpdate = (
+    headline: string | undefined,
+    subhead: string | undefined,
+    source: string | undefined
+  ) => {
     this.setState(
       {
         headline,
@@ -369,20 +470,46 @@ export class App extends Component {
         source,
       },
       () => {
-        parent.postMessage({ pluginMessage: { type: MSG_EVENTS.UPDATE_HEADLINES, headline, subhead, source } }, "*");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: MSG_EVENTS.UPDATE_HEADLINES,
+              headline,
+              subhead,
+              source,
+            },
+          },
+          "*"
+        );
       }
     );
   };
 
   switchView = () => {
-    const { frames, stage, previewIndex, windowHeight, windowWidth, headline, subhead, source } = this.state;
+    const {
+      frames,
+      stage,
+      previewIndex,
+      windowHeight,
+      windowWidth,
+      headline,
+      subhead,
+      source,
+      loading,
+    } = this.state;
 
-    const framesArr = Object.values(frames).sort((a, b) => (a.width <= b.width ? -1 : 1));
+    const framesArr = Object.values(frames).sort((a, b) =>
+      a.width <= b.width ? -1 : 1
+    );
     let selectedFrames = framesArr.filter((frame) => frame.selected);
 
-    // If previewing frame without a render then request if from the backend
+    // If previewing frame without a render then request if from the backends
     // TODO: Move out of render
-    if (stage === STAGES.PREVIEW_OUTPUT && !selectedFrames[previewIndex].svg) {
+    if (
+      stage === STAGES.PREVIEW_OUTPUT &&
+      !selectedFrames[previewIndex].svg &&
+      loading === false
+    ) {
       this.getOutputRender(selectedFrames[previewIndex].id);
     }
 
@@ -404,13 +531,35 @@ export class App extends Component {
 
       case STAGES.PREVIEW_OUTPUT:
         const selectedFrame = selectedFrames[previewIndex];
-        return <Preview frame={selectedFrame} windowHeight={windowHeight} windowWidth={windowWidth} />;
+        return (
+          <Preview
+            frame={selectedFrame}
+            windowHeight={windowHeight}
+            windowWidth={windowWidth}
+          />
+        );
 
       case STAGES.RESPONSIVE_PREVIEW:
-        return <ResponsiveView frames={selectedFrames} headline={headline} subhead={subhead} source={source} />;
+        return (
+          <ResponsiveView
+            windowHeight={windowHeight}
+            windowWidth={windowWidth}
+            frames={selectedFrames}
+            headline={headline}
+            subhead={subhead}
+            source={source}
+          />
+        );
 
       case STAGES.SAVE_OUTPUT:
-        return <Save frames={selectedFrames} headline={headline} subhead={subhead} source={source} />;
+        return (
+          <Save
+            frames={selectedFrames}
+            headline={headline}
+            subhead={subhead}
+            source={source}
+          />
+        );
 
       default:
         return <div>Loading...</div>;
@@ -418,7 +567,7 @@ export class App extends Component {
   };
 
   render() {
-    const { error, frames, stage, previewIndex } = this.state;
+    const { error, frames, stage, previewIndex, loading } = this.state;
 
     return (
       <div class="f2h" onMouseLeave={this.stopResizing}>
@@ -426,11 +575,13 @@ export class App extends Component {
           stage={stage}
           handleBackClick={this.goBack}
           handleNextClick={this.goNext}
-          disableNext={stage === STAGES.SAVE_OUTPUT}
+          disableNext={loading || stage === STAGES.SAVE_OUTPUT}
           frame={Object.values(frames)[previewIndex]}
         />
 
-        <div class="f2h__body">{error ? <div class="error">{error}</div> : this.switchView()}</div>
+        <div class="f2h__body">
+          {error ? <div class="error">{error}</div> : this.switchView()}
+        </div>
       </div>
     );
   }

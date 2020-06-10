@@ -25,7 +25,10 @@ export class Preview extends Component<PreviewProps, PreviewState> {
     this.setState({ nativeSize: scale >= 1 });
   }
 
-  componentDidUpdate(_previousProps: PreviewProps, previousState: PreviewState) {
+  componentDidUpdate(
+    _previousProps: PreviewProps,
+    previousState: PreviewState
+  ) {
     const { nativeSize } = previousState;
     const { scale } = this.getScale();
     const isNativeSize = scale >= 1;
@@ -84,7 +87,9 @@ export class Preview extends Component<PreviewProps, PreviewState> {
 
     const { nativeSize } = this.state;
     const { scale, scaledHeight, scaledWidth } = this.getScale();
-    const previewWrapperStyles = !nativeSize ? `width: ${scaledWidth}; height: ${scaledHeight};` : "";
+    const previewWrapperStyles = !nativeSize
+      ? `width: ${scaledWidth}; height: ${scaledHeight};`
+      : "";
     let scaleWarning;
 
     if (scale < 1) {
@@ -92,7 +97,12 @@ export class Preview extends Component<PreviewProps, PreviewState> {
         <p class="f2h__scale_warning f2h__notice--warning">
           <span>Zoomed {nativeSize ? "100" : Math.round(scale * 100)}% - </span>
           <label>
-            native size <input type="checkbox" checked={nativeSize} onClick={this.toggleZoomed} />
+            native size{" "}
+            <input
+              type="checkbox"
+              checked={nativeSize}
+              onClick={this.toggleZoomed}
+            />
           </label>
         </p>
       );
@@ -102,7 +112,8 @@ export class Preview extends Component<PreviewProps, PreviewState> {
       <div class="f2h__preview">
         {isFileLarge && (
           <p class="f2h__size_warning f2h__notice--warning">
-            File size is very large, consider using smaller images and simplier shapes
+            File size is very large, consider using smaller images and simplier
+            shapes
           </p>
         )}
 
@@ -111,7 +122,9 @@ export class Preview extends Component<PreviewProps, PreviewState> {
         {svg ? (
           <div
             ref={this.innerEl}
-            class={`f2h__preview_inner ${!nativeSize ? "f2h__preview_inner--scaled" : ""}`}
+            class={`f2h__preview_inner ${
+              !nativeSize ? "f2h__preview_inner--scaled" : ""
+            }`}
             style={previewWrapperStyles}
           >
             <FrameContainer {...frame} scale={!nativeSize && scale} />

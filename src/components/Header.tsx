@@ -9,14 +9,22 @@ function FrameInfo(props: { frame: FrameDataType | false }) {
   const renderCharCount = svg?.length || 0;
   const fileKbSize = Math.ceil(renderCharCount / 1000);
   const isFileLarge = fileKbSize > FRAME_WARNING_SIZE;
+  let fileSizeClassName = "f2h__file_size";
+  if (isFileLarge) {
+    fileSizeClassName += " f2h__file_size f2h__notice--error";
+  }
+
+  let responsiveClassName = "f2h__info_responsive";
+  if (responsive === false) {
+    responsiveClassName += " f2h__info_responsive--no";
+  }
 
   return (
     <p class="f2h__info">
       <span class="f2h__info_title">"{name}"</span>{" "}
       <span class="f2h__info_meta">
-        {width} x {height},{" "}
-        <span class={`f2h__info_responsive ${responsive ? "" : "f2h__info_responsive--no"}`}>responsive</span>,{" "}
-        <span class={isFileLarge ? "f2h__file_size f2h__notice--error" : "f2h__file_size"}>{fileKbSize}kB</span>
+        {width} x {height}, <span class={responsiveClassName}>responsive</span>,{" "}
+        <span class={fileSizeClassName}>{fileKbSize}kB</span>
       </span>
     </p>
   );
@@ -76,7 +84,11 @@ export function Header(props: HeaderProps) {
         )}
 
         {nextText && (
-          <button class="f2h__btn btn--primary" onClick={handleNextClick} disabled={disableNext}>
+          <button
+            class="f2h__btn btn--primary"
+            onClick={handleNextClick}
+            disabled={disableNext}
+          >
             {nextText}
           </button>
         )}

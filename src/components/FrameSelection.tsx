@@ -1,17 +1,39 @@
 import { h, Fragment, Component, createRef, RefObject } from "preact";
-import type { App, FrameDataType } from "../ui";
+import type { App, FrameDataType, AppState } from "../ui";
 
-type FrameSelectionProps = {
+interface InputFieldProps {
+  refTarget: RefObject<HTMLInputElement>;
+  label: string;
+  value: string | undefined;
+  handleChange: () => void;
+}
+function InputField(props: InputFieldProps) {
+  const { label, value, refTarget, handleChange } = props;
+
+  return (
+    <p class="f2h__info_form__item f2h__info_form__item--headline">
+      <label class="f2h__info_form__label">{label}</label>
+      <input
+        class="f2h__info_form__input f2h__info_form__input--headline"
+        type="text"
+        spellcheck={true}
+        value={value}
+        ref={refTarget}
+        onChange={handleChange}
+      />
+    </p>
+  );
+}
+
+interface FrameSelectionProps
+  extends Pick<AppState, "source" | "headline" | "subhead"> {
   frames: FrameDataType[];
   handleClick: App["handleFrameSelectionChange"];
   toggleResonsive: App["toggleResonsive"];
   toggleSelectAll: App["toggleSelectAll"];
   toggleResponsiveAll: App["toggleResponsiveAll"];
-  headline: string | undefined;
-  subhead: string | undefined;
-  source: string | undefined;
   handleFormUpdate: App["handleFormUpdate"];
-};
+}
 
 export class FrameSelection extends Component<FrameSelectionProps> {
   private headlineInput: RefObject<HTMLInputElement> = createRef();
@@ -39,52 +61,38 @@ export class FrameSelection extends Component<FrameSelectionProps> {
       source,
     } = this.props;
 
-    const selectedCount = frames.filter((frame) => frame.selected).length;
-    const someFramesSelected = selectedCount > 0 && selectedCount < frames.length;
-    const allSelected = selectedCount === frames.length;
+    const selectCount = frames.filter((frame) => frame.selected).length;
+    const someFramesSelected = selectCount > 0 && selectCount < frames.length;
+    const allSelected = selectCount === frames.length;
 
-    const responsiveCount = frames.filter((frame) => frame.responsive).length;
-    const someResponsiveSelected = responsiveCount > 0 && responsiveCount < frames.length;
-    const allResponsiveSelected = responsiveCount === frames.length;
+    const responseCount = frames.filter((frame) => frame.responsive).length;
+    const someResponsiveSelected =
+      responseCount > 0 && responseCount < frames.length;
+    const allResponsiveSelected = responseCount === frames.length;
 
     return (
       <div class="f2h__choose_frames">
         <div class="f2h__info_form">
-          <p class="f2h__info_form__item f2h__info_form__item--headline">
-            <label class="f2h__info_form__label">Headline</label>
-            <input
-              class="f2h__info_form__input f2h__info_form__input--headline"
-              type="text"
-              spellcheck={true}
-              value={headline}
-              ref={this.headlineInput}
-              onChange={this.sendFormValues}
-            />
-          </p>
+          <InputField
+            refTarget={this.headlineInput}
+            handleChange={this.sendFormValues}
+            label="Headline"
+            value={headline}
+          />
 
-          <p class="f2h__info_form__item f2h__info_form__item--headline">
-            <label class="f2h__info_form__label">Subhead</label>
-            <input
-              class="f2h__info_form__input f2h__info_form__input--headline"
-              type="text"
-              spellcheck={true}
-              value={subhead}
-              ref={this.subheadInput}
-              onChange={this.sendFormValues}
-            />
-          </p>
+          <InputField
+            refTarget={this.subheadInput}
+            handleChange={this.sendFormValues}
+            label="Subhead"
+            value={subhead}
+          />
 
-          <p class="f2h__info_form__item f2h__info_form__item--headline">
-            <label class="f2h__info_form__label">Source</label>
-            <input
-              class="f2h__info_form__input f2h__info_form__input--headline"
-              type="text"
-              spellcheck={true}
-              value={source}
-              ref={this.sourceInput}
-              onChange={this.sendFormValues}
-            />
-          </p>
+          <InputField
+            refTarget={this.sourceInput}
+            handleChange={this.sendFormValues}
+            label="Source"
+            value={source}
+          />
         </div>
 
         <div class="f2h__frame_selection">

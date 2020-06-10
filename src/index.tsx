@@ -1,5 +1,11 @@
 import { MSG_EVENTS } from "./constants";
-import { MsgFramesType, MsgNoFramesType, MsgRenderType, MsgErrorType } from "./ui";
+import {
+  MsgFramesType,
+  MsgNoFramesType,
+  MsgRenderType,
+  MsgErrorType,
+  MsgCompressedImageType,
+} from "./ui";
 
 // Listen for messages from the UI
 // NOTE: Listen for DOM_READY message to kick-off main function
@@ -16,9 +22,26 @@ const initialWindowWidth = Math.round(width * zoom);
 const initialWindowHeight = Math.round(height * zoom);
 figma.ui.resize(initialWindowWidth, initialWindowHeight);
 
+const compressionPool: {
+  uid: string;
+  callback: (img: Uint8Array) => void;
+}[] = [];
+
+function handleCompressedMsg(msg: MsgCompressedImageType) {
+  const { uid, image } = msg;
+
+  const poolItemIndex = compressionPool.findIndex((item) => item.uid === uid);
+  if (poolItemIndex > -1) {
+    compressionPool[poolItemIndex].callback(image);
+    compressionPool.splice(poolItemIndex, 1);
+  }
+}
+
 function getRootFrames() {
   const { currentPage } = figma;
-  const rootFrames = currentPage.children.filter((node) => node.type === "FRAME") as FrameNode[];
+  const rootFrames = currentPage.children.filter(
+    (node) => node.type === "FRAME"
+  ) as FrameNode[];
 
   // Return error if there's no frames on the current page
   if (rootFrames.length < 1) {
@@ -53,17 +76,77 @@ function getRootFrames() {
   } as MsgFramesType);
 }
 
+function compressImage(node: DefaultShapeMixin): Promise<void> {
+  return new Promise(async (resolve, _reject) => {
+    const newFills: any[] = [];
+
+    await Promise.all(
+      [...node.fills].map(async (paint) => {
+        if (paint.type === "IMAGE" && paint.imageHash) {
+          const image = figma.getImageByHash(paint.imageHash);
+          const imageBytes = await image.getBytesAsync();
+          const uid = Math.random().toString(32);
+
+          // Send post message
+          figma.ui.postMessage({
+            type: MSG_EVENTS.COMPRESS_IMAGE,
+            image: imageBytes,
+            width: node.width,
+            height: node.height,
+            uid,
+          });
+
+          await new Promise((res) => {
+            compressionPool.push({
+              uid,
+
+              callback: (image: Uint8Array) => {
+                const newPaint = JSON.parse(JSON.stringify(paint));
+                newPaint.imageHash = figma.createImage(image).hash;
+                newFills.push(newPaint);
+                res();
+              },
+            });
+          });
+        }
+      })
+    );
+
+    node.fills = newFills;
+    resolve();
+  });
+}
+
 async function handleRender(frameId: string) {
+  let clone;
+
   try {
     const frame = figma.getNodeById(frameId);
     if (!frame || frame.type !== "FRAME") {
       throw new Error("Missing frame");
     }
 
-    const clone = frame.clone();
+    clone = frame.clone();
+    clone.name = `[temp] ${frame.name}`;
+
     const cloneTextNodes = clone.findChildren((node) => node.type === "TEXT");
     cloneTextNodes.forEach((node) => node.remove());
 
+    const nodesWithPaintImages = clone.findChildren(
+      // @ts-expect-error
+      (node) => node?.fills?.some((fill) => fill?.imageHash)
+    ) as DefaultShapeMixin[];
+
+    await Promise.all(nodesWithPaintImages.map(compressImage));
+
+    // Wait for Figma to process image hash otherwise the paint fill with have
+    // an incorrect transform scale
+    // TODO: Find better way
+    if (nodesWithPaintImages.length > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    console.log("RENDERING SVG");
     const svg = await clone.exportAsync({
       format: "SVG",
       svgOutlineText: false,
@@ -80,6 +163,9 @@ async function handleRender(frameId: string) {
       type: MSG_EVENTS.ERROR,
       errorText: `Render failed: ${err ?? err.message}`,
     } as MsgErrorType);
+  } finally {
+    // Removing clone
+    clone?.remove();
   }
 }
 
@@ -179,7 +265,9 @@ function getHeadlinesAndSource(pageNode: PageNode) {
 
   const result: { [id: string]: string | undefined } = {};
   for (const name of NODE_NAMES) {
-    const node = pageNode.findChild((node) => node.name === name && node.type === "TEXT") as TextNode | null;
+    const node = pageNode.findChild(
+      (node) => node.name === name && node.type === "TEXT"
+    ) as TextNode | null;
 
     result[name] = node?.characters;
   }
@@ -204,8 +292,10 @@ async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
   const mostLeftPos = Math.min(...frames.map((node) => node.x));
   const mostTopPos = Math.min(...frames.map((node) => node.y));
 
-  Object.values(HEADLINE_NODES).forEach(async (name, i) => {
-    let node = pageNode.findChild((node) => node.name === name && node.type === "TEXT") as TextNode | null;
+  Object.values(HEADLINE_NODES).forEach(async (name, _i) => {
+    let node = pageNode.findChild(
+      (node) => node.name === name && node.type === "TEXT"
+    ) as TextNode | null;
     const textContent = props[name];
 
     // Remove node if there's no text content
@@ -218,15 +308,12 @@ async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
     if (!node) {
       node = figma.createText();
       node.name = name;
-      let y = mostTopPos - 60;
-      switch (name) {
-        case HEADLINE_NODES.HEADLINE:
-          y -= 60;
-          break;
 
-        case HEADLINE_NODES.SUBHEAD:
-          y -= 30;
-          break;
+      let y = mostTopPos - 60;
+      if (name === HEADLINE_NODES.HEADLINE) {
+        y -= 60;
+      } else if (name === HEADLINE_NODES.SUBHEAD) {
+        y -= 30;
       }
 
       node.relativeTransform = [
@@ -239,8 +326,10 @@ async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
     node.locked = true;
 
     // Load font
-    const fontName = node.fontName !== figma.mixed ? node.fontName.family : "Roboto";
-    const fontStyle = node.fontName !== figma.mixed ? node.fontName.style : "Regular";
+    const fontName =
+      node.fontName !== figma.mixed ? node.fontName.family : "Roboto";
+    const fontStyle =
+      node.fontName !== figma.mixed ? node.fontName.style : "Regular";
     await figma.loadFontAsync({ family: fontName, style: fontStyle });
 
     // Set text node content
@@ -248,20 +337,47 @@ async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
   });
 }
 
-export interface PostMsg {
-  type: MSG_EVENTS;
+interface MsgCloseInterface {
+  type: MSG_EVENTS.CLOSE;
+}
+interface MsgDomReadyInterface {
+  type: MSG_EVENTS.DOM_READY;
+}
+
+interface MsgRenderInterface {
+  type: MSG_EVENTS.RENDER;
   frameId: string;
+}
+
+interface MsgErrorInterface {
+  type: MSG_EVENTS.ERROR;
+}
+
+interface MsgResizeInterface {
+  type: MSG_EVENTS.RESIZE;
   width: number;
   height: number;
+}
+
+interface MsgHeadlinesInterface {
+  type: MSG_EVENTS.UPDATE_HEADLINES;
   headline: string | undefined;
   subhead: string | undefined;
   source: string | undefined;
 }
+
+export type PostMsg =
+  | MsgCompressedImageType
+  | MsgErrorInterface
+  | MsgCloseInterface
+  | MsgDomReadyInterface
+  | MsgResizeInterface
+  | MsgRenderInterface
+  | MsgHeadlinesInterface;
+
 // Handle messages from the UI
 function handleReceivedMsg(msg: PostMsg) {
-  const { type, width, height, frameId, headline, subhead, source } = msg;
-
-  switch (type) {
+  switch (msg.type) {
     case MSG_EVENTS.ERROR:
       console.log("plugin msg: error");
       break;
@@ -277,23 +393,29 @@ function handleReceivedMsg(msg: PostMsg) {
       break;
 
     case MSG_EVENTS.RENDER:
+      const { frameId } = msg;
       console.log("plugin msg: render", frameId);
       handleRender(frameId);
       break;
 
     case MSG_EVENTS.RESIZE:
+      const { width, height } = msg;
       console.log("plugin msg: resize");
       figma.ui.resize(width, height);
       break;
 
     case MSG_EVENTS.UPDATE_HEADLINES:
-      console.log("UpdatingHeadlines", headline, subhead, source);
+      const { headline, subhead, source } = msg;
       setHeadlinesAndSource({
         pageNode: figma.currentPage,
         headline,
         subhead,
         source,
       });
+      break;
+
+    case MSG_EVENTS.COMPRESSED_IMAGE:
+      handleCompressedMsg(msg);
       break;
 
     default:

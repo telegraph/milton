@@ -2,19 +2,15 @@ import { h, Component, createRef } from "preact";
 import { saveAs } from "file-saver";
 import { OUTPUT_FORMATS } from "../constants";
 import { renderInline } from "../outputRender";
-import type { FrameDataType } from "../ui";
+import type { FrameDataType, AppState } from "../ui";
 
-type SaveProps = {
+interface SaveProps extends Pick<AppState, "source" | "headline" | "subhead"> {
   frames: FrameDataType[];
-  headline?: string | undefined;
-  subhead?: string | undefined;
-  source?: string | undefined;
-};
+}
 
 interface SaveState {
   advancedOpen: boolean;
   showToast: boolean;
-
   outputFormat: OUTPUT_FORMATS;
 }
 
@@ -25,9 +21,9 @@ export class Save extends Component<SaveProps, SaveState> {
     outputFormat: OUTPUT_FORMATS.INLINE,
   };
 
-  textAreaEl = createRef<HTMLTextAreaElement>();
+  private textAreaEl = createRef<HTMLTextAreaElement>();
 
-  toggleAdvancedDisplay = () => {
+  toggleAdvanced = () => {
     this.setState({
       advancedOpen: !this.state.advancedOpen,
     });
@@ -58,7 +54,10 @@ export class Save extends Component<SaveProps, SaveState> {
   };
 
   saveEmbedToClipboard = () => {
-    this.setState({ outputFormat: OUTPUT_FORMATS.INLINE }, this.saveToClipboard);
+    this.setState(
+      { outputFormat: OUTPUT_FORMATS.INLINE },
+      this.saveToClipboard
+    );
   };
 
   saveBinaryFile = () => {
@@ -66,7 +65,13 @@ export class Save extends Component<SaveProps, SaveState> {
     const outputFrames = Object.values(frames).filter((f) => f.selected);
 
     const filename = "figma-to-html-test.html";
-    const raw = renderInline({ frames: outputFrames, iframe: OUTPUT_FORMATS.IFRAME, headline, subhead, source });
+    const raw = renderInline({
+      frames: outputFrames,
+      iframe: OUTPUT_FORMATS.IFRAME,
+      headline,
+      subhead,
+      source,
+    });
     const blob = new Blob([raw], { type: "text/html" });
 
     saveAs(blob, filename);
@@ -81,7 +86,24 @@ export class Save extends Component<SaveProps, SaveState> {
   render() {
     const { frames, headline, subhead, source } = this.props;
     const { advancedOpen, showToast, outputFormat } = this.state;
-    const raw = renderInline({ frames, iframe: outputFormat, headline, subhead, source });
+    const rawHtml = renderInline({
+      frames,
+      iframe: outputFormat,
+      headline,
+      subhead,
+      source,
+    });
+
+    const advancedBtnText = `${advancedOpen ? "hide" : "show"}`;
+    let advancedClassName = "f2h__save_advanced";
+    if (advancedOpen) {
+      advancedClassName += "f2h__save_advanced--open";
+    }
+
+    let toastClassName = "f2h__toast";
+    if (showToast) {
+      toastClassName += "f2h__toast--open";
+    }
 
     return (
       <div class="f2h__save">
@@ -96,12 +118,12 @@ export class Save extends Component<SaveProps, SaveState> {
 
         <h2 class="f2h__save__subhead f2h__save_advanced-header">
           <span class="f2h__save_advanced_title">Advanced settings</span>
-          <button class="f2h__save_advanced_show" onClick={this.toggleAdvancedDisplay}>{`${
-            advancedOpen ? "hide" : "show"
-          }`}</button>
+          <button class="f2h__save_advanced_show" onClick={this.toggleAdvanced}>
+            {advancedBtnText}
+          </button>
         </h2>
 
-        <div class={`f2h__save_advanced ${advancedOpen ? "f2h__save_advanced--open" : ""}`}>
+        <div class={advancedClassName}>
           <h2 class="f2h__save__subhead">Format</h2>
 
           <label for="f2h__input_inline" class="f2h__label">
@@ -131,10 +153,14 @@ export class Save extends Component<SaveProps, SaveState> {
           </label>
 
           <h2 class="f2h__save__subhead">Raw HTML</h2>
-          <textarea ref={this.textAreaEl} class="f2h__save__raw" value={raw}></textarea>
+          <textarea
+            ref={this.textAreaEl}
+            class="f2h__save__raw"
+            value={rawHtml}
+          ></textarea>
         </div>
 
-        <div class={`f2h__toast ${showToast ? "f2h__toast--open" : ""}`}>Copied to clipboard</div>
+        <div class={toastClassName}>Copied to clipboard</div>
       </div>
     );
   }
