@@ -1,8 +1,12 @@
-import { h } from "preact";
+import { h, Component, createRef, RefObject } from "preact";
 import render from "preact-render-to-string";
 import type { textData } from ".";
 import type { FrameDataType } from "./ui";
 import { OUTPUT_FORMATS } from "./constants";
+
+import simplify from "simplify-js";
+import { toPath, toPoints } from "svg-points";
+import { node, frameShape, updateNode } from "wilderness-dom-node";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-expect-error
@@ -26,7 +30,11 @@ function generateIframeHtml(body: string) {
   `;
 }
 
-function generateStyleText(node: textData, frameWidth: number, frameHeight: number) {
+function generateStyleText(
+  node: textData,
+  frameWidth: number,
+  frameHeight: number
+) {
   const {
     x,
     y,
@@ -68,7 +76,10 @@ function generateStyleText(node: textData, frameWidth: number, frameHeight: numb
 
   // Regular, Medium, Roman, Semibold
 
-  const { unit: letterUnit, value: letterVal } = letterSpacing as { value: number; unit: "PIXELS" | "PERCENT" };
+  const { unit: letterUnit, value: letterVal } = letterSpacing as {
+    value: number;
+    unit: "PIXELS" | "PERCENT";
+  };
   let letterSpaceValue = "0";
   switch (letterUnit) {
     case "PIXELS":
@@ -103,7 +114,10 @@ function generateStyleText(node: textData, frameWidth: number, frameHeight: numb
       break;
   }
 
-  const { unit: lineUnit, value: lineVal } = lineHeight as { value: number; unit: "AUTO" | "PIXELS" | "PERCENT" };
+  const { unit: lineUnit, value: lineVal } = lineHeight as {
+    value: number;
+    unit: "AUTO" | "PIXELS" | "PERCENT";
+  };
   let lineHeightValue = "auto";
   switch (lineUnit) {
     case "PIXELS":
@@ -184,20 +198,106 @@ function Text(props: TextProps) {
 interface FrameContainerProps extends FrameDataType {
   scale?: number | false;
 }
-export function FrameContainer(props: FrameContainerProps) {
-  const { uid, width, height, textNodes, svg = "", responsive, scale } = props;
-  const textEls = textNodes.map((node) => <Text node={node} width={width} height={height} />);
-  const classNames = `f2h__render ${responsive ? "f2h__render--responsive" : ""}`;
+interface FrameContainerState {
+  optimize: boolean;
+}
+export class FrameContainer extends Component<
+  FrameContainerProps,
+  FrameContainerState
+> {
+  state: FrameContainerState = {
+    optimize: false,
+  };
 
-  let style = responsive ? "" : `width: ${width}px;`;
-  style = scale ? `${style} transform: scale(${scale});` : style;
+  private svgContainedEl: RefObject<HTMLDivElement> = createRef();
 
-  return (
-    <div class={classNames} style={style} id={uid}>
-      <div class="f2h__svg_container" dangerouslySetInnerHTML={{ __html: svg }} />
-      <div class="f2h__text_container">{textEls}</div>
-    </div>
-  );
+  componentDidUpdate = () => {
+    if (this.state.optimize) {
+      this.simplify();
+    }
+  };
+
+  toggleSimplify = () => {
+    this.setState({ optimize: !this.state.optimize });
+  };
+
+  simplify = () => {
+    console.log("simplifying");
+    const { current: el } = this.svgContainedEl;
+
+    if (!el) {
+      return console.error("Missing SVG DOM wrapper");
+    }
+
+    const svg = el.querySelector("svg");
+    if (!svg) {
+      return console.error("Missing SVG DOM element");
+    }
+
+    const SIMPLIFY_AMOUNT = 1;
+    const paths = Array.from(el.querySelectorAll("svg path"));
+
+    // Split paths into collections based on move to, then add them back after each simplify
+    paths.forEach((path) => {
+      const shape = frameShape(path);
+      const splitPoints = [];
+      for (const point of shape.points) {
+        point.moveTo
+          ? splitPoints.push([point])
+          : splitPoints[splitPoints.length - 1].push(point);
+      }
+
+      shape.points = splitPoints.flatMap((points: any[]) => [
+        points[0],
+        ...simplify(points.splice(1), SIMPLIFY_AMOUNT),
+      ]);
+
+      updateNode(path, shape);
+    });
+
+    const fileKbSize = Math.ceil(svg.outerHTML.length / 1000);
+    console.log(fileKbSize);
+  };
+
+  render() {
+    const { optimize } = this.state;
+
+    const {
+      uid,
+      width,
+      height,
+      textNodes,
+      svg = "",
+      responsive,
+      scale,
+    } = this.props;
+    const textEls = textNodes.map((node) => (
+      <Text node={node} width={width} height={height} />
+    ));
+    const classNames = `f2h__render ${
+      responsive ? "f2h__render--responsive" : ""
+    }`;
+
+    let style = responsive ? "" : `width: ${width}px;`;
+    style = scale ? `${style} transform: scale(${scale});` : style;
+
+    return (
+      <div class={classNames} style={style} id={uid}>
+        <input
+          type="checkbox"
+          checked={optimize}
+          onChange={this.toggleSimplify}
+          style="margin: 10px; display: block; position: absolute; z-index: 22;"
+        />
+        <div
+          ref={this.svgContainedEl}
+          class="f2h__svg_container"
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
+        <div class="f2h__text_container">{textEls}</div>
+      </div>
+    );
+  }
 }
 
 interface renderInlineProps {
@@ -251,7 +351,9 @@ export function renderInline(props: renderInlineProps) {
 }
 
 function genreateMediaQueries(frames: FrameDataType[]) {
-  const idWidths = frames.map(({ width, uid }) => [width, uid]).sort(([a], [b]) => (a < b ? -1 : 1));
+  const idWidths = frames
+    .map(({ width, uid }) => [width, uid])
+    .sort(([a], [b]) => (a < b ? -1 : 1));
 
   const mediaQueries = idWidths.map(([width, uid], i) => {
     if (i === 0) {
