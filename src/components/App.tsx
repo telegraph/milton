@@ -17,6 +17,7 @@ import type {
   MsgEventType,
   HeadlinesInterface,
 } from "types";
+import { crunchSvg } from "utils/crunchSvg";
 
 export class App extends Component {
   state: AppState = {
@@ -59,7 +60,7 @@ export class App extends Component {
     for (const frame of frames) {
       const { id } = frame;
       const rndId = Math.random().toString(32).substr(2);
-      frameData[id] = { ...frame, uid: `f2h-${rndId}`, svgOptimise: false };
+      frameData[id] = { ...frame, uid: `f2h-${rndId}`, svgOptimised: false };
     }
 
     this.setState({
@@ -76,7 +77,7 @@ export class App extends Component {
   compressImage = async (msg: MsgCompressImageType) => {
     try {
       const { image, width, height, uid } = msg;
-      const imgData = compressImage(image, width, height);
+      const imgData = await compressImage(image, width, height);
       sendMessage(MSG_EVENTS.COMPRESSED_IMAGE, { image: imgData, uid });
     } catch (err) {
       console.error(err);
@@ -189,7 +190,10 @@ export class App extends Component {
     sendMessage(MSG_EVENTS.RENDER, { frameId });
   };
 
-  toggleProp = (id: string, prop: "selected" | "responsive") => {
+  toggleProp = (
+    id: string,
+    prop: "selected" | "responsive" | "svgOptimised"
+  ) => {
     const { frames } = this.state;
     const cloneFrames = JSON.parse(JSON.stringify(frames)) as FrameCollection;
     cloneFrames[id][prop] = !cloneFrames[id][prop];
@@ -200,6 +204,30 @@ export class App extends Component {
   toggleFrameSelect = (id: string) => this.toggleProp(id, "selected");
 
   toggleResonsive = (id: string) => this.toggleProp(id, "responsive");
+
+  toggleOptimised = (id: string) => {
+    const { frames } = this.state;
+    const { svgCompressed, svg, svgOptimised } = frames[id];
+
+    if (svg && !svgOptimised && !svgCompressed) {
+      const el = document.createElement("div");
+      el.innerHTML = svg;
+      const svgEl = el.querySelector("svg");
+
+      if (!svgEl) {
+        console.error("Missing SVG in SVG string");
+        return;
+      }
+
+      crunchSvg(svgEl);
+      const cloneFrames = JSON.parse(JSON.stringify(frames)) as FrameCollection;
+      cloneFrames[id].svgCompressed = svgEl.outerHTML;
+      cloneFrames[id].svgOptimised = true;
+      this.setState({ frames: cloneFrames });
+    } else {
+      this.toggleProp(id, "svgOptimised");
+    }
+  };
 
   toggleAllProp = (propName: "selected" | "responsive") => {
     const { frames } = this.state;
@@ -307,6 +335,9 @@ export class App extends Component {
 
   render() {
     const { error, frames, stage, previewIndex, loading } = this.state;
+    // TODO: Don't rely on object prop order
+    const selectedFrame = Object.values(frames)[previewIndex];
+    console.log(this.state);
 
     return (
       <div class="f2h">
@@ -315,7 +346,8 @@ export class App extends Component {
           handleBackClick={this.goBack}
           handleNextClick={this.goNext}
           disableNext={loading || stage === STAGES.SAVE_OUTPUT}
-          frame={Object.values(frames)[previewIndex]}
+          frame={selectedFrame}
+          handleOptimseClick={this.toggleOptimised}
         />
 
         <div class="f2h__body">

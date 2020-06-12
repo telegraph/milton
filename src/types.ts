@@ -9,9 +9,9 @@ export type FrameDataType = {
   textNodes: textData[];
   responsive: boolean;
   selected: boolean;
-  svg?: string;
-  svgCompressed?: string;
-  svgOptimise: boolean;
+  svg: string | undefined;
+  svgCompressed: string | undefined;
+  svgOptimised: boolean;
 };
 
 export type MsgEventType =

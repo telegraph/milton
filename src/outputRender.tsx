@@ -1,7 +1,6 @@
-import { h, Component, createRef, RefObject } from "preact";
+import { h } from "preact";
 import render from "preact-render-to-string";
 import { OUTPUT_FORMATS } from "./constants";
-import { crunchSvg } from "./utils/crunchSvg";
 import type { textData, FrameDataType } from "types";
 
 // Import CSS file as plain text via esbuild loader option
@@ -178,79 +177,37 @@ function Text(props: TextProps) {
 interface FrameContainerProps extends FrameDataType {
   scale?: number | false;
 }
-interface FrameContainerState {
-  optimize: boolean;
-}
-export class FrameContainer extends Component<
-  FrameContainerProps,
-  FrameContainerState
-> {
-  state: FrameContainerState = {
-    optimize: false,
-  };
+export function FrameContainer(props: FrameContainerProps) {
+  const {
+    uid,
+    width,
+    height,
+    textNodes,
+    svg = "",
+    svgCompressed = "",
+    svgOptimised,
+    responsive,
+    scale,
+  } = props;
+  const textEls = textNodes.map((node) => (
+    <Text node={node} width={width} height={height} />
+  ));
+  const classNames = `f2h__render ${
+    responsive ? "f2h__render--responsive" : ""
+  }`;
 
-  private svgContainedEl: RefObject<HTMLDivElement> = createRef();
+  let style = responsive ? "" : `width: ${width}px;`;
+  style = scale ? `${style} transform: scale(${scale});` : style;
 
-  componentDidUpdate = () => {
-    if (this.state.optimize) {
-      this.simplify();
-    }
-  };
-
-  toggleSimplify = () => {
-    this.setState({ optimize: !this.state.optimize });
-  };
-
-  simplify = () => {
-    console.log("simplifying");
-    const svg = this.svgContainedEl?.current?.querySelector("svg");
-
-    if (svg) {
-      crunchSvg(svg);
-      const fileKbSize = Math.ceil(svg.outerHTML.length / 1000);
-      console.log(fileKbSize);
-    }
-  };
-
-  render() {
-    const { optimize } = this.state;
-
-    const {
-      uid,
-      width,
-      height,
-      textNodes,
-      svg = "",
-      responsive,
-      scale,
-    } = this.props;
-    const textEls = textNodes.map((node) => (
-      <Text node={node} width={width} height={height} />
-    ));
-    const classNames = `f2h__render ${
-      responsive ? "f2h__render--responsive" : ""
-    }`;
-
-    let style = responsive ? "" : `width: ${width}px;`;
-    style = scale ? `${style} transform: scale(${scale});` : style;
-
-    return (
-      <div class={classNames} style={style} id={uid}>
-        <input
-          type="checkbox"
-          checked={optimize}
-          onChange={this.toggleSimplify}
-          style="margin: 10px; display: block; position: absolute; z-index: 22;"
-        />
-        <div
-          ref={this.svgContainedEl}
-          class="f2h__svg_container"
-          dangerouslySetInnerHTML={{ __html: svg }}
-        />
-        <div class="f2h__text_container">{textEls}</div>
-      </div>
-    );
-  }
+  return (
+    <div class={classNames} style={style} id={uid}>
+      <div
+        class="f2h__svg_container"
+        dangerouslySetInnerHTML={{ __html: svgOptimised ? svgCompressed : svg }}
+      />
+      <div class="f2h__text_container">{textEls}</div>
+    </div>
+  );
 }
 
 interface renderInlineProps {

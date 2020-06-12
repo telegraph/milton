@@ -79,9 +79,10 @@ export class Preview extends Component<PreviewProps, PreviewState> {
 
   render() {
     const { frame } = this.props;
-    const { svg } = frame;
+    const { svg, svgOptimised, svgCompressed } = frame;
 
-    const renderCharCount = svg?.length || 0;
+    const renderCharCount =
+      (svgOptimised ? svgCompressed?.length : svg?.length) || 0;
     const fileKbSize = Math.ceil(renderCharCount / 1000);
     const isFileLarge = fileKbSize > FRAME_WARNING_SIZE;
 

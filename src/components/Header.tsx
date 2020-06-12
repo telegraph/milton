@@ -1,13 +1,23 @@
-import { h } from "preact";
+import { h, Fragment } from "preact";
 import { STAGES, UI_TEXT, FRAME_WARNING_SIZE } from "../constants";
 import type { FrameDataType } from "types";
 
 function FrameInfo(props: { frame: FrameDataType | false }) {
   if (!props.frame) return null;
 
-  const { name, width, height, svg, responsive } = props.frame;
-  const renderCharCount = svg?.length || 0;
-  const fileKbSize = Math.ceil(renderCharCount / 1000);
+  const {
+    name,
+    width,
+    height,
+    svg,
+    responsive,
+    svgCompressed,
+    svgOptimised,
+  } = props.frame;
+
+  const renderCharCount =
+    (svgOptimised ? svgCompressed?.length : svg?.length) || 0;
+  const fileKbSize = renderCharCount / 1000;
   const isFileLarge = fileKbSize > FRAME_WARNING_SIZE;
   let fileSizeClassName = "f2h__file_size";
   if (isFileLarge) {
@@ -24,7 +34,7 @@ function FrameInfo(props: { frame: FrameDataType | false }) {
       <span class="f2h__info_title">"{name}"</span>{" "}
       <span class="f2h__info_meta">
         {width} x {height}, <span class={responsiveClassName}>responsive</span>,{" "}
-        <span class={fileSizeClassName}>{fileKbSize}kB</span>
+        <span class={fileSizeClassName}>{fileKbSize.toPrecision(2)}kB</span>
       </span>
     </p>
   );
@@ -34,12 +44,20 @@ type HeaderProps = {
   stage: STAGES;
   handleNextClick: () => void;
   handleBackClick: () => void;
+  handleOptimseClick: (id: string) => void;
   disableNext: boolean;
   frame: FrameDataType;
 };
 
 export function Header(props: HeaderProps) {
-  const { stage, handleBackClick, handleNextClick, disableNext, frame } = props;
+  const {
+    stage,
+    handleBackClick,
+    handleNextClick,
+    disableNext,
+    frame,
+    handleOptimseClick,
+  } = props;
 
   let title;
   let nextText;
@@ -74,7 +92,21 @@ export function Header(props: HeaderProps) {
     <header class="f2h__header">
       <h1 class="f2h__title">{title}</h1>
 
-      {stage === STAGES.PREVIEW_OUTPUT && <FrameInfo frame={frame} />}
+      {stage === STAGES.PREVIEW_OUTPUT && (
+        <Fragment>
+          <FrameInfo frame={frame} />
+          <label class="f2h__svg_optimise">
+            <input
+              type="checkbox"
+              checked={frame.svgOptimised}
+              name="optimise"
+              id="optimise"
+              onClick={() => handleOptimseClick(frame.id)}
+            />
+            <span>Optimise SVG</span>
+          </label>
+        </Fragment>
+      )}
 
       <nav class="f2h__nav">
         {stage !== STAGES.CHOOSE_FRAMES && (

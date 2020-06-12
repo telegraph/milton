@@ -183,6 +183,14 @@ button:hover {
 .f2h__info_responsive--no {
   text-decoration: line-through;
 }
+.f2h__svg_optimise {
+  margin-left: var(--padding-medium, 0);
+  padding-left: var(--padding-small, 0);
+  border-left: 1px solid var(--colours-grey-4, #f0f);
+}
+.f2h__svg_optimise span {
+  padding-left: var(--padding-small, 0);
+}
 
 .f2h__body {
   display: flex;
@@ -445,7 +453,13 @@ button:hover {
   bottom: 6px;
   right: 6px;
   cursor: grabbing;
-  background: repeating-linear-gradient(-45deg, #d2d2d2, #d2d2d2 2px, transparent 1px, transparent 8px);
+  background: repeating-linear-gradient(
+    -45deg,
+    #d2d2d2,
+    #d2d2d2 2px,
+    transparent 1px,
+    transparent 8px
+  );
   border-radius: 100% 0 0;
 }
 

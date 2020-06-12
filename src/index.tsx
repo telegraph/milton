@@ -28,6 +28,7 @@ figma.ui.resize(initialWindowWidth, initialWindowHeight);
 const compressionPool: {
   uid: string;
   callback: (img: Uint8Array) => void;
+  timeout: number;
 }[] = [];
 
 function handleCompressedMsg(msg: MsgCompressedImageType) {
@@ -36,6 +37,7 @@ function handleCompressedMsg(msg: MsgCompressedImageType) {
   const poolItemIndex = compressionPool.findIndex((item) => item.uid === uid);
   if (poolItemIndex > -1) {
     compressionPool[poolItemIndex].callback(image);
+    clearTimeout(compressionPool[poolItemIndex].timeout);
     compressionPool.splice(poolItemIndex, 1);
   }
 }
@@ -101,6 +103,10 @@ function compressImage(node: DefaultShapeMixin): Promise<void> {
           });
 
           await new Promise((res) => {
+            const timeout = setTimeout(() => {
+              _reject("Compress image response timed out.");
+            }, 5000);
+
             compressionPool.push({
               uid,
 
@@ -110,6 +116,8 @@ function compressImage(node: DefaultShapeMixin): Promise<void> {
                 newFills.push(newPaint);
                 res();
               },
+
+              timeout,
             });
           });
         }
@@ -165,9 +173,10 @@ async function handleRender(frameId: string) {
   } catch (err) {
     figma.ui.postMessage({
       type: MSG_EVENTS.ERROR,
-      errorText: `Render failed: ${err ?? err.message}`,
+      errorText: `Render failed: ${err?.message}`,
     } as MsgErrorType);
   } finally {
+    console.warn("Inside render finallay");
     // Removing clone
     clone?.remove();
   }

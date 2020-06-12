@@ -37,9 +37,16 @@ export function compressImage(
           const data = new Uint8Array(buf);
           resolve(data);
         },
+        error: (err) => {
+          console.error("Image compression failed");
+          reject(err);
+        },
       });
     });
 
-    img.addEventListener("error", reject);
+    img.addEventListener("error", (err) => {
+      console.error("Error loading compressed image");
+      reject(err);
+    });
   });
 }
