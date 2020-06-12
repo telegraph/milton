@@ -48,3 +48,9 @@ export const INITIAL_UI_SIZE = {
 };
 
 export const FRAME_WARNING_SIZE = 300;
+
+export enum HEADLINE_NODE_NAMES {
+  HEADLINE = "headline",
+  SUBHEAD = "subhead",
+  SOURCE = "source",
+}

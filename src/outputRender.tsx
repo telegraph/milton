@@ -1,9 +1,8 @@
 import { h, Component, createRef, RefObject } from "preact";
 import render from "preact-render-to-string";
-import type { textData } from ".";
-import type { FrameDataType } from "./ui";
 import { OUTPUT_FORMATS } from "./constants";
 import { crunchSvg } from "./utils/crunchSvg";
+import type { textData, FrameDataType } from "types";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-expect-error
@@ -55,23 +54,7 @@ function generateStyleText(
   const { r, g, b, a } = colour;
   const colourVals = [r, g, b].map((val = 0) => Math.round(val * 255));
   const textColour = `rgba(${colourVals.join(",")}, ${a})`;
-
   let fontName = `${fontFamily} ${fontStyle}`;
-
-  // Font family
-  // Austin News Deck
-  // Austin News Text
-  // Telesans Text
-  // Austin News Deck
-  // Telesans Agate
-
-  // "Austin News Deck Semibold"
-  // "Austin News Deck Medium"
-  // "Austin News Text Roman"
-  // "Telesans Text Regular"
-  // "Telesans Agate"
-
-  // Regular, Medium, Roman, Semibold
 
   const { unit: letterUnit, value: letterVal } = letterSpacing as {
     value: number;

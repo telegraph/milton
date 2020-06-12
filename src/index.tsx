@@ -1,12 +1,14 @@
-import { MSG_EVENTS } from "./constants";
-
-import {
+import { MSG_EVENTS, HEADLINE_NODE_NAMES } from "./constants";
+import type {
   MsgFramesType,
   MsgNoFramesType,
   MsgRenderType,
   MsgErrorType,
   MsgCompressedImageType,
-} from "./ui";
+  textData,
+  PostMsg,
+  setHeadlinesAndSourceProps,
+} from "types";
 
 // Listen for messages from the UI
 // NOTE: Listen for DOM_READY message to kick-off main function
@@ -171,26 +173,6 @@ async function handleRender(frameId: string) {
   }
 }
 
-export type textNodeSelectedProps = Pick<
-  TextNode,
-  | "x"
-  | "y"
-  | "width"
-  | "height"
-  | "characters"
-  | "lineHeight"
-  | "letterSpacing"
-  | "textAlignHorizontal"
-  | "textAlignVertical"
->;
-
-export interface textData extends textNodeSelectedProps {
-  colour: { r: number; g: number; b: number; a: number };
-  fontSize: number;
-  fontFamily: string;
-  fontStyle: string;
-}
-
 // Extract object properties from textNode for passing via postMessage
 function getTextNodes(frame: FrameNode): textData[] {
   const textNodes = frame.findAll(({ type }) => type === "TEXT") as TextNode[];
@@ -277,24 +259,13 @@ function getHeadlinesAndSource(pageNode: PageNode) {
   return result;
 }
 
-enum HEADLINE_NODES {
-  HEADLINE = "headline",
-  SUBHEAD = "subhead",
-  SOURCE = "source",
-}
-interface setHeadlinesAndSourceProps {
-  pageNode: PageNode;
-  headline: string | undefined;
-  subhead: string | undefined;
-  source: string | undefined;
-}
 async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
   const { pageNode } = props;
   const frames = pageNode.findChildren((node) => node.type === "FRAME");
   const mostLeftPos = Math.min(...frames.map((node) => node.x));
   const mostTopPos = Math.min(...frames.map((node) => node.y));
 
-  Object.values(HEADLINE_NODES).forEach(async (name, _i) => {
+  Object.values(HEADLINE_NODE_NAMES).forEach(async (name, _i) => {
     let node = pageNode.findChild(
       (node) => node.name === name && node.type === "TEXT"
     ) as TextNode | null;
@@ -312,9 +283,9 @@ async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
       node.name = name;
 
       let y = mostTopPos - 60;
-      if (name === HEADLINE_NODES.HEADLINE) {
+      if (name === HEADLINE_NODE_NAMES.HEADLINE) {
         y -= 60;
-      } else if (name === HEADLINE_NODES.SUBHEAD) {
+      } else if (name === HEADLINE_NODE_NAMES.SUBHEAD) {
         y -= 30;
       }
 
@@ -338,44 +309,6 @@ async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
     node.characters = props[name] || "";
   });
 }
-
-interface MsgCloseInterface {
-  type: MSG_EVENTS.CLOSE;
-}
-interface MsgDomReadyInterface {
-  type: MSG_EVENTS.DOM_READY;
-}
-
-interface MsgRenderInterface {
-  type: MSG_EVENTS.RENDER;
-  frameId: string;
-}
-
-interface MsgErrorInterface {
-  type: MSG_EVENTS.ERROR;
-}
-
-interface MsgResizeInterface {
-  type: MSG_EVENTS.RESIZE;
-  width: number;
-  height: number;
-}
-
-interface MsgHeadlinesInterface {
-  type: MSG_EVENTS.UPDATE_HEADLINES;
-  headline: string | undefined;
-  subhead: string | undefined;
-  source: string | undefined;
-}
-
-export type PostMsg =
-  | MsgCompressedImageType
-  | MsgErrorInterface
-  | MsgCloseInterface
-  | MsgDomReadyInterface
-  | MsgResizeInterface
-  | MsgRenderInterface
-  | MsgHeadlinesInterface;
 
 // Handle messages from the UI
 function handleReceivedMsg(msg: PostMsg) {

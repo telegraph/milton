@@ -2,7 +2,7 @@ import { h, Component, createRef } from "preact";
 import { saveAs } from "file-saver";
 import { OUTPUT_FORMATS } from "../constants";
 import { renderInline } from "../outputRender";
-import type { FrameDataType, AppState } from "../ui";
+import type { FrameDataType, AppState } from "types";
 
 interface SaveProps extends Pick<AppState, "source" | "headline" | "subhead"> {
   frames: FrameDataType[];

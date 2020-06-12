@@ -1,5 +1,5 @@
 import { h, Fragment, Component, createRef, RefObject } from "preact";
-import type { App, FrameDataType, AppState } from "../ui";
+import type { FrameDataType, AppState, HeadlinesInterface } from "types";
 
 interface InputFieldProps {
   refTarget: RefObject<HTMLInputElement>;
@@ -28,11 +28,11 @@ function InputField(props: InputFieldProps) {
 interface FrameSelectionProps
   extends Pick<AppState, "source" | "headline" | "subhead"> {
   frames: FrameDataType[];
-  handleClick: App["handleFrameSelectionChange"];
-  toggleResonsive: App["toggleResonsive"];
-  toggleSelectAll: App["toggleSelectAll"];
-  toggleResponsiveAll: App["toggleResponsiveAll"];
-  handleFormUpdate: App["handleFormUpdate"];
+  handleClick: (id: string) => void;
+  toggleResonsive: (id: string) => void;
+  toggleSelectAll: () => void;
+  toggleResponsiveAll: () => void;
+  handleFormUpdate: (props: HeadlinesInterface) => void;
 }
 
 export class FrameSelection extends Component<FrameSelectionProps> {
@@ -46,7 +46,7 @@ export class FrameSelection extends Component<FrameSelectionProps> {
     const subhead = this.subheadInput.current?.value;
     const source = this.sourceInput.current?.value;
 
-    handleFormUpdate(headline, subhead, source);
+    handleFormUpdate({ headline, subhead, source });
   };
 
   render() {

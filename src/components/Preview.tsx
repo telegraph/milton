@@ -1,7 +1,7 @@
 import { h, Component, createRef } from "preact";
-import type { FrameDataType } from "../ui";
 import { FRAME_WARNING_SIZE } from "../constants";
 import { FrameContainer } from "../outputRender";
+import type { FrameDataType } from "types";
 
 type PreviewProps = {
   frame: FrameDataType;

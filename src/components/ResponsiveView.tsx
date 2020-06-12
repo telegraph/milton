@@ -1,7 +1,7 @@
 import { h } from "preact";
 import { renderInline } from "../outputRender";
 import { OUTPUT_FORMATS } from "../constants";
-import type { FrameDataType, AppState } from "../ui";
+import type { FrameDataType, AppState } from "types";
 
 interface ResponsiveViewProps
   extends Pick<

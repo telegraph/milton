@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { STAGES, UI_TEXT, FRAME_WARNING_SIZE } from "../constants";
-import type { App, FrameDataType } from "../ui";
+import type { FrameDataType } from "types";
 
 function FrameInfo(props: { frame: FrameDataType | false }) {
   if (!props.frame) return null;
@@ -32,8 +32,8 @@ function FrameInfo(props: { frame: FrameDataType | false }) {
 
 type HeaderProps = {
   stage: STAGES;
-  handleNextClick: App["goNext"];
-  handleBackClick: App["goBack"];
+  handleNextClick: () => void;
+  handleBackClick: () => void;
   disableNext: boolean;
   frame: FrameDataType;
 };
