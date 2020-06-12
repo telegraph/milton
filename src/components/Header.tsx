@@ -34,7 +34,7 @@ function FrameInfo(props: { frame: FrameDataType | false }) {
       <span class="f2h__info_title">"{name}"</span>{" "}
       <span class="f2h__info_meta">
         {width} x {height}, <span class={responsiveClassName}>responsive</span>,{" "}
-        <span class={fileSizeClassName}>{fileKbSize.toPrecision(2)}kB</span>
+        <span class={fileSizeClassName}>{fileKbSize.toFixed(2)}kB</span>
       </span>
     </p>
   );
