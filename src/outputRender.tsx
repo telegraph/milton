@@ -3,10 +3,7 @@ import render from "preact-render-to-string";
 import type { textData } from ".";
 import type { FrameDataType } from "./ui";
 import { OUTPUT_FORMATS } from "./constants";
-
-import simplify from "simplify-js";
-import { toPath, toPoints } from "svg-points";
-import { node, frameShape, updateNode } from "wilderness-dom-node";
+import { crunchSvg } from "./utils/crunchSvg";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-expect-error
@@ -223,40 +220,13 @@ export class FrameContainer extends Component<
 
   simplify = () => {
     console.log("simplifying");
-    const { current: el } = this.svgContainedEl;
+    const svg = this.svgContainedEl?.current?.querySelector("svg");
 
-    if (!el) {
-      return console.error("Missing SVG DOM wrapper");
+    if (svg) {
+      crunchSvg(svg);
+      const fileKbSize = Math.ceil(svg.outerHTML.length / 1000);
+      console.log(fileKbSize);
     }
-
-    const svg = el.querySelector("svg");
-    if (!svg) {
-      return console.error("Missing SVG DOM element");
-    }
-
-    const SIMPLIFY_AMOUNT = 1;
-    const paths = Array.from(el.querySelectorAll("svg path"));
-
-    // Split paths into collections based on move to, then add them back after each simplify
-    paths.forEach((path) => {
-      const shape = frameShape(path);
-      const splitPoints = [];
-      for (const point of shape.points) {
-        point.moveTo
-          ? splitPoints.push([point])
-          : splitPoints[splitPoints.length - 1].push(point);
-      }
-
-      shape.points = splitPoints.flatMap((points: any[]) => [
-        points[0],
-        ...simplify(points.splice(1), SIMPLIFY_AMOUNT),
-      ]);
-
-      updateNode(path, shape);
-    });
-
-    const fileKbSize = Math.ceil(svg.outerHTML.length / 1000);
-    console.log(fileKbSize);
   };
 
   render() {

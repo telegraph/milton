@@ -80,9 +80,10 @@ function getRootFrames() {
 function compressImage(node: DefaultShapeMixin): Promise<void> {
   return new Promise(async (resolve, _reject) => {
     const newFills: any[] = [];
+    const fills = node.fills === figma.mixed ? [] : [...node.fills];
 
     await Promise.all(
-      [...node.fills].map(async (paint) => {
+      fills.map(async (paint) => {
         if (paint.type === "IMAGE" && paint.imageHash) {
           const image = figma.getImageByHash(paint.imageHash);
           const imageBytes = await image.getBytesAsync();
@@ -221,7 +222,7 @@ function getTextNodes(frame: FrameNode): textData[] {
       const y = textY - rootY;
 
       // Extract basic fill colour
-      const [fill] = fills;
+      const [fill] = fills === figma.mixed ? [] : fills;
       let colour = { r: 0, g: 0, b: 0, a: 1 };
       if (fill.type === "SOLID") {
         colour = { ...colour, a: fill.opacity || 1 };
