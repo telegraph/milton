@@ -33,7 +33,7 @@ function FrameInfo(props: {
 
   return (
     <p className="f2h__info">
-      <span className="f2h__info_title">&quote;{name}&quote;</span>{" "}
+      <span className="f2h__info_title">{`"${name}"`}</span>{" "}
       <span className="f2h__info_meta">
         {width} x {height},{" "}
         <span className={responsiveClassName}>responsive</span>,{" "}
