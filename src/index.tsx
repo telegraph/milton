@@ -1,6 +1,5 @@
 import { MSG_EVENTS, HEADLINE_NODE_NAMES } from "./constants";
 import {
-  MsgFramesType,
   MsgNoFramesType,
   MsgRenderType,
   MsgErrorType,
@@ -72,13 +71,17 @@ function getRootFrames() {
     };
   });
 
-  figma.ui.postMessage({
-    type: MSG_EVENTS.FOUND_FRAMES,
-    frames: framesData,
-    windowWidth: initialWindowWidth,
-    windowHeight: initialWindowHeight,
-    ...headlinesAndSource,
-  } as MsgFramesType);
+  figma.ui.postMessage(
+    Object.assign(
+      {
+        type: MSG_EVENTS.FOUND_FRAMES,
+        frames: framesData,
+        windowWidth: initialWindowWidth,
+        windowHeight: initialWindowHeight,
+      },
+      headlinesAndSource
+    )
+  );
 }
 
 // TODO: Break out nested async logic
@@ -112,7 +115,7 @@ function compressImage(node: DefaultShapeMixin): Promise<void> {
               uid,
 
               callback: (image: Uint8Array) => {
-                const newPaint = JSON.parse(JSON.stringify(paint));
+                const newPaint = { ...paint };
                 newPaint.imageHash = figma.createImage(image).hash;
                 newFills.push(newPaint);
                 res();
@@ -123,10 +126,14 @@ function compressImage(node: DefaultShapeMixin): Promise<void> {
           });
         }
       })
-    ).then(() => {
-      node.fills = newFills;
-      resolve();
-    });
+    )
+      .then(() => {
+        node.fills = newFills;
+        resolve();
+      })
+      .catch((err) => {
+        console.error("compressing images", err);
+      });
   });
 }
 
@@ -175,13 +182,13 @@ async function handleRender(frameId: string) {
       svg,
     } as MsgRenderType);
   } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown render error";
     figma.ui.postMessage({
       type: MSG_EVENTS.ERROR,
-      errorText: `Render failed: ${err?.message}`,
+      errorText: `Render failed: ${msg}`,
     } as MsgErrorType);
+    console.error("Failed to render SVG", err);
   } finally {
-    console.warn("Inside render finallay");
-    // Removing clone
     clone?.remove();
   }
 }
@@ -272,21 +279,28 @@ function getHeadlinesAndSource(pageNode: PageNode) {
   return result;
 }
 
-async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
+function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
   const { pageNode } = props;
   const frames = pageNode.findChildren((node) => node.type === "FRAME");
   const mostLeftPos = Math.min(...frames.map((node) => node.x));
   const mostTopPos = Math.min(...frames.map((node) => node.y));
 
-  Object.values(HEADLINE_NODE_NAMES).forEach(async (name) => {
-    let node = pageNode.findChild(
-      (node) => node.name === name && node.type === "TEXT"
-    ) as TextNode | null;
+  // Object.values(HEADLINE_NODE_NAMES).forEach(async (name) => {
+
+  for (const name of Object.values(HEADLINE_NODE_NAMES)) {
+    let node =
+      (pageNode.findChild(
+        (node) => node.name === name && node.type === "TEXT"
+      ) as TextNode) || null;
     const textContent = props[name];
 
     // Remove node if there's no text content
+    if (node && !textContent) {
+      node.remove();
+      return;
+    }
+
     if (!textContent) {
-      if (node) node.remove();
       return;
     }
 
@@ -316,11 +330,16 @@ async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
       node.fontName !== figma.mixed ? node.fontName.family : "Roboto";
     const fontStyle =
       node.fontName !== figma.mixed ? node.fontName.style : "Regular";
-    await figma.loadFontAsync({ family: fontName, style: fontStyle });
-
-    // Set text node content
-    node.characters = props[name] || "";
-  });
+    figma
+      .loadFontAsync({ family: fontName, style: fontStyle })
+      .then(() => {
+        // Set text node content
+        node.characters = props[name] || "";
+      })
+      .catch((err) => {
+        console.error("Failed to load font", err);
+      });
+  }
 }
 
 // Handle messages from the UI
@@ -342,7 +361,9 @@ function handleReceivedMsg(msg: PostMsg) {
 
     case MSG_EVENTS.RENDER:
       console.log("plugin msg: render", msg.frameId);
-      handleRender(msg.frameId);
+      handleRender(msg.frameId).catch((err) =>
+        console.error("Failed to handle render", err)
+      );
       break;
 
     case MSG_EVENTS.RESIZE:

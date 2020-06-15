@@ -1,4 +1,5 @@
 import { h, Component } from "preact";
+import produce from "immer";
 import { MSG_EVENTS, STAGES, UI_TEXT, INITIAL_UI_SIZE } from "../constants";
 import { Header } from "./Header";
 import { ResponsiveView } from "./ResponsiveView";
@@ -17,6 +18,7 @@ import {
   MsgRenderType,
   MsgEventType,
   HeadlinesInterface,
+  UiPostMessageEvent,
 } from "types";
 import { crunchSvg } from "utils/crunchSvg";
 
@@ -41,7 +43,7 @@ export class App extends Component<AppPropsInterface, AppState> {
 
   componentDidMount(): void {
     // Listen for events from the backend
-    window.addEventListener("message", (e) =>
+    window.addEventListener("message", (e: UiPostMessageEvent) =>
       this.handleEvents(e.data.pluginMessage)
     );
 
@@ -68,6 +70,7 @@ export class App extends Component<AppPropsInterface, AppState> {
     for (const frame of frames) {
       const { id } = frame;
       const rndId = Math.random().toString(32).substr(2);
+
       frameData[id] = { ...frame, uid: `f2h-${rndId}`, svgOptimised: false };
     }
 
@@ -88,7 +91,7 @@ export class App extends Component<AppPropsInterface, AppState> {
       const imgData = await compressImage(image, width, height);
       sendMessage(MSG_EVENTS.COMPRESSED_IMAGE, { image: imgData, uid });
     } catch (err) {
-      console.error(err);
+      console.error("UI failed to compress image", err);
       this.setState({ error: "Failed to compress image" });
     }
   };
@@ -131,7 +134,13 @@ export class App extends Component<AppPropsInterface, AppState> {
         break;
 
       case MSG_EVENTS.COMPRESS_IMAGE:
-        this.compressImage(data);
+        this.compressImage(data).catch((err) => {
+          console.error("UI compress image event", err);
+          this.setState({
+            error:
+              err instanceof Error ? err.message : "Compress images failed",
+          });
+        });
         break;
 
       default:
@@ -244,12 +253,13 @@ export class App extends Component<AppPropsInterface, AppState> {
       (frame) => frame[propName]
     );
 
-    const newFrames: FrameCollection = JSON.parse(JSON.stringify(frames));
-    Object.values(newFrames).forEach(
-      (frame) => (frame[propName] = !shouldDeselectAll)
-    );
+    const draftState = produce(this.state, (draftState) => {
+      Object.values(draftState.frames).forEach(
+        (frame) => (frame[propName] = !shouldDeselectAll)
+      );
+    });
 
-    this.setState({ frames: newFrames });
+    this.setState(draftState);
   };
 
   toggleSelectAll = (): void => this.toggleAllProp("selected");

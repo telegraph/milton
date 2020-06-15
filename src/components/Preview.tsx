@@ -1,10 +1,10 @@
 import { h, Component, createRef } from "preact";
 import { FRAME_WARNING_SIZE } from "../constants";
 import { FrameContainer } from "../outputRender";
-import { FrameDataType } from "types";
+import { FrameDataInterface } from "types";
 
 type PreviewProps = {
-  frame: FrameDataType;
+  frame: FrameDataInterface;
   windowWidth: number;
   windowHeight: number;
 };

@@ -2,7 +2,7 @@
 import { h } from "preact";
 import render from "preact-render-to-string";
 import { OUTPUT_FORMATS } from "./constants";
-import { textData, FrameDataType } from "types";
+import { textData, FrameDataInterface } from "types";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-ignore
@@ -175,7 +175,7 @@ function Text(props: TextProps) {
   );
 }
 
-interface FrameContainerProps extends FrameDataType {
+interface FrameContainerProps extends FrameDataInterface {
   scale?: number | false;
 }
 export function FrameContainer(props: FrameContainerProps): h.JSX.Element {
@@ -212,7 +212,7 @@ export function FrameContainer(props: FrameContainerProps): h.JSX.Element {
 }
 
 interface renderInlineProps {
-  frames: FrameDataType[];
+  frames: FrameDataInterface[];
   iframe: OUTPUT_FORMATS;
   headline?: string | undefined;
   subhead?: string | undefined;
@@ -231,8 +231,8 @@ export function renderInline(props: renderInlineProps): string {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-       ${fontsCss}
-       ${embedCss}
+       ${fontsCss as string}
+       ${embedCss as string}
        ${mediaQuery}
       `,
         }}
@@ -263,7 +263,7 @@ export function renderInline(props: renderInlineProps): string {
   // return html.replace(/\n|\r|\s{2,}/g, "");
 }
 
-function genreateMediaQueries(frames: FrameDataType[]) {
+function genreateMediaQueries(frames: FrameDataInterface[]) {
   const idWidths = frames
     .map(({ width, uid }) => [width, uid])
     .sort(([a], [b]) => (a < b ? -1 : 1));

@@ -1,5 +1,5 @@
 import { h, Fragment, Component, createRef, RefObject } from "preact";
-import { FrameDataType, AppState, HeadlinesInterface } from "types";
+import { FrameDataInterface, AppState, HeadlinesInterface } from "types";
 
 interface InputFieldProps {
   refTarget: RefObject<HTMLInputElement>;
@@ -26,7 +26,7 @@ function InputField(props: InputFieldProps) {
 
 interface FrameSelectionProps
   extends Pick<AppState, "source" | "headline" | "subhead"> {
-  frames: FrameDataType[];
+  frames: FrameDataInterface[];
   handleClick: (id: string) => void;
   toggleResonsive: (id: string) => void;
   toggleSelectAll: () => void;

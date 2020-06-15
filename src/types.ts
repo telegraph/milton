@@ -1,6 +1,6 @@
 import { MSG_EVENTS, STAGES } from "./constants";
 
-export type FrameDataType = {
+export interface FrameDataInterface {
   name: string;
   width: number;
   height: number;
@@ -12,7 +12,7 @@ export type FrameDataType = {
   svg: string | undefined;
   svgCompressed: string | undefined;
   svgOptimised: boolean;
-};
+}
 
 export type MsgEventType =
   | MsgFramesType
@@ -23,7 +23,7 @@ export type MsgEventType =
 
 export interface MsgFramesType {
   type: MSG_EVENTS.FOUND_FRAMES;
-  frames: Omit<FrameDataType, "uid">[];
+  frames: Omit<FrameDataInterface, "uid">[];
   windowWidth: number;
   windowHeight: number;
   headline: string | undefined;
@@ -62,7 +62,7 @@ export interface MsgCompressedImageType {
 }
 
 export interface FrameCollection {
-  [id: string]: FrameDataType;
+  [id: string]: FrameDataInterface;
 }
 
 export interface AppPropsInterface {
@@ -70,21 +70,21 @@ export interface AppPropsInterface {
 }
 
 export interface AppState {
-  error: undefined | string;
-  ready: boolean;
-  frames: FrameCollection;
-  stage: STAGES;
-  previewIndex: number;
-  isResizing: boolean;
-  mouseStartX: number;
-  mouseStartY: number;
-  windowWidth: number;
-  windowHeight: number;
-  responsive: boolean;
-  headline: string | undefined;
-  subhead: string | undefined;
-  source: string | undefined;
-  loading: boolean;
+  readonly error: undefined | string;
+  readonly ready: boolean;
+  readonly frames: FrameCollection;
+  readonly stage: STAGES;
+  readonly previewIndex: number;
+  readonly isResizing: boolean;
+  readonly mouseStartX: number;
+  readonly mouseStartY: number;
+  readonly windowWidth: number;
+  readonly windowHeight: number;
+  readonly responsive: boolean;
+  readonly headline: string | undefined;
+  readonly subhead: string | undefined;
+  readonly source: string | undefined;
+  readonly loading: boolean;
 }
 
 type textNodeSelectedProps = Pick<
@@ -156,4 +156,10 @@ export interface HeadlinesInterface {
   headline: string | undefined;
   subhead: string | undefined;
   source: string | undefined;
+}
+
+export interface UiPostMessageEvent extends MessageEvent {
+  data: {
+    pluginMessage: MsgEventType;
+  };
 }

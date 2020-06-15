@@ -1,9 +1,9 @@
 import { h, Fragment } from "preact";
 import { STAGES, UI_TEXT, FRAME_WARNING_SIZE } from "../constants";
-import { FrameDataType } from "types";
+import { FrameDataInterface } from "types";
 
 function FrameInfo(props: {
-  frame: FrameDataType | false;
+  frame: FrameDataInterface | false;
 }): h.JSX.Element | null {
   if (!props.frame) return null;
 
@@ -49,7 +49,7 @@ type HeaderProps = {
   handleBackClick: () => void;
   handleOptimseClick: (id: string) => void;
   disableNext: boolean;
-  frame: FrameDataType;
+  frame: FrameDataInterface;
 };
 
 export function Header(props: HeaderProps): h.JSX.Element {

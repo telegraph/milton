@@ -1,14 +1,14 @@
 import { h } from "preact";
 import { renderInline } from "../outputRender";
 import { OUTPUT_FORMATS } from "../constants";
-import { FrameDataType, AppState } from "types";
+import { FrameDataInterface, AppState } from "types";
 
 interface ResponsiveViewProps
   extends Pick<
     AppState,
     "source" | "headline" | "subhead" | "windowWidth" | "windowHeight"
   > {
-  frames: FrameDataType[];
+  frames: FrameDataInterface[];
 }
 
 export function ResponsiveView(props: ResponsiveViewProps): h.JSX.Element {
