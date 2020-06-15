@@ -10,6 +10,7 @@ import { compressImage } from "../utils/compressImage";
 import { sendMessage } from "../utils/messages";
 import {
   AppState,
+  AppPropsInterface,
   MsgFramesType,
   FrameCollection,
   MsgCompressImageType,
@@ -19,7 +20,7 @@ import {
 } from "types";
 import { crunchSvg } from "utils/crunchSvg";
 
-export class App extends Component {
+export class App extends Component<AppPropsInterface, AppState> {
   state: AppState = {
     error: undefined,
     ready: false,
@@ -341,6 +342,7 @@ export class App extends Component {
   };
 
   render(): h.JSX.Element {
+    const { version } = this.props;
     const { error, frames, stage, previewIndex, loading } = this.state;
     // TODO: Don't rely on object prop order
     const selectedFrame = Object.values(frames)[previewIndex];
@@ -360,6 +362,7 @@ export class App extends Component {
         <div className="f2h__body">
           {error ? <div className="error">{error}</div> : this.switchView()}
         </div>
+        <p className="f2h__version">Version: {version}</p>
       </div>
     );
   }

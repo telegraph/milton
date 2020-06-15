@@ -65,7 +65,11 @@ export interface FrameCollection {
   [id: string]: FrameDataType;
 }
 
-export type AppState = {
+export interface AppPropsInterface {
+  version: string;
+}
+
+export interface AppState {
   error: undefined | string;
   ready: boolean;
   frames: FrameCollection;
@@ -81,7 +85,7 @@ export type AppState = {
   subhead: string | undefined;
   source: string | undefined;
   loading: boolean;
-};
+}
 
 type textNodeSelectedProps = Pick<
   TextNode,

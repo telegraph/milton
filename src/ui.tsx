@@ -3,6 +3,8 @@ import { h, render } from "preact";
 import { injectCss } from "./utils/css";
 import { App } from "./components/App";
 
+const VERSION = "alpha-0.1";
+
 // Import CSS files as plain text via esbuild loader option
 // @ts-expect-error
 import uiCss from "./ui.css";
@@ -16,4 +18,4 @@ injectCss(embedCss);
 injectCss(fontsCss);
 
 // Render app
-render(<App />, document.body);
+render(<App version={VERSION} />, document.body);

@@ -83,7 +83,7 @@ function getRootFrames() {
 
 // TODO: Break out nested async logic
 function compressImage(node: DefaultShapeMixin): Promise<void> {
-  const newFills: any[] = [];
+  const newFills: Paint[] = [];
   return new Promise((resolve, _reject) => {
     const fills = node.fills === figma.mixed ? [] : [...node.fills];
 
@@ -278,7 +278,7 @@ async function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
   const mostLeftPos = Math.min(...frames.map((node) => node.x));
   const mostTopPos = Math.min(...frames.map((node) => node.y));
 
-  Object.values(HEADLINE_NODE_NAMES).forEach(async (name, _i) => {
+  Object.values(HEADLINE_NODE_NAMES).forEach(async (name) => {
     let node = pageNode.findChild(
       (node) => node.name === name && node.type === "TEXT"
     ) as TextNode | null;

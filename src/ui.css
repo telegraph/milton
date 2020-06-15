@@ -201,6 +201,15 @@ button:hover {
   background-color: var(--colours-grey-5, #f0f);
 }
 
+.f2h__version {
+  position: absolute;
+  bottom: var(--padding-small, 0);
+  right: var(--padding-small, 0);
+  color: var(--colours-grey-3, #f0f);
+  font-size: var(--font-size--small, 1em);
+  font-family: var(--font-family-sans-serif, sans-serif);
+}
+
 /* [ Frame selection and Form ] */
 .f2h__choose_frames {
   min-width: 50%;

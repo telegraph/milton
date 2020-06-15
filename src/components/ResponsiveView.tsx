@@ -11,7 +11,7 @@ interface ResponsiveViewProps
   frames: FrameDataType[];
 }
 
-export function ResponsiveView(props: ResponsiveViewProps) {
+export function ResponsiveView(props: ResponsiveViewProps): h.JSX.Element {
   const {
     frames,
     headline,

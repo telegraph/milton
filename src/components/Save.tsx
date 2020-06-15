@@ -23,13 +23,13 @@ export class Save extends Component<SaveProps, SaveState> {
 
   private textAreaEl = createRef<HTMLTextAreaElement>();
 
-  toggleAdvanced = () => {
+  toggleAdvanced = (): void => {
     this.setState({
       advancedOpen: !this.state.advancedOpen,
     });
   };
 
-  saveToClipboard = () => {
+  saveToClipboard = (): void => {
     const { current: el } = this.textAreaEl;
 
     if (!el) {
@@ -53,14 +53,14 @@ export class Save extends Component<SaveProps, SaveState> {
     setTimeout(() => this.setState({ showToast: false }), 2000);
   };
 
-  saveEmbedToClipboard = () => {
+  saveEmbedToClipboard = (): void => {
     this.setState(
       { outputFormat: OUTPUT_FORMATS.INLINE },
       this.saveToClipboard
     );
   };
 
-  saveBinaryFile = () => {
+  saveBinaryFile = (): void => {
     const { frames, headline, subhead, source } = this.props;
     const outputFrames = Object.values(frames).filter((f) => f.selected);
 
@@ -77,13 +77,13 @@ export class Save extends Component<SaveProps, SaveState> {
     saveAs(blob, filename);
   };
 
-  handleFormatChange = (format: OUTPUT_FORMATS) => {
+  handleFormatChange = (format: OUTPUT_FORMATS): void => {
     this.setState({
       outputFormat: format,
     });
   };
 
-  render() {
+  render(): h.JSX.Element {
     const { frames, headline, subhead, source } = this.props;
     const { advancedOpen, showToast, outputFormat } = this.state;
     const rawHtml = renderInline({

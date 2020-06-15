@@ -13,6 +13,12 @@ type PreviewState = {
   nativeSize: boolean;
 };
 
+interface scaleInterface {
+  scale: number;
+  scaledHeight: number;
+  scaledWidth: number;
+}
+
 export class Preview extends Component<PreviewProps, PreviewState> {
   state: PreviewState = {
     nativeSize: true,
@@ -20,7 +26,7 @@ export class Preview extends Component<PreviewProps, PreviewState> {
 
   innerEl = createRef<HTMLDivElement>();
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { scale } = this.getScale();
     this.setState({ nativeSize: scale >= 1 });
   }
@@ -28,7 +34,7 @@ export class Preview extends Component<PreviewProps, PreviewState> {
   componentDidUpdate(
     _previousProps: PreviewProps,
     previousState: PreviewState
-  ) {
+  ): void {
     const { nativeSize } = previousState;
     const { scale } = this.getScale();
     const isNativeSize = scale >= 1;
@@ -38,7 +44,7 @@ export class Preview extends Component<PreviewProps, PreviewState> {
     }
   }
 
-  getScale = () => {
+  getScale = (): scaleInterface => {
     const { windowHeight, windowWidth, frame } = this.props;
     const { width, height } = frame;
 
@@ -64,7 +70,7 @@ export class Preview extends Component<PreviewProps, PreviewState> {
     };
   };
 
-  toggleZoomed = () => {
+  toggleZoomed = (): void => {
     // Reposition inner scroll to ensure transform offset matches top left
     const { current: el } = this.innerEl;
     if (el) {
@@ -77,7 +83,7 @@ export class Preview extends Component<PreviewProps, PreviewState> {
     this.setState({ nativeSize: !this.state.nativeSize });
   };
 
-  render() {
+  render(): h.JSX.Element {
     const { frame } = this.props;
     const { svg, svgOptimised, svgCompressed } = frame;
 
