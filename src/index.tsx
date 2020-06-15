@@ -71,17 +71,13 @@ function getRootFrames() {
     };
   });
 
-  figma.ui.postMessage(
-    Object.assign(
-      {
-        type: MSG_EVENTS.FOUND_FRAMES,
-        frames: framesData,
-        windowWidth: initialWindowWidth,
-        windowHeight: initialWindowHeight,
-      },
-      headlinesAndSource
-    )
-  );
+  figma.ui.postMessage({
+    type: MSG_EVENTS.FOUND_FRAMES,
+    frames: framesData,
+    windowWidth: initialWindowWidth,
+    windowHeight: initialWindowHeight,
+    ...headlinesAndSource,
+  });
 }
 
 // TODO: Break out nested async logic
