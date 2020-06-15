@@ -2,7 +2,7 @@ import { h, Component, createRef } from "preact";
 import { saveAs } from "file-saver";
 import { OUTPUT_FORMATS } from "../constants";
 import { renderInline } from "../outputRender";
-import type { FrameDataType, AppState } from "types";
+import { FrameDataType, AppState } from "types";
 
 interface SaveProps extends Pick<AppState, "source" | "headline" | "subhead"> {
   frames: FrameDataType[];
@@ -106,29 +106,32 @@ export class Save extends Component<SaveProps, SaveState> {
     }
 
     return (
-      <div class="f2h__save">
-        <div class="f2h__save_options">
-          <button class="f2h__save_btn" onClick={this.saveEmbedToClipboard}>
+      <div className="f2h__save">
+        <div className="f2h__save_options">
+          <button className="f2h__save_btn" onClick={this.saveEmbedToClipboard}>
             Copy embed to clipboard
           </button>
-          <button class="f2h__save_btn" onClick={this.saveBinaryFile}>
+          <button className="f2h__save_btn" onClick={this.saveBinaryFile}>
             Download iframe HTML file
           </button>
         </div>
 
-        <h2 class="f2h__save__subhead f2h__save_advanced-header">
-          <span class="f2h__save_advanced_title">Advanced settings</span>
-          <button class="f2h__save_advanced_show" onClick={this.toggleAdvanced}>
+        <h2 className="f2h__save__subhead f2h__save_advanced-header">
+          <span className="f2h__save_advanced_title">Advanced settings</span>
+          <button
+            className="f2h__save_advanced_show"
+            onClick={this.toggleAdvanced}
+          >
             {advancedBtnText}
           </button>
         </h2>
 
-        <div class={advancedClassName}>
-          <h2 class="f2h__save__subhead">Format</h2>
+        <div className={advancedClassName}>
+          <h2 className="f2h__save__subhead">Format</h2>
 
-          <label for="f2h__input_inline" class="f2h__label">
+          <label htmlFor="f2h__input_inline" className="f2h__label">
             <input
-              class="f2h__radio_btn"
+              className="f2h__radio_btn"
               type="radio"
               name="inline"
               id="f2h__input_inline"
@@ -139,9 +142,9 @@ export class Save extends Component<SaveProps, SaveState> {
             Inline (default)
           </label>
 
-          <label for="f2h__input_iframe" class="f2h__label">
+          <label htmlFor="f2h__input_iframe" className="f2h__label">
             <input
-              class="f2h__radio_btn"
+              className="f2h__radio_btn"
               type="radio"
               name="iframe"
               id="f2h__input_iframe"
@@ -152,15 +155,15 @@ export class Save extends Component<SaveProps, SaveState> {
             iFrame
           </label>
 
-          <h2 class="f2h__save__subhead">Raw HTML</h2>
+          <h2 className="f2h__save__subhead">Raw HTML</h2>
           <textarea
             ref={this.textAreaEl}
-            class="f2h__save__raw"
+            className="f2h__save__raw"
             value={rawHtml}
           ></textarea>
         </div>
 
-        <div class={toastClassName}>Copied to clipboard</div>
+        <div className={toastClassName}>Copied to clipboard</div>
       </div>
     );
   }

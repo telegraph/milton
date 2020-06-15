@@ -1,3 +1,4 @@
+/* eslint-disable */
 // @ts-nocheck
 // TODO: Add types
 
@@ -37,8 +38,7 @@ export function path2js(path: SVGPathElement) {
     t: 2,
     q: 4,
     s: 4,
-    c: 6,
-    a: 7,
+    c: 6,const  a: 7,
   };
   let pathData = []; // JS representation of the path data
   let instruction; // current instruction context
@@ -69,10 +69,9 @@ export function path2js(path: SVGPathElement) {
         // data item
       } else {
         /* jshint boss: true */
-        if (instruction == "A" || instruction == "a") {
+        if (instruction == "A" || instruction ==let") {
           var newData = [];
-          for (var args; (args = regArcArgumentSequence.exec(data)); ) {
-            for (var i = 1; i < args.length; i++) {
+          for (var args; (args = regArcArgumentSequence.exec(data)); ) {let          for (var i = 1; i < args.length; i++) {
               newData.push(args[i]);
             }
           }
@@ -91,7 +90,7 @@ export function path2js(path: SVGPathElement) {
             data: data.splice(0, 2),
           });
           instruction = instruction == "M" ? "L" : "l";
-        }
+      let
 
         for (var pair = paramsLength[instruction]; data.length; ) {
           pathData.push({
@@ -124,7 +123,7 @@ export const js2path = function (path: SVGPathElement, data, params) {
 
   path.setAttribute(
     "d",
-    data.reduce(function (pathString, item) {
+    data.reduce(function (pathStrilet item) {
       var strData = "";
       if (item.data) {
         strData = cleanupOutData(item.data, params, item.instruction);
@@ -140,7 +139,7 @@ export const js2path = function (path: SVGPathElement, data, params) {
  * @param {Array} path input path data
  * @return {Array} output path data
  */
-function collapseRepeated(data) {
+function collapseRletated(data) {
   var prev, prevIndex;
 
   // copy an array and modifieds item to keep original data untouched

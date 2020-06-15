@@ -1,7 +1,7 @@
 import { h, Component, createRef } from "preact";
 import { FRAME_WARNING_SIZE } from "../constants";
 import { FrameContainer } from "../outputRender";
-import type { FrameDataType } from "types";
+import { FrameDataType } from "types";
 
 type PreviewProps = {
   frame: FrameDataType;
@@ -95,7 +95,7 @@ export class Preview extends Component<PreviewProps, PreviewState> {
 
     if (scale < 1) {
       scaleWarning = (
-        <p class="f2h__scale_warning f2h__notice--warning">
+        <p className="f2h__scale_warning f2h__notice--warning">
           <span>Zoomed {nativeSize ? "100" : Math.round(scale * 100)}% - </span>
           <label>
             native size{" "}
@@ -110,9 +110,9 @@ export class Preview extends Component<PreviewProps, PreviewState> {
     }
 
     return (
-      <div class="f2h__preview">
+      <div className="f2h__preview">
         {isFileLarge && (
-          <p class="f2h__size_warning f2h__notice--warning">
+          <p className="f2h__size_warning f2h__notice--warning">
             File size is very large, consider using smaller images and simplier
             shapes
           </p>
@@ -123,7 +123,7 @@ export class Preview extends Component<PreviewProps, PreviewState> {
         {svg ? (
           <div
             ref={this.innerEl}
-            class={`f2h__preview_inner ${
+            className={`f2h__preview_inner ${
               !nativeSize ? "f2h__preview_inner--scaled" : ""
             }`}
             style={previewWrapperStyles}
@@ -131,7 +131,7 @@ export class Preview extends Component<PreviewProps, PreviewState> {
             <FrameContainer {...frame} scale={!nativeSize && scale} />
           </div>
         ) : (
-          <p class="f2h__preview_loading">Loading...</p>
+          <p className="f2h__preview_loading">Loading...</p>
         )}
       </div>
     );

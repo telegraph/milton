@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { h, render } from "preact";
 import { injectCss } from "./utils/css";
 import { App } from "./components/App";

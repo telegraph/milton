@@ -1,7 +1,7 @@
 import { h } from "preact";
 import { renderInline } from "../outputRender";
 import { OUTPUT_FORMATS } from "../constants";
-import type { FrameDataType, AppState } from "types";
+import { FrameDataType, AppState } from "types";
 
 interface ResponsiveViewProps
   extends Pick<
@@ -35,13 +35,13 @@ export function ResponsiveView(props: ResponsiveViewProps) {
   });
 
   return (
-    <div class="f2h__responsive_preview">
+    <div className="f2h__responsive_preview">
       <p>Use the window below to test how the frames behave when resizing.</p>
 
-      <div class="f2h__responsive__wrapper">
+      <div className="f2h__responsive__wrapper">
         <iframe
           style={`height: ${minHeight}px; width: ${minWidth}px;`}
-          class="f2h__responsive__sandbox"
+          className="f2h__responsive__sandbox"
           srcDoc={rawHtml}
         ></iframe>
       </div>

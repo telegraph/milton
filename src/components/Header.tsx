@@ -1,6 +1,6 @@
 import { h, Fragment } from "preact";
 import { STAGES, UI_TEXT, FRAME_WARNING_SIZE } from "../constants";
-import type { FrameDataType } from "types";
+import { FrameDataType } from "types";
 
 function FrameInfo(props: { frame: FrameDataType | false }) {
   if (!props.frame) return null;
@@ -30,11 +30,12 @@ function FrameInfo(props: { frame: FrameDataType | false }) {
   }
 
   return (
-    <p class="f2h__info">
-      <span class="f2h__info_title">"{name}"</span>{" "}
-      <span class="f2h__info_meta">
-        {width} x {height}, <span class={responsiveClassName}>responsive</span>,{" "}
-        <span class={fileSizeClassName}>{fileKbSize.toFixed(2)}kB</span>
+    <p className="f2h__info">
+      <span className="f2h__info_title">&quote;{name}&quote;</span>{" "}
+      <span className="f2h__info_meta">
+        {width} x {height},{" "}
+        <span className={responsiveClassName}>responsive</span>,{" "}
+        <span className={fileSizeClassName}>{fileKbSize.toFixed(2)}kB</span>
       </span>
     </p>
   );
@@ -89,13 +90,13 @@ export function Header(props: HeaderProps) {
   }
 
   return (
-    <header class="f2h__header">
-      <h1 class="f2h__title">{title}</h1>
+    <header className="f2h__header">
+      <h1 className="f2h__title">{title}</h1>
 
       {stage === STAGES.PREVIEW_OUTPUT && (
         <Fragment>
           <FrameInfo frame={frame} />
-          <label class="f2h__svg_optimise">
+          <label className="f2h__svg_optimise">
             <input
               type="checkbox"
               checked={frame.svgOptimised}
@@ -108,16 +109,16 @@ export function Header(props: HeaderProps) {
         </Fragment>
       )}
 
-      <nav class="f2h__nav">
+      <nav className="f2h__nav">
         {stage !== STAGES.CHOOSE_FRAMES && (
-          <button class="f2h__btn btn--secondary" onClick={handleBackClick}>
+          <button className="f2h__btn btn--secondary" onClick={handleBackClick}>
             {backText}
           </button>
         )}
 
         {nextText && (
           <button
-            class="f2h__btn btn--primary"
+            className="f2h__btn btn--primary"
             onClick={handleNextClick}
             disabled={disableNext}
           >

@@ -1,5 +1,5 @@
 import { MSG_EVENTS, HEADLINE_NODE_NAMES } from "./constants";
-import type {
+import {
   MsgFramesType,
   MsgNoFramesType,
   MsgRenderType,
@@ -144,10 +144,13 @@ async function handleRender(frameId: string) {
     const cloneTextNodes = clone.findChildren((node) => node.type === "TEXT");
     cloneTextNodes.forEach((node) => node.remove());
 
-    const nodesWithPaintImages = clone.findChildren(
-      // @ts-expect-error
-      (node) => node?.fills?.some((fill) => fill?.imageHash)
-    ) as DefaultShapeMixin[];
+    const nodesWithPaintImages = clone.findChildren((node) => {
+      if ("fills" in node && node.fills !== figma.mixed) {
+        return node.fills.some((fill) => "imageHash" in fill);
+      } else {
+        return false;
+      }
+    }) as DefaultShapeMixin[];
 
     await Promise.all(nodesWithPaintImages.map(compressImage));
 
@@ -337,24 +340,21 @@ function handleReceivedMsg(msg: PostMsg) {
       break;
 
     case MSG_EVENTS.RENDER:
-      const { frameId } = msg;
-      console.log("plugin msg: render", frameId);
-      handleRender(frameId);
+      console.log("plugin msg: render", msg.frameId);
+      handleRender(msg.frameId);
       break;
 
     case MSG_EVENTS.RESIZE:
-      const { width, height } = msg;
       console.log("plugin msg: resize");
-      figma.ui.resize(width, height);
+      figma.ui.resize(msg.width, msg.height);
       break;
 
     case MSG_EVENTS.UPDATE_HEADLINES:
-      const { headline, subhead, source } = msg;
       setHeadlinesAndSource({
         pageNode: figma.currentPage,
-        headline,
-        subhead,
-        source,
+        headline: msg.headline,
+        subhead: msg.subhead,
+        source: msg.source,
       });
       break;
 

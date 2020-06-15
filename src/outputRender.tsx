@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { h } from "preact";
 import render from "preact-render-to-string";
 import { OUTPUT_FORMATS } from "./constants";
-import type { textData, FrameDataType } from "types";
+import { textData, FrameDataType } from "types";
 
 // Import CSS file as plain text via esbuild loader option
-// @ts-expect-error
+// @ts-ignore
 import embedCss from "./embed.css";
 // @ts-expect-error
 import fontsCss from "./fonts.css";
@@ -53,7 +54,7 @@ function generateStyleText(
   const { r, g, b, a } = colour;
   const colourVals = [r, g, b].map((val = 0) => Math.round(val * 255));
   const textColour = `rgba(${colourVals.join(",")}, ${a})`;
-  let fontName = `${fontFamily} ${fontStyle}`;
+  const fontName = `${fontFamily} ${fontStyle}`;
 
   const { unit: letterUnit, value: letterVal } = letterSpacing as {
     value: number;
@@ -168,7 +169,7 @@ function Text(props: TextProps) {
   const styleText = generateStyleText(node, width, height);
 
   return (
-    <p class="f2h__text" style={styleText}>
+    <p className="f2h__text" style={styleText}>
       {characters}
     </p>
   );
@@ -177,7 +178,7 @@ function Text(props: TextProps) {
 interface FrameContainerProps extends FrameDataType {
   scale?: number | false;
 }
-export function FrameContainer(props: FrameContainerProps) {
+export function FrameContainer(props: FrameContainerProps): h.JSX.Element {
   const {
     uid,
     width,
@@ -190,7 +191,7 @@ export function FrameContainer(props: FrameContainerProps) {
     scale,
   } = props;
   const textEls = textNodes.map((node) => (
-    <Text node={node} width={width} height={height} />
+    <Text key={node.characters} node={node} width={width} height={height} />
   ));
   const classNames = `f2h__render ${
     responsive ? "f2h__render--responsive" : ""
@@ -200,12 +201,12 @@ export function FrameContainer(props: FrameContainerProps) {
   style = scale ? `${style} transform: scale(${scale});` : style;
 
   return (
-    <div class={classNames} style={style} id={uid}>
+    <div className={classNames} style={style} id={uid}>
       <div
-        class="f2h__svg_container"
+        className="f2h__svg_container"
         dangerouslySetInnerHTML={{ __html: svgOptimised ? svgCompressed : svg }}
       />
-      <div class="f2h__text_container">{textEls}</div>
+      <div className="f2h__text_container">{textEls}</div>
     </div>
   );
 }
@@ -217,14 +218,16 @@ interface renderInlineProps {
   subhead?: string | undefined;
   source?: string | undefined;
 }
-export function renderInline(props: renderInlineProps) {
+export function renderInline(props: renderInlineProps): string {
   const { frames, iframe, headline, subhead, source } = props;
   const mediaQuery = genreateMediaQueries(frames);
 
-  const renderedFrames = frames.map((frame) => <FrameContainer {...frame} />);
+  const renderedFrames = frames.map((frame) => (
+    <FrameContainer key={frame.uid} {...frame} />
+  ));
 
   let html = render(
-    <div class="f2h__embed">
+    <div className="f2h__embed">
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -236,9 +239,9 @@ export function renderInline(props: renderInlineProps) {
       ></style>
 
       {(headline || subhead) && (
-        <header class="f2h_header">
-          {headline && <h1 class="f2h_headline">{headline}</h1>}
-          {subhead && <p class="f2h_subbhead">subhead</p>}
+        <header className="f2h_header">
+          {headline && <h1 className="f2h_headline">{headline}</h1>}
+          {subhead && <p className="f2h_subbhead">subhead</p>}
         </header>
       )}
 
@@ -246,7 +249,7 @@ export function renderInline(props: renderInlineProps) {
 
       {source && (
         <footer>
-          <p class="f2h_source">{source}</p>
+          <p className="f2h_source">{source}</p>
         </footer>
       )}
     </div>

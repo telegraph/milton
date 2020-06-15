@@ -1,5 +1,5 @@
 import { h, Fragment, Component, createRef, RefObject } from "preact";
-import type { FrameDataType, AppState, HeadlinesInterface } from "types";
+import { FrameDataType, AppState, HeadlinesInterface } from "types";
 
 interface InputFieldProps {
   refTarget: RefObject<HTMLInputElement>;
@@ -11,12 +11,11 @@ function InputField(props: InputFieldProps) {
   const { label, value, refTarget, handleChange } = props;
 
   return (
-    <p class="f2h__info_form__item f2h__info_form__item--headline">
-      <label class="f2h__info_form__label">{label}</label>
+    <p className="f2h__info_form__item f2h__info_form__item--headline">
+      <label className="f2h__info_form__label">{label}</label>
       <input
-        class="f2h__info_form__input f2h__info_form__input--headline"
+        className="f2h__info_form__input f2h__info_form__input--headline"
         type="text"
-        spellcheck={true}
         value={value}
         ref={refTarget}
         onChange={handleChange}
@@ -40,7 +39,7 @@ export class FrameSelection extends Component<FrameSelectionProps> {
   private subheadInput: RefObject<HTMLInputElement> = createRef();
   private sourceInput: RefObject<HTMLInputElement> = createRef();
 
-  sendFormValues = () => {
+  sendFormValues = (): void => {
     const { handleFormUpdate } = this.props;
     const headline = this.headlineInput.current?.value;
     const subhead = this.subheadInput.current?.value;
@@ -49,7 +48,7 @@ export class FrameSelection extends Component<FrameSelectionProps> {
     handleFormUpdate({ headline, subhead, source });
   };
 
-  render() {
+  render(): h.JSX.Element {
     const {
       frames,
       handleClick,
@@ -71,8 +70,8 @@ export class FrameSelection extends Component<FrameSelectionProps> {
     const allResponsiveSelected = responseCount === frames.length;
 
     return (
-      <div class="f2h__choose_frames">
-        <div class="f2h__info_form">
+      <div className="f2h__choose_frames">
+        <div className="f2h__info_form">
           <InputField
             refTarget={this.headlineInput}
             handleChange={this.sendFormValues}
@@ -95,8 +94,8 @@ export class FrameSelection extends Component<FrameSelectionProps> {
           />
         </div>
 
-        <div class="f2h__frame_selection">
-          <label class="f2h__sel_header f2h__sel_header--name">
+        <div className="f2h__frame_selection">
+          <label className="f2h__sel_header f2h__sel_header--name">
             <input
               name="selectAll"
               id="selectAll"
@@ -107,7 +106,7 @@ export class FrameSelection extends Component<FrameSelectionProps> {
             />{" "}
             Frames
           </label>
-          <label class="f2h__sel_header f2h__sel_header--responsive">
+          <label className="f2h__sel_header f2h__sel_header--responsive">
             <input
               type="checkbox"
               id="responsiveAll"
@@ -120,26 +119,26 @@ export class FrameSelection extends Component<FrameSelectionProps> {
           </label>
 
           {frames.map(({ name, id, width, height, selected, responsive }) => (
-            <Fragment>
-              <p class="f2h__label f2h__label--name">
+            <Fragment key={id}>
+              <p className="f2h__label f2h__label--name">
                 <input
-                  class="f2h__checkbox"
+                  className="f2h__checkbox"
                   type="checkbox"
                   checked={selected}
                   onClick={() => handleClick(id)}
                   id={name}
                   name={name}
                 />
-                <label class="f2h__label--name-text" for={name}>
+                <label className="f2h__label--name-text" htmlFor={name}>
                   {name}
                 </label>
-                <span class="f2h__sel_width">
+                <span className="f2h__sel_width">
                   {width} x {height}
                 </span>
               </p>
 
               <input
-                class="f2h__checkbox f2h__input--responsive"
+                className="f2h__checkbox f2h__input--responsive"
                 type="checkbox"
                 checked={responsive}
                 onClick={() => toggleResonsive(id)}

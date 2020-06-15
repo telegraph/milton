@@ -8,7 +8,7 @@ import { Save } from "./Save";
 import { decodeSvgToString } from "../utils/svg";
 import { compressImage } from "../utils/compressImage";
 import { sendMessage } from "../utils/messages";
-import type {
+import {
   AppState,
   MsgFramesType,
   FrameCollection,
@@ -38,7 +38,7 @@ export class App extends Component {
     loading: false,
   };
 
-  componentDidMount() {
+  componentDidMount(): void {
     // Listen for events from the backend
     window.addEventListener("message", (e) =>
       this.handleEvents(e.data.pluginMessage)
@@ -47,8 +47,15 @@ export class App extends Component {
     sendMessage(MSG_EVENTS.DOM_READY);
   }
 
-  updateInitialState = (data: MsgFramesType) => {
-    let { frames, windowHeight, windowWidth, headline, subhead, source } = data;
+  updateInitialState = (data: MsgFramesType): void => {
+    const {
+      frames,
+      windowHeight,
+      windowWidth,
+      headline,
+      subhead,
+      source,
+    } = data;
 
     if (!Array.isArray(frames) || frames?.length < 1) {
       this.setState({ error: "No frames!" });
@@ -74,7 +81,7 @@ export class App extends Component {
     });
   };
 
-  compressImage = async (msg: MsgCompressImageType) => {
+  compressImage = async (msg: MsgCompressImageType): Promise<void> => {
     try {
       const { image, width, height, uid } = msg;
       const imgData = await compressImage(image, width, height);
@@ -85,7 +92,7 @@ export class App extends Component {
     }
   };
 
-  handleRenderMessage = (data: MsgRenderType) => {
+  handleRenderMessage = (data: MsgRenderType): void => {
     const { frameId, svg } = data;
     if (!frameId || !svg) {
       this.setState({ error: "Failed to render", loading: false });
@@ -100,7 +107,7 @@ export class App extends Component {
     this.setState({ frames: cloneFrames, loading: false });
   };
 
-  handleEvents = (data: MsgEventType) => {
+  handleEvents = (data: MsgEventType): void => {
     console.log("UI post", data);
     switch (data.type) {
       case MSG_EVENTS.FOUND_FRAMES:
@@ -134,7 +141,7 @@ export class App extends Component {
   };
 
   // TODO: Merge goNext and goBack
-  goNext = () => {
+  goNext = (): void => {
     const { stage, previewIndex, frames } = this.state;
     const { length } = Object.values(frames).filter((f) => f.selected);
 
@@ -142,12 +149,13 @@ export class App extends Component {
       return;
     }
 
+    const nextIndex = previewIndex + 1;
+
     switch (stage) {
       case STAGES.CHOOSE_FRAMES:
         return this.setState({ stage: STAGES.PREVIEW_OUTPUT });
 
       case STAGES.PREVIEW_OUTPUT:
-        const nextIndex = previewIndex + 1;
         if (length === nextIndex) {
           return this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
         } else {
@@ -162,7 +170,7 @@ export class App extends Component {
     }
   };
 
-  goBack = () => {
+  goBack = (): void => {
     const { stage, previewIndex } = this.state;
 
     switch (stage) {
@@ -185,7 +193,7 @@ export class App extends Component {
     }
   };
 
-  getOutputRender = (frameId: String) => {
+  getOutputRender = (frameId: string): void => {
     this.setState({ loading: true });
     sendMessage(MSG_EVENTS.RENDER, { frameId });
   };
@@ -193,7 +201,7 @@ export class App extends Component {
   toggleProp = (
     id: string,
     prop: "selected" | "responsive" | "svgOptimised"
-  ) => {
+  ): void => {
     const { frames } = this.state;
     const cloneFrames = JSON.parse(JSON.stringify(frames)) as FrameCollection;
     cloneFrames[id][prop] = !cloneFrames[id][prop];
@@ -201,11 +209,11 @@ export class App extends Component {
     this.setState({ frames: cloneFrames });
   };
 
-  toggleFrameSelect = (id: string) => this.toggleProp(id, "selected");
+  toggleFrameSelect = (id: string): void => this.toggleProp(id, "selected");
 
-  toggleResonsive = (id: string) => this.toggleProp(id, "responsive");
+  toggleResonsive = (id: string): void => this.toggleProp(id, "responsive");
 
-  toggleOptimised = (id: string) => {
+  toggleOptimised = (id: string): void => {
     const { frames } = this.state;
     const { svgCompressed, svg, svgOptimised } = frames[id];
 
@@ -229,7 +237,7 @@ export class App extends Component {
     }
   };
 
-  toggleAllProp = (propName: "selected" | "responsive") => {
+  toggleAllProp = (propName: "selected" | "responsive"): void => {
     const { frames } = this.state;
     const shouldDeselectAll = Object.values(frames).some(
       (frame) => frame[propName]
@@ -243,16 +251,16 @@ export class App extends Component {
     this.setState({ frames: newFrames });
   };
 
-  toggleSelectAll = () => this.toggleAllProp("selected");
+  toggleSelectAll = (): void => this.toggleAllProp("selected");
 
-  toggleResponsiveAll = () => this.toggleAllProp("responsive");
+  toggleResponsiveAll = (): void => this.toggleAllProp("responsive");
 
-  handleFormUpdate = (props: HeadlinesInterface) => {
+  handleFormUpdate = (props: HeadlinesInterface): void => {
     this.setState({ ...props });
     sendMessage(MSG_EVENTS.UPDATE_HEADLINES, props);
   };
 
-  switchView = () => {
+  switchView = (): h.JSX.Element => {
     const {
       frames,
       stage,
@@ -268,7 +276,7 @@ export class App extends Component {
     const framesArr = Object.values(frames).sort((a, b) =>
       a.width <= b.width ? -1 : 1
     );
-    let selectedFrames = framesArr.filter((frame) => frame.selected);
+    const selectedFrames = framesArr.filter((frame) => frame.selected);
 
     // If previewing frame without a render then request if from the backends
     // TODO: Move out of render
@@ -297,10 +305,9 @@ export class App extends Component {
         );
 
       case STAGES.PREVIEW_OUTPUT:
-        const selectedFrame = selectedFrames[previewIndex];
         return (
           <Preview
-            frame={selectedFrame}
+            frame={selectedFrames[previewIndex]}
             windowHeight={windowHeight}
             windowWidth={windowWidth}
           />
@@ -333,14 +340,14 @@ export class App extends Component {
     }
   };
 
-  render() {
+  render(): h.JSX.Element {
     const { error, frames, stage, previewIndex, loading } = this.state;
     // TODO: Don't rely on object prop order
     const selectedFrame = Object.values(frames)[previewIndex];
     console.log(this.state);
 
     return (
-      <div class="f2h">
+      <div className="f2h">
         <Header
           stage={stage}
           handleBackClick={this.goBack}
@@ -350,8 +357,8 @@ export class App extends Component {
           handleOptimseClick={this.toggleOptimised}
         />
 
-        <div class="f2h__body">
-          {error ? <div class="error">{error}</div> : this.switchView()}
+        <div className="f2h__body">
+          {error ? <div className="error">{error}</div> : this.switchView()}
         </div>
       </div>
     );
