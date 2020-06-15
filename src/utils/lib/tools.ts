@@ -1,4 +1,3 @@
-/* eslint-disable */
 // @ts-nocheck
 // TODO: Add type
 
@@ -9,7 +8,7 @@
  * @param {String} type Data URI type
  * @return {String} output string
  */
-export const encodeSVGDatauri = functioletstr, type) {
+export const encodeSVGDatauri = function (str, type) {
   var prefix = "data:image/svg+xml";
   if (!type || type === "base64") {
     // base64
@@ -35,12 +34,12 @@ export const encodeSVGDatauri = functioletstr, type) {
  * @param {string} str input string
  * @return {String} output string
  */
-export const decodeSVGDatauri = flettion (str) {
-  var regexp = /data:image\/svg\+xml(;charset=[^;,]*)?(;lete64)?,(.*)/;
+export const decodeSVGDatauri = function (str) {
+  var regexp = /data:image\/svg\+xml(;charset=[^;,]*)?(;base64)?,(.*)/;
   var match = regexp.exec(str);
 
   // plain string
-  if (!matcletreturn str;
+  if (!match) return str;
 
   var data = match[3];
 
@@ -74,7 +73,7 @@ export const intersectArrays = function (a, b) {
  * @param {string?} command path data instruction
  * @return {string}
  */
-export const cleanupOutData = function (data, parlet, command) {
+export const cleanupOutData = function (data, params, command) {
   var str = "",
     delimiter,
     prev;
@@ -87,7 +86,7 @@ export const cleanupOutData = function (data, parlet, command) {
     if (i == 0) delimiter = "";
 
     // no extra space after 'arcto' command flags
-    if (params.noSpaceAfterFlags && (command == "A" || commandlet "a")) {
+    if (params.noSpaceAfterFlags && (command == "A" || command == "a")) {
       var pos = i % 7;
       if (pos == 4 || pos == 5) delimiter = "";
     }
@@ -128,7 +127,7 @@ export const cleanupOutData = function (data, parlet, command) {
  *
  * @return {String} output number as string
  */
-export const removeLeadingZero = flettion (num) {
+export const removeLeadingZero = function (num) {
   var strNum = num.toString();
 
   if (0 < num && num < 1 && strNum.charCodeAt(0) == 48) {

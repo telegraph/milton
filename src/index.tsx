@@ -81,12 +81,13 @@ function getRootFrames() {
   } as MsgFramesType);
 }
 
+// TODO: Break out nested async logic
 function compressImage(node: DefaultShapeMixin): Promise<void> {
-  return new Promise(async (resolve, _reject) => {
-    const newFills: any[] = [];
+  const newFills: any[] = [];
+  return new Promise((resolve, _reject) => {
     const fills = node.fills === figma.mixed ? [] : [...node.fills];
 
-    await Promise.all(
+    Promise.all(
       fills.map(async (paint) => {
         if (paint.type === "IMAGE" && paint.imageHash) {
           const image = figma.getImageByHash(paint.imageHash);
@@ -122,10 +123,10 @@ function compressImage(node: DefaultShapeMixin): Promise<void> {
           });
         }
       })
-    );
-
-    node.fills = newFills;
-    resolve();
+    ).then(() => {
+      node.fills = newFills;
+      resolve();
+    });
   });
 }
 
