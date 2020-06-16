@@ -54,7 +54,13 @@ function generateStyleText(
   const { r, g, b, a } = colour;
   const colourVals = [r, g, b].map((val = 0) => Math.round(val * 255));
   const textColour = `rgba(${colourVals.join(",")}, ${a})`;
-  const fontName = `${fontFamily} ${fontStyle}`;
+  const fontName = `${fontFamily}`;
+  let fontWeight = 400;
+  if (fontStyle === "Semibold" || fontStyle === "Bold") {
+    fontWeight = 700;
+  }
+
+  console.log(fontStyle);
 
   const { unit: letterUnit, value: letterVal } = letterSpacing as {
     value: number;
@@ -142,7 +148,7 @@ function generateStyleText(
   return `
         font-size: ${String(fontSize)}px;
         font-family: "${fontName}", Georgia, 'Times New Roman', Times, serif;
-        font-weight: normal;
+        font-weight: ${fontWeight};
         position: absolute;
         color: ${textColour};
         width: ${newWidth}%;
