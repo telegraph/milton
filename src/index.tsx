@@ -24,6 +24,8 @@ const initialWindowWidth = Math.round(width * zoom);
 const initialWindowHeight = Math.round(height * zoom);
 figma.ui.resize(initialWindowWidth, initialWindowHeight);
 
+// TODO: Async image compression using callback array feels hacky.
+// Take another look.
 const compressionPool: {
   uid: string;
   callback: (img: Uint8Array) => void;
@@ -143,6 +145,7 @@ async function handleRender(frameId: string) {
     }
 
     clone = frame.clone();
+    // clone.clipsContent = true;
     clone.name = `[temp] ${frame.name}`;
 
     const cloneTextNodes = clone.findChildren((node) => node.type === "TEXT");
@@ -226,20 +229,11 @@ function getTextNodes(frame: FrameNode): textData[] {
         colour = { ...colour, a: fill.opacity || 1 };
       }
 
-      // Extract font family
-      let fontSize = 16;
-      if (fontSizeData !== figma.mixed) {
-        fontSize = fontSizeData;
-      }
-
-      // Extract font family
+      // Extract font info
       // TODO: Confirm fallback fonts
-      let fontFamily = "Arial";
-      let fontStyle = "Regular";
-      if (fontName !== figma.mixed) {
-        fontFamily = fontName.family;
-        fontStyle = fontName.style;
-      }
+      const fontSize = fontSizeData !== figma.mixed ? fontSizeData : 16;
+      const fontFamily = fontName !== figma.mixed ? fontName.family : "Arial";
+      const fontStyle = fontName !== figma.mixed ? fontName.style : "Regular";
 
       return {
         x,
@@ -280,8 +274,6 @@ function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
   const frames = pageNode.findChildren((node) => node.type === "FRAME");
   const mostLeftPos = Math.min(...frames.map((node) => node.x));
   const mostTopPos = Math.min(...frames.map((node) => node.y));
-
-  // Object.values(HEADLINE_NODE_NAMES).forEach(async (name) => {
 
   for (const name of Object.values(HEADLINE_NODE_NAMES)) {
     let node =
