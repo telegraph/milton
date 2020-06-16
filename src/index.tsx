@@ -144,14 +144,16 @@ async function handleRender(frameId: string) {
       throw new Error("Missing frame");
     }
 
+    // frame.clipsContent = true;
     clone = frame.clone();
-    // clone.clipsContent = true;
+    console.log("clipping");
     clone.name = `[temp] ${frame.name}`;
 
-    const cloneTextNodes = clone.findChildren((node) => node.type === "TEXT");
-    cloneTextNodes.forEach((node) => node.remove());
+    clone
+      .findAll((node) => node.type === "TEXT")
+      .forEach((node) => node.remove());
 
-    const nodesWithPaintImages = clone.findChildren((node) => {
+    const nodesWithPaintImages = clone.findAll((node) => {
       if ("fills" in node && node.fills !== figma.mixed) {
         return node.fills.some((fill) => "imageHash" in fill);
       } else {
