@@ -12,12 +12,13 @@ export function decodeSvgToString(svg: Uint8Array) {
   }
 
   ids.forEach((id) => {
-    const rnd = Math.random().toString(32).substr(2);
+    const rnd = btoa(Math.random().toString()).substr(6, 6);
     const randomId = `${id}-${rnd}`;
     // Replace ID
     svgStr = svgStr.replace(`id="${id}"`, `id="${randomId}"`);
     // Replace anchor refs
-    svgStr = svgStr.replace(`#${id}`, `#${randomId}`);
+    const regex = new RegExp(`#${id}`, "g");
+    svgStr = svgStr.replace(regex, `#${randomId}`);
   });
 
   // Update HTTP links to HTTPS
