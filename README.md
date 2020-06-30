@@ -70,6 +70,10 @@ What is wanted from this tool
 
 ## Changelog
 
+### 0.1.52
+
+- Improve quality of PNG resizing
+
 ### 0.1.51
 
 - Remove image compression for simple PNG conversion to all for alpha transparency

@@ -27,7 +27,14 @@ export function compressImage(
       const canvas = new OffscreenCanvas(targetWidth, targetHeight);
       const ctx = canvas.getContext("2d");
 
-      ctx?.drawImage(img, 0, 0, targetWidth, targetHeight);
+      if (!ctx) {
+        reject(new Error("Unable to get 2d context"));
+        return;
+      }
+
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
       canvas.convertToBlob({ type: "image/png" }).then((blob) => {
         blob.arrayBuffer().then((buf) => resolve(new Uint8Array(buf)));
       });
