@@ -88,7 +88,7 @@ export class App extends Component<AppPropsInterface, AppState> {
   compressImage = async (msg: MsgCompressImageType): Promise<void> => {
     try {
       const { image, width, height, uid } = msg;
-      const imgData = await compressImage(image, width, height);
+      const imgData = await compressImage(image, width * 2, height * 2);
       sendMessage(MSG_EVENTS.COMPRESSED_IMAGE, { image: imgData, uid });
     } catch (err) {
       console.error("UI failed to compress image", err);
