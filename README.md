@@ -68,6 +68,46 @@ What is wanted from this tool
 - How we put graphics (charts) into long-form
 - Fraiser uses AI2HTML script (no need to alter-workflow) - It auto populates head-footer & source - Remove these - Print designers use this
 
+## Changelog
+
+### 0.1.51
+
+- Remove image compression for simple PNG conversion to all for alpha transparency
+
+### 0.1.5
+
+- Compress images and simplfy SVG shapes
+
+### 0.1.4
+
+- Scaling preview support
+
+### 0.1.3
+
+- Batch select frames and responsive setting
+- Background tint
+- Copy inline-embed to clipboard
+- Select all frames by default
+- Hide advanced output settings by default
+- Frame ordering
+- Nested frames (auto-layout) text position
+- Mask not working with mulitple frames
+
+### 0.1.2
+
+- Improvement: Added initial responsive frame support
+
+### 0.1.1
+
+- Improvement: Add file size information and warning
+
+### 0.1.0
+
+- Improvement: New logo
+- Improvement: Support window resizing
+- Improvement: Auto-size window based on fames
+- Fix: Only select top level frames on page
+
 ## References
 
 [Responsive sticky text SVGs](https://bl.ocks.org/veltman/5cd1ba0b3c623e7b5146

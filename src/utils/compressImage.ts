@@ -1,5 +1,3 @@
-import Compressor from "compressorjs";
-
 export function compressImage(
   image: Uint8Array,
   width: number,
@@ -8,10 +6,9 @@ export function compressImage(
   return new Promise((resolve, reject) => {
     // Create image from blob to access native image sizes the resize and
     // compress
-    const blob = new Blob([image], { type: "image/png" });
-    const imgUrl = URL.createObjectURL(blob);
+
     const img = new Image();
-    img.src = imgUrl;
+
     img.addEventListener("load", () => {
       let targetWidth = 0;
       let targetHeight = 0;
@@ -27,20 +24,12 @@ export function compressImage(
         targetHeight = aspectRatio >= 1 ? height : width / aspectRatio;
       }
 
-      new Compressor(blob, {
-        width: targetWidth,
-        height: targetHeight,
-        quality: 0.7,
-        convertSize: 100000,
-        success: async (newImage) => {
-          const buf = await newImage.arrayBuffer();
-          const data = new Uint8Array(buf);
-          resolve(data);
-        },
-        error: (err) => {
-          console.error("Image compression failed");
-          reject(err);
-        },
+      const canvas = new OffscreenCanvas(targetWidth, targetHeight);
+      const ctx = canvas.getContext("2d");
+
+      ctx?.drawImage(img, 0, 0, targetWidth, targetHeight);
+      canvas.convertToBlob({ type: "image/png" }).then((blob) => {
+        blob.arrayBuffer().then((buf) => resolve(new Uint8Array(buf)));
       });
     });
 
@@ -48,5 +37,9 @@ export function compressImage(
       console.error("Error loading compressed image");
       reject(err);
     });
+
+    const blob = new Blob([image], { type: "image/png" });
+    const imgUrl = URL.createObjectURL(blob);
+    img.src = imgUrl;
   });
 }
