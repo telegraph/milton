@@ -181,58 +181,60 @@ function Text(props: TextProps) {
   );
 }
 
-interface FrameContainerProps extends FrameDataInterface {
-  scale?: number | false;
-}
-export function FrameContainer(props: FrameContainerProps): h.JSX.Element {
-  const {
-    uid,
-    width,
-    height,
-    textNodes,
-    svg = "",
-    svgCompressed = "",
-    svgOptimised,
-    responsive,
-    scale,
-  } = props;
-  const textEls = textNodes.map((node) => (
-    <Text key={node.characters} node={node} width={width} height={height} />
-  ));
-  const classNames = `f2h__render ${
-    responsive ? "f2h__render--responsive" : ""
-  }`;
+// interface FrameContainerProps extends FrameDataInterface {
+//   scale?: number | false;
+// }
+// export function FrameContainer(props: FrameContainerProps): h.JSX.Element {
+//   const { uid, width, height, textNodes, scale } = props;
 
-  let style = responsive ? "" : `width: ${width}px;`;
-  style = scale ? `${style} transform: scale(${scale});` : style;
+//   const classNames = `f2h__render ${
+//     responsive ? "f2h__render--responsive" : ""
+//   }`;
 
-  return (
-    <div className={classNames} style={style} id={uid}>
-      <div
-        className="f2h__svg_container"
-        dangerouslySetInnerHTML={{ __html: svgOptimised ? svgCompressed : svg }}
-      />
-      <div className="f2h__text_container">{textEls}</div>
-    </div>
-  );
-}
+//   let style = responsive ? "" : `width: ${width}px;`;
+//   style = scale ? `${style} transform: scale(${scale});` : style;
+
+//   return (
+//     <div className={classNames} style={style} id={uid}>
+//       <div className="f2h__text_container">{textEls}</div>
+//     </div>
+//   );
+// }
 
 interface renderInlineProps {
   frames: FrameDataInterface[];
-  iframe: OUTPUT_FORMATS;
+  svgText: string;
   headline?: string | undefined;
   subhead?: string | undefined;
   source?: string | undefined;
 }
 export function renderInline(props: renderInlineProps): string {
-  const { frames, iframe, headline, subhead, source } = props;
+  const { frames, svgText, headline, subhead, source } = props;
   const mediaQuery = genreateMediaQueries(frames);
 
-  const renderedFrames = frames.map((frame) => (
-    <FrameContainer key={frame.uid} {...frame} />
-  ));
+  const maxWidth = Math.max(...frames.map((f) => f.width));
+  const maxHeight = Math.max(...frames.map((f) => f.height));
 
-  let html = render(
+  const textNodes = [];
+
+  for (const frame of frames) {
+    const tNode = (
+      <div id={`textblock-${frame.id}`} className={frame.uid}>
+        {frame.textNodes.map((node) => (
+          <Text
+            key={node.characters}
+            node={node}
+            width={maxWidth}
+            height={maxHeight}
+          />
+        ))}
+      </div>
+    );
+
+    textNodes.push(tNode);
+  }
+
+  const html = render(
     <div className="f2h__embed">
       <style
         dangerouslySetInnerHTML={{
@@ -251,7 +253,13 @@ export function renderInline(props: renderInlineProps): string {
         </header>
       )}
 
-      {renderedFrames}
+      <div className="f2h__wrap" style={`position: relative;`}>
+        <div
+          className="f2h__svg_container"
+          dangerouslySetInnerHTML={{ __html: svgText }}
+        />
+        <div className="text-nodes">{textNodes}</div>
+      </div>
 
       {source && (
         <footer>
@@ -261,34 +269,47 @@ export function renderInline(props: renderInlineProps): string {
     </div>
   );
 
-  if (iframe === OUTPUT_FORMATS.IFRAME) {
-    html = generateIframeHtml(html);
-  }
-
   return html;
-  // return html.replace(/\n|\r|\s{2,}/g, "");
 }
 
 function genreateMediaQueries(frames: FrameDataInterface[]) {
+  // Sort frames by ascending height. Small > big
   const idWidths = frames
-    .map(({ width, uid }) => [width, uid])
+    .map(({ width, height, uid }) => [width, height, uid])
     .sort(([a], [b]) => (a < b ? -1 : 1));
 
-  const mediaQueries = idWidths.map(([width, uid], i) => {
+  const mediaQueries = idWidths.map(([width, height, uid], i) => {
+    // Always show largest frame
+    console.log(width);
     if (i === 0) {
-      return "";
+      return `
+        @media (min-width: ${width}px) {
+          .f2h__svg_container,
+          .f2h__wrap {
+            width: ${width}px;
+            height: ${height}px;
+          }
+        }`;
     }
 
-    const [, prevId] = idWidths[i - 1];
+    const [, , prevId] = idWidths[i - 1];
 
-    // Note: Cascade order is important.
+    // Note: Cascade order is important
     return `
+      /* Hide until width is reached */
       @media (max-width: ${width}px) {
-        #${uid} { display: none; }
+        .${uid} { display: none; }
       }
+
+      /* Hide previous and show current frame */
       @media (min-width: ${width}px) {
-        #${prevId} { display: none; }
-        #${uid} { display: block; }
+        .${prevId} { display: none; }
+        .${uid} { display: block; }
+        .f2h__svg_container,
+        .f2h__wrap {
+          width: ${width}px;
+          height: ${height}px;
+        }
       }
     `;
   });

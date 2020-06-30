@@ -13,6 +13,10 @@ body {
   /* color: rgba(255, 0, 0, 0.34) !important; */
 }
 
+.f2h__svg_container {
+  overflow: hidden;
+}
+
 .f2h__render {
   position: relative;
   overflow: hidden;
@@ -38,14 +42,16 @@ body {
 }
 
 .f2h_headline {
-  font-family: "Austin News Deck Semibold", Georgia, "Times New Roman", Times, serif;
+  font-family: "Austin News Deck Semibold", Georgia, "Times New Roman", Times,
+    serif;
   font-size: 22px;
   color: #333;
   margin: 0;
   line-height: 1.3;
 }
 .f2h_subbhead {
-  font-family: "Austin News Text Roman", Georgia, "Times New Roman", Times, serif;
+  font-family: "Austin News Text Roman", Georgia, "Times New Roman", Times,
+    serif;
   font-size: 17px;
   color: #333;
   margin: 0;

@@ -67,7 +67,7 @@ export class Save extends Component<SaveProps, SaveState> {
     const filename = "figma-to-html-test.html";
     const raw = renderInline({
       frames: outputFrames,
-      iframe: OUTPUT_FORMATS.IFRAME,
+      outputFormat: OUTPUT_FORMATS.IFRAME,
       headline,
       subhead,
       source,
@@ -88,7 +88,7 @@ export class Save extends Component<SaveProps, SaveState> {
     const { advancedOpen, showToast, outputFormat } = this.state;
     const rawHtml = renderInline({
       frames,
-      iframe: outputFormat,
+      outputFormat: outputFormat,
       headline,
       subhead,
       source,

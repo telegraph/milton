@@ -1,5 +1,10 @@
 import { h, Fragment, Component, createRef, RefObject } from "preact";
-import { FrameDataInterface, AppState, HeadlinesInterface } from "types";
+import {
+  FrameDataInterface,
+  AppState,
+  HeadlinesInterface,
+  FrameCollection,
+} from "types";
 
 interface InputFieldProps {
   refTarget: RefObject<HTMLInputElement>;
@@ -26,7 +31,8 @@ function InputField(props: InputFieldProps) {
 
 interface FrameSelectionProps
   extends Pick<AppState, "source" | "headline" | "subhead"> {
-  frames: FrameDataInterface[];
+  frames: FrameCollection;
+  selectedFrames: string[];
   handleClick: (id: string) => void;
   toggleResonsive: (id: string) => void;
   toggleSelectAll: () => void;
@@ -58,16 +64,13 @@ export class FrameSelection extends Component<FrameSelectionProps> {
       headline,
       subhead,
       source,
+      selectedFrames,
     } = this.props;
 
-    const selectCount = frames.filter((frame) => frame.selected).length;
-    const someFramesSelected = selectCount > 0 && selectCount < frames.length;
-    const allSelected = selectCount === frames.length;
-
-    const responseCount = frames.filter((frame) => frame.responsive).length;
-    const someResponsiveSelected =
-      responseCount > 0 && responseCount < frames.length;
-    const allResponsiveSelected = responseCount === frames.length;
+    const frameCount = Object.values(frames).length;
+    const selectCount = selectedFrames.length;
+    const someFramesSelected = selectCount > 0 && selectCount < frameCount;
+    const allSelected = selectCount === frameCount;
 
     return (
       <div className="f2h__choose_frames">
@@ -112,19 +115,18 @@ export class FrameSelection extends Component<FrameSelectionProps> {
               id="responsiveAll"
               name="responsiveAll"
               onClick={toggleResponsiveAll}
-              checked={allResponsiveSelected}
-              ref={(el) => el && (el.indeterminate = someResponsiveSelected)}
+              checked={false}
             />{" "}
             Responsive
           </label>
 
-          {frames.map(({ name, id, width, height, selected, responsive }) => (
+          {Object.values(frames).map(({ name, id, width, height }) => (
             <Fragment key={id}>
               <p className="f2h__label f2h__label--name">
                 <input
                   className="f2h__checkbox"
                   type="checkbox"
-                  checked={selected}
+                  checked={selectedFrames.includes(id)}
                   onClick={() => handleClick(id)}
                   id={name}
                   name={name}
@@ -136,15 +138,6 @@ export class FrameSelection extends Component<FrameSelectionProps> {
                   {width} x {height}
                 </span>
               </p>
-
-              <input
-                className="f2h__checkbox f2h__input--responsive"
-                type="checkbox"
-                checked={responsive}
-                onClick={() => toggleResonsive(id)}
-                id={name}
-                name={name}
-              />
             </Fragment>
           ))}
         </div>

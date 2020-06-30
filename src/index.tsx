@@ -82,61 +82,61 @@ function getRootFrames() {
   });
 }
 
-// TODO: Break out nested async logic
-function compressImage(node: DefaultShapeMixin): Promise<void> {
-  const newFills: Paint[] = [];
-  return new Promise((resolve, _reject) => {
-    const fills = node.fills === figma.mixed ? [] : [...node.fills];
+// // TODO: Break out nested async logic
+// function compressImage(node: DefaultShapeMixin): Promise<void> {
+//   const newFills: Paint[] = [];
+//   return new Promise((resolve, _reject) => {
+//     const fills = node.fills === figma.mixed ? [] : [...node.fills];
 
-    Promise.all(
-      fills.map(async (paint) => {
-        if (paint.type === "IMAGE" && paint.imageHash) {
-          const image = figma.getImageByHash(paint.imageHash);
-          const imageBytes = await image.getBytesAsync();
-          const uid = Math.random().toString(32);
+//     Promise.all(
+//       fills.map(async (paint) => {
+//         if (paint.type === "IMAGE" && paint.imageHash) {
+//           const image = figma.getImageByHash(paint.imageHash);
+//           const imageBytes = await image.getBytesAsync();
+//           const uid = Math.random().toString(32);
 
-          // Send post message
-          figma.ui.postMessage({
-            type: MSG_EVENTS.COMPRESS_IMAGE,
-            image: imageBytes,
-            width: node.width,
-            height: node.height,
-            uid,
-          });
+//           // Send post message
+//           figma.ui.postMessage({
+//             type: MSG_EVENTS.COMPRESS_IMAGE,
+//             image: imageBytes,
+//             width: node.width,
+//             height: node.height,
+//             uid,
+//           });
 
-          await new Promise((res) => {
-            const timeout = setTimeout(() => {
-              _reject("Compress image response timed out.");
-            }, 5000);
+//           await new Promise((res) => {
+//             const timeout = setTimeout(() => {
+//               _reject("Compress image response timed out.");
+//             }, 5000);
 
-            compressionPool.push({
-              uid,
+//             compressionPool.push({
+//               uid,
 
-              callback: (image: Uint8Array) => {
-                const newPaint = { ...paint };
-                newPaint.imageHash = figma.createImage(image).hash;
-                newFills.push(newPaint);
-                res();
-              },
+//               callback: (image: Uint8Array) => {
+//                 const newPaint = { ...paint };
+//                 newPaint.imageHash = figma.createImage(image).hash;
+//                 newFills.push(newPaint);
+//                 res();
+//               },
 
-              timeout,
-            });
-          });
-        }
-      })
-    )
-      .then(() => {
-        node.fills = newFills;
-        resolve();
-      })
-      .catch((err) => {
-        console.error("compressing images", err);
-      });
-  });
-}
+//               timeout,
+//             });
+//           });
+//         }
+//       })
+//     )
+//       .then(() => {
+//         node.fills = newFills;
+//         resolve();
+//       })
+//       .catch((err) => {
+//         console.error("compressing images", err);
+//       });
+//   });
+// }
 
 async function handleRender(frameId: string) {
-  let clone;
+  // let clone;
 
   try {
     const frame = figma.getNodeById(frameId);
@@ -144,38 +144,51 @@ async function handleRender(frameId: string) {
       throw new Error("Missing frame");
     }
 
-    // frame.clipsContent = true;
-    clone = frame.clone();
-    console.log("clipping");
-    clone.name = `[temp] ${frame.name}`;
+    // // frame.clipsContent = true;
+    // clone = frame.clone();
+    // clone.clipsContent = true;
+    // console.log("clipping");
+    // clone.name = `[temp] ${frame.name}`;
 
-    clone
-      .findAll((node) => node.type === "TEXT")
-      .forEach((node) => node.remove());
+    // // Delete empty def nodes?
+    // console.log(
+    //   frame.findAll((n) => {
+    //     console.log(n);
+    //     return false;
+    //   })
+    // );
 
-    const nodesWithPaintImages = clone.findAll((node) => {
-      if ("fills" in node && node.fills !== figma.mixed) {
-        return node.fills.some((fill) => "imageHash" in fill);
-      } else {
-        return false;
-      }
-    }) as DefaultShapeMixin[];
+    // clone
+    //   .findAll((node) => node.type === "TEXT")
+    //   .forEach((node) => node.remove());
 
-    await Promise.all(nodesWithPaintImages.map(compressImage));
+    // const nodesWithPaintImages = clone.findAll((node) => {
+    //   if ("fills" in node && node.fills !== figma.mixed) {
+    //     return node.fills.some((fill) => "imageHash" in fill);
+    //   } else {
+    //     return false;
+    //   }
+    // }) as DefaultShapeMixin[];
+
+    // await Promise.all(nodesWithPaintImages.map(compressImage));
 
     // Wait for Figma to process image hash otherwise the paint fill with have
     // an incorrect transform scale
     // TODO: Find better way
-    if (nodesWithPaintImages.length > 0) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
+    // if (nodesWithPaintImages.length > 0) {
+    //   await new Promise((resolve) => setTimeout(resolve, 1000));
+    // }
 
     console.log("RENDERING SVG");
-    const svg = await clone.exportAsync({
+    const svg = await frame.exportAsync({
       format: "SVG",
       svgOutlineText: false,
       svgSimplifyStroke: true,
     });
+
+    // Bug: Clip content SVG render can result in an empty clipPath which
+    // masks all content. Current fix is to search for empty clip paths and
+    // remove them.
 
     figma.ui.postMessage({
       type: MSG_EVENTS.RENDER,
@@ -189,8 +202,6 @@ async function handleRender(frameId: string) {
       errorText: `Render failed: ${msg}`,
     } as MsgErrorType);
     console.error("Failed to render SVG", err);
-  } finally {
-    clone?.remove();
   }
 }
 
@@ -349,12 +360,69 @@ function handleReceivedMsg(msg: PostMsg) {
       getRootFrames();
       break;
 
-    case MSG_EVENTS.RENDER:
-      console.log("plugin msg: render", msg.frameId);
-      handleRender(msg.frameId).catch((err) =>
-        console.error("Failed to handle render", err)
-      );
+    case MSG_EVENTS.RENDER: {
+      try {
+        // WIP: TESING
+        console.log("plugin msg: render", msg.frameId);
+        console.log(msg.ids);
+        const { ids } = msg;
+
+        const outputNode = figma.createFrame();
+        outputNode.name = "output";
+
+        // Clone each selected frame adding them to the temp container frame
+        // at origin 0,0
+        const frames = figma.currentPage.children.filter(({ id }) =>
+          ids.includes(id)
+        );
+
+        console.log(frames);
+
+        const maxWidth = Math.max(...frames.map((f) => f.width));
+        const maxHeight = Math.max(...frames.map((f) => f.height));
+        outputNode.resizeWithoutConstraints(maxWidth, maxHeight);
+
+        for (const frame of frames) {
+          const clone = frame?.clone();
+          outputNode.appendChild(clone);
+          clone.x = 0;
+          clone.y = 0;
+
+          clone.name = frame.id;
+
+          console.log(frame.id);
+        }
+
+        outputNode
+          .exportAsync({
+            format: "SVG",
+            svgSimplifyStroke: true,
+            svgOutlineText: false,
+            svgIdAttribute: true,
+          })
+          .then((svgData) => {
+            figma.ui.postMessage({
+              type: MSG_EVENTS.RENDER,
+              svgData,
+            } as MsgRenderType);
+
+            outputNode?.remove();
+          })
+          .catch((err) => {
+            console.error(err);
+            outputNode?.remove();
+          });
+
+        // Render temp container frame and send back content
+
+        // handleRender(msg.frameId).catch((err) =>
+        //   console.error("Failed to handle render", err)
+        // );
+      } catch (err) {
+        console.error(err);
+      }
       break;
+    }
 
     case MSG_EVENTS.RESIZE:
       console.log("plugin msg: resize");

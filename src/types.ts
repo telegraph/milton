@@ -7,11 +7,6 @@ export interface FrameDataInterface {
   id: string;
   uid: string;
   textNodes: textData[];
-  responsive: boolean;
-  selected: boolean;
-  svg: string | undefined;
-  svgCompressed: string | undefined;
-  svgOptimised: boolean;
 }
 
 export type MsgEventType =
@@ -70,21 +65,16 @@ export interface AppPropsInterface {
 }
 
 export interface AppState {
-  readonly error: undefined | string;
+  readonly error: string | undefined;
   readonly ready: boolean;
   readonly frames: FrameCollection;
   readonly stage: STAGES;
-  readonly previewIndex: number;
-  readonly isResizing: boolean;
-  readonly mouseStartX: number;
-  readonly mouseStartY: number;
-  readonly windowWidth: number;
-  readonly windowHeight: number;
   readonly responsive: boolean;
   readonly headline: string | undefined;
   readonly subhead: string | undefined;
   readonly source: string | undefined;
-  readonly loading: boolean;
+  readonly selectedFrames: string[];
+  readonly svgObjectUrl: string;
 }
 
 type textNodeSelectedProps = Pick<
