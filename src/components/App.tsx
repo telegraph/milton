@@ -2,13 +2,7 @@ import { h, Component } from "preact";
 import produce from "immer";
 import { processSvg } from "../utils/processSvg";
 import { renderInline } from "../outputRender";
-import {
-  MSG_EVENTS,
-  STAGES,
-  UI_TEXT,
-  INITIAL_UI_SIZE,
-  OUTPUT_FORMATS,
-} from "../constants";
+import { MSG_EVENTS, STAGES, UI_TEXT } from "../constants";
 import { Header } from "./Header";
 import { ResponsiveView } from "./ResponsiveView";
 import { FrameSelection } from "./FrameSelection";
@@ -21,13 +15,11 @@ import {
   AppPropsInterface,
   MsgFramesType,
   FrameCollection,
-  MsgCompressImageType,
   MsgRenderType,
   MsgEventType,
   HeadlinesInterface,
   UiPostMessageEvent,
 } from "types";
-import { crunchSvg } from "utils/crunchSvg";
 
 export class App extends Component<AppPropsInterface, AppState> {
   readonly state: AppState = {
@@ -79,7 +71,7 @@ export class App extends Component<AppPropsInterface, AppState> {
     });
   };
 
-  handleRenderMessage = (data: MsgRenderType): void => {
+  handleRenderMessage = async (data: MsgRenderType): Promise<void> => {
     const { svgData } = data;
     if (!svgData) {
       this.setState({ error: "Failed to render" });
@@ -87,16 +79,10 @@ export class App extends Component<AppPropsInterface, AppState> {
       return;
     }
 
-    // processSvg(svg)
-    //   .then(() => console.log("done"))
-    //   .catch((err) => console.error(err));
-
-    // const { frames } = this.state;
-
     // Revoke old URL blob if previously set
     const { selectedFrames, frames, headline, subhead, source } = this.state;
 
-    let svgText = decodeSvgToString(svgData);
+    let svgText = await decodeSvgToString(svgData);
 
     // Replace figma IDs "00:00" with CSS valid IDs
     Object.values(frames)
@@ -120,6 +106,7 @@ export class App extends Component<AppPropsInterface, AppState> {
       subhead,
       source,
     });
+
     this.setState({ svgObjectUrl: html, stage: STAGES.RESPONSIVE_PREVIEW });
   };
 
@@ -128,6 +115,10 @@ export class App extends Component<AppPropsInterface, AppState> {
     switch (data.type) {
       case MSG_EVENTS.FOUND_FRAMES:
         this.updateInitialState(data);
+        break;
+
+      case MSG_EVENTS.RENDER:
+        this.handleRenderMessage(data);
         break;
 
       case MSG_EVENTS.NO_FRAMES:
@@ -141,10 +132,6 @@ export class App extends Component<AppPropsInterface, AppState> {
         });
         break;
 
-      case MSG_EVENTS.RENDER:
-        this.handleRenderMessage(data);
-        break;
-
       default:
         this.setState({ error: "Unknown post message" });
         console.error("UI post message error", data);
@@ -155,28 +142,15 @@ export class App extends Component<AppPropsInterface, AppState> {
   // TODO: Merge goNext and goBack
   goNext = (): void => {
     const { stage } = this.state;
-    // const { length } = Object.values(frames).filter((f) => f.selected);
-
-    // if (length === 0) {
-    //   return;
-    // }
 
     switch (stage) {
       case STAGES.CHOOSE_FRAMES:
         this.getOutputRender();
-        console.log("in here");
         return;
-      // return this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
-
-      // case STAGES.PREVIEW_OUTPUT:
-      //   if (length === nextIndex) {
-      //     return this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
-      //   } else {
-      //     return this.setState({ previewIndex: nextIndex });
-      //   }
 
       case STAGES.RESPONSIVE_PREVIEW:
-        return this.setState({ stage: STAGES.SAVE_OUTPUT });
+        this.setState({ stage: STAGES.SAVE_OUTPUT });
+        return;
 
       case STAGES.SAVE_OUTPUT:
         return;
@@ -190,19 +164,13 @@ export class App extends Component<AppPropsInterface, AppState> {
       case STAGES.CHOOSE_FRAMES:
         return;
 
-      // case STAGES.PREVIEW_OUTPUT:
-      //   if (previewIndex === 0) {
-      //     this.setState({ stage: STAGES.CHOOSE_FRAMES });
-      //   } else {
-      //     this.setState({ previewIndex: previewIndex - 1 });
-      //   }
-      //   return;
-
       case STAGES.RESPONSIVE_PREVIEW:
-        return this.setState({ stage: STAGES.CHOOSE_FRAMES });
+        this.setState({ stage: STAGES.CHOOSE_FRAMES });
+        return;
 
       case STAGES.SAVE_OUTPUT:
-        return this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
+        this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
+        return;
     }
   };
 
@@ -225,32 +193,6 @@ export class App extends Component<AppPropsInterface, AppState> {
 
   toggleFrameSelect = (id: string): void => this.toggleProp(id, "selected");
 
-  toggleResonsive = (id: string): void => this.toggleProp(id, "responsive");
-
-  toggleOptimised = (id: string): void => {
-    const { frames } = this.state;
-    const { svgCompressed, svg, svgOptimised } = frames[id];
-
-    if (svg && !svgOptimised && !svgCompressed) {
-      const el = document.createElement("div");
-      el.innerHTML = svg;
-      const svgEl = el.querySelector("svg");
-
-      if (!svgEl) {
-        console.error("Missing SVG in SVG string");
-        return;
-      }
-
-      crunchSvg(svgEl);
-      const cloneFrames = JSON.parse(JSON.stringify(frames)) as FrameCollection;
-      cloneFrames[id].svgCompressed = svgEl.outerHTML;
-      cloneFrames[id].svgOptimised = true;
-      this.setState({ frames: cloneFrames });
-    } else {
-      this.toggleProp(id, "svgOptimised");
-    }
-  };
-
   toggleAllProp = (propName: "selected" | "responsive"): void => {
     const { frames } = this.state;
     const shouldDeselectAll = Object.values(frames).some(
@@ -268,8 +210,6 @@ export class App extends Component<AppPropsInterface, AppState> {
 
   toggleSelectAll = (): void => this.toggleAllProp("selected");
 
-  // toggleResponsiveAll = (): void => this.toggleAllProp("responsive");
-
   handleFormUpdate = (props: HeadlinesInterface): void => {
     this.setState({ ...props });
     sendMessage(MSG_EVENTS.UPDATE_HEADLINES, props);
@@ -285,21 +225,6 @@ export class App extends Component<AppPropsInterface, AppState> {
       source,
       svgObjectUrl,
     } = this.state;
-
-    // const framesArr = Object.values(frames).sort((a, b) =>
-    //   a.width <= b.width ? -1 : 1
-    // );
-    // const selectedFrames = framesArr.filter((frame) => frame.selected);
-
-    // // If previewing frame without a render then request if from the backends
-    // // TODO: Move out of render
-    // if (
-    //   stage === STAGES.PREVIEW_OUTPUT &&
-    //   !selectedFrames[previewIndex].svg &&
-    //   loading === false
-    // ) {
-    //   this.getOutputRender(selectedFrames[previewIndex].id);
-    // }
 
     switch (stage) {
       case STAGES.CHOOSE_FRAMES:
@@ -318,15 +243,6 @@ export class App extends Component<AppPropsInterface, AppState> {
           />
         );
 
-      // case STAGES.PREVIEW_OUTPUT:
-      //   return (
-      //     <Preview
-      //       frame={selectedFrames[previewIndex]}
-      //       windowHeight={windowHeight}
-      //       windowWidth={windowWidth}
-      //     />
-      //   );
-
       case STAGES.RESPONSIVE_PREVIEW:
         return <ResponsiveView svgObjectUrl={svgObjectUrl} />;
 
@@ -340,7 +256,7 @@ export class App extends Component<AppPropsInterface, AppState> {
 
   render(): h.JSX.Element {
     const { version } = this.props;
-    const { error, frames, stage } = this.state;
+    const { error, stage } = this.state;
 
     console.log(this.state);
 
@@ -352,7 +268,6 @@ export class App extends Component<AppPropsInterface, AppState> {
           handleNextClick={this.goNext}
           disableNext={stage === STAGES.SAVE_OUTPUT}
           // frame={selectedFrame}
-          handleOptimseClick={this.toggleOptimised}
         />
 
         <div className="f2h__body">

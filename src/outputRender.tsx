@@ -10,7 +10,7 @@ import embedCss from "./embed.css";
 // @ts-expect-error
 import fontsCss from "./fonts.css";
 
-function generateIframeHtml(body: string) {
+export function generateIframeHtml(body: string) {
   return `
     <!doctype html>
     <html>

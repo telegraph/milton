@@ -1,12 +1,7 @@
 import { h, Component, createRef } from "preact";
 import { saveAs } from "file-saver";
 import { OUTPUT_FORMATS } from "../constants";
-import { renderInline } from "../outputRender";
-import { FrameDataInterface, AppState } from "types";
-
-interface SaveProps extends Pick<AppState, "source" | "headline" | "subhead"> {
-  frames: FrameDataInterface[];
-}
+import { generateIframeHtml } from "../outputRender";
 
 interface SaveState {
   advancedOpen: boolean;
@@ -14,7 +9,7 @@ interface SaveState {
   outputFormat: OUTPUT_FORMATS;
 }
 
-export class Save extends Component<SaveProps, SaveState> {
+export class Save extends Component<{ svgObjectUrl: string }, SaveState> {
   state: SaveState = {
     advancedOpen: false,
     showToast: false,
@@ -53,25 +48,11 @@ export class Save extends Component<SaveProps, SaveState> {
     setTimeout(() => this.setState({ showToast: false }), 2000);
   };
 
-  saveEmbedToClipboard = (): void => {
-    this.setState(
-      { outputFormat: OUTPUT_FORMATS.INLINE },
-      this.saveToClipboard
-    );
-  };
-
   saveBinaryFile = (): void => {
-    const { frames, headline, subhead, source } = this.props;
-    const outputFrames = Object.values(frames).filter((f) => f.selected);
+    const { svgObjectUrl } = this.props;
 
     const filename = "figma-to-html-test.html";
-    const raw = renderInline({
-      frames: outputFrames,
-      outputFormat: OUTPUT_FORMATS.IFRAME,
-      headline,
-      subhead,
-      source,
-    });
+    const raw = generateIframeHtml(svgObjectUrl);
     const blob = new Blob([raw], { type: "text/html" });
 
     saveAs(blob, filename);
@@ -84,15 +65,8 @@ export class Save extends Component<SaveProps, SaveState> {
   };
 
   render(): h.JSX.Element {
-    const { frames, headline, subhead, source } = this.props;
-    const { advancedOpen, showToast, outputFormat } = this.state;
-    const rawHtml = renderInline({
-      frames,
-      outputFormat: outputFormat,
-      headline,
-      subhead,
-      source,
-    });
+    const { svgObjectUrl } = this.props;
+    const { advancedOpen, showToast } = this.state;
 
     const advancedBtnText = `${advancedOpen ? "hide" : "show"}`;
     let advancedClassName = "f2h__save_advanced";
@@ -108,7 +82,7 @@ export class Save extends Component<SaveProps, SaveState> {
     return (
       <div className="f2h__save">
         <div className="f2h__save_options">
-          <button className="f2h__save_btn" onClick={this.saveEmbedToClipboard}>
+          <button className="f2h__save_btn" onClick={this.saveToClipboard}>
             Copy embed to clipboard
           </button>
           <button className="f2h__save_btn" onClick={this.saveBinaryFile}>
@@ -127,39 +101,11 @@ export class Save extends Component<SaveProps, SaveState> {
         </h2>
 
         <div className={advancedClassName}>
-          <h2 className="f2h__save__subhead">Format</h2>
-
-          <label htmlFor="f2h__input_inline" className="f2h__label">
-            <input
-              className="f2h__radio_btn"
-              type="radio"
-              name="inline"
-              id="f2h__input_inline"
-              value={OUTPUT_FORMATS.INLINE}
-              checked={outputFormat === OUTPUT_FORMATS.INLINE}
-              onClick={() => this.handleFormatChange(OUTPUT_FORMATS.INLINE)}
-            />
-            Inline (default)
-          </label>
-
-          <label htmlFor="f2h__input_iframe" className="f2h__label">
-            <input
-              className="f2h__radio_btn"
-              type="radio"
-              name="iframe"
-              id="f2h__input_iframe"
-              value={OUTPUT_FORMATS.IFRAME}
-              checked={outputFormat === OUTPUT_FORMATS.IFRAME}
-              onClick={() => this.handleFormatChange(OUTPUT_FORMATS.IFRAME)}
-            />
-            iFrame
-          </label>
-
           <h2 className="f2h__save__subhead">Raw HTML</h2>
           <textarea
             ref={this.textAreaEl}
             className="f2h__save__raw"
-            value={rawHtml}
+            value={svgObjectUrl}
           ></textarea>
         </div>
 
