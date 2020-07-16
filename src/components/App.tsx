@@ -31,10 +31,6 @@ export class App extends Component<AppPropsInterface, AppState> {
     svgObjectUrl: "",
   };
 
-  constructor(props) {
-    super(props);
-  }
-
   componentDidMount(): void {
     postMan
       .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
@@ -77,32 +73,20 @@ export class App extends Component<AppPropsInterface, AppState> {
       return;
     }
 
-    console.log(new TextDecoder("utf-8").decode(svgData));
-
-    // Revoke old URL blob if previously set
     const { selectedFrames, frames, headline, subhead, source } = this.state;
 
-    let svgText = await decodeSvgToString(svgData);
+    const ids = selectedFrames.map((id) => [id, frames[id].uid]);
+    console.log("IDS", ids);
+    let svgText = await decodeSvgToString(svgData, ids);
 
     console.log("SVG file size", (svgText?.length || 1) / 1024);
 
-    // Replace figma IDs "00:00" with CSS valid IDs
-    Object.values(frames)
-      .filter((f) => selectedFrames.includes(f.id))
-      .forEach((f) => {
-        console.log(f.id);
-        svgText = svgText.replace(
-          `id="${f.id}"`,
-          `id="${f.id}" class="${f.uid}" `
-        );
-      });
-
-    const targetFrames = Object.values(frames).filter(({ id }) =>
-      selectedFrames.includes(id)
+    const selected = Object.values(frames).filter((f) =>
+      selectedFrames.includes(f.id)
     );
 
     const html = renderInline({
-      frames: targetFrames,
+      frames: selected,
       svgText: svgText,
       headline,
       subhead,
