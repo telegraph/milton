@@ -11,20 +11,25 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@emotion/hash": "^0.8.0",
     "@figma/plugin-typings": "^1.15.0",
-    "esbuild": "^0.5.12",
+    "@rgba-image/lanczos": "^0.1.0",
+    "b2a": "^1.1.2",
+    "b64-lite": "^1.4.0",
+    "esbuild": "^0.5.26",
     "file-saver": "^2.0.2",
+    "gifuct-js": "matt-way/gifuct-js",
     "immer": "^7.0.5",
-    "preact": "^10.4.4",
-    "preact-render-to-string": "^5.1.9"
+    "pica": "^6.0.0",
+    "preact": "^10.4.5",
+    "preact-render-to-string": "^5.1.9",
+    "upng-js": "^2.1.0"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.1",
-    "@typescript-eslint/eslint-plugin": "^3.4.0",
-    "@typescript-eslint/parser": "^3.4.0",
-    "eslint": "^7.3.1",
+    "@typescript-eslint/eslint-plugin": "^3.6.0",
+    "@typescript-eslint/parser": "^3.6.0",
+    "eslint": "^7.4.0",
     "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-react": "^7.20.0"
+    "eslint-plugin-react": "^7.20.3"
   }
 }

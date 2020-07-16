@@ -1,4 +1,3 @@
-import murmur from "@emotion/hash";
 interface reduceImageInterface {
   img: HTMLImageElement;
   targetWidth: number;
@@ -113,10 +112,6 @@ export async function processSvg(data: Uint8Array): Promise<void> {
     const imgId = svgEl.querySelector(`#${id} use`)?.getAttribute("xlink:href");
     const imgEl = svgEl.querySelector(`image${imgId}`);
     console.log(imgId);
-
-    const hash = murmur(imgEl?.getAttribute("xlink:href") || "");
-
-    console.log("HASH", hash);
 
     if (!width || !height) {
       return;

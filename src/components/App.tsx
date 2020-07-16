@@ -1,6 +1,6 @@
 import { h, Component } from "preact";
 import produce from "immer";
-import { processSvg } from "../utils/processSvg";
+import { saveAs } from "file-saver";
 import { renderInline } from "../outputRender";
 import { MSG_EVENTS, STAGES, UI_TEXT } from "../constants";
 import { Header } from "./Header";
@@ -9,16 +9,13 @@ import { FrameSelection } from "./FrameSelection";
 // import { Preview } from "./Preview";
 import { Save } from "./Save";
 import { decodeSvgToString } from "../utils/svg";
-import { sendMessage } from "../utils/messages";
+import { sendMessage, postMan } from "../utils/messages";
 import {
   AppState,
   AppPropsInterface,
   MsgFramesType,
   FrameCollection,
-  MsgRenderType,
-  MsgEventType,
   HeadlinesInterface,
-  UiPostMessageEvent,
 } from "types";
 
 export class App extends Component<AppPropsInterface, AppState> {
@@ -34,13 +31,15 @@ export class App extends Component<AppPropsInterface, AppState> {
     source: undefined,
   };
 
-  componentDidMount(): void {
-    // Listen for events from the backend
-    window.addEventListener("message", (e: UiPostMessageEvent) =>
-      this.handleEvents(e.data.pluginMessage)
-    );
+  constructor(props) {
+    super(props);
+  }
 
-    sendMessage(MSG_EVENTS.DOM_READY);
+  componentDidMount(): void {
+    postMan
+      .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
+      .then(this.updateInitialState)
+      .catch((err) => console.error("erer", err));
   }
 
   updateInitialState = (data: MsgFramesType): void => {
@@ -71,18 +70,21 @@ export class App extends Component<AppPropsInterface, AppState> {
     });
   };
 
-  handleRenderMessage = async (data: MsgRenderType): Promise<void> => {
-    const { svgData } = data;
+  handleRenderMessage = async (svgData: Uint8Array): Promise<void> => {
     if (!svgData) {
       this.setState({ error: "Failed to render" });
-      console.error("Post message: failed to render", data);
+      console.error("Post message: failed to render");
       return;
     }
+
+    console.log(new TextDecoder("utf-8").decode(svgData));
 
     // Revoke old URL blob if previously set
     const { selectedFrames, frames, headline, subhead, source } = this.state;
 
     let svgText = await decodeSvgToString(svgData);
+
+    console.log("SVG file size", (svgText?.length || 1) / 1024);
 
     // Replace figma IDs "00:00" with CSS valid IDs
     Object.values(frames)
@@ -108,35 +110,6 @@ export class App extends Component<AppPropsInterface, AppState> {
     });
 
     this.setState({ svgObjectUrl: html, stage: STAGES.RESPONSIVE_PREVIEW });
-  };
-
-  handleEvents = (data: MsgEventType): void => {
-    console.log("UI post", data);
-    switch (data.type) {
-      case MSG_EVENTS.FOUND_FRAMES:
-        this.updateInitialState(data);
-        break;
-
-      case MSG_EVENTS.RENDER:
-        this.handleRenderMessage(data);
-        break;
-
-      case MSG_EVENTS.NO_FRAMES:
-        this.setState({ error: UI_TEXT.ERROR_MISSING_FRAMES });
-        break;
-
-      case MSG_EVENTS.ERROR:
-        console.error("UI post message error", data);
-        this.setState({
-          error: `${UI_TEXT.ERROR_UNEXPECTED}: ${data.errorText}`,
-        });
-        break;
-
-      default:
-        this.setState({ error: "Unknown post message" });
-        console.error("UI post message error", data);
-        break;
-    }
   };
 
   // TODO: Merge goNext and goBack
@@ -177,7 +150,13 @@ export class App extends Component<AppPropsInterface, AppState> {
   getOutputRender = (): void => {
     const { selectedFrames } = this.state;
 
-    sendMessage(MSG_EVENTS.RENDER, { ids: selectedFrames });
+    // sendMessage(MSG_EVENTS.RENDER, { ids: selectedFrames });
+    postMan
+      .send({ workload: MSG_EVENTS.RENDER, data: selectedFrames })
+      .then(this.handleRenderMessage)
+      .catch((err) => {
+        console.error("error getting render", err);
+      });
   };
 
   toggleProp = (
