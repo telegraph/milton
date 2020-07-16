@@ -58,7 +58,6 @@ export class FrameSelection extends Component<FrameSelectionProps> {
     const {
       frames,
       handleClick,
-      toggleResonsive,
       toggleSelectAll,
       toggleResponsiveAll,
       headline,
@@ -120,26 +119,28 @@ export class FrameSelection extends Component<FrameSelectionProps> {
             Responsive
           </label>
 
-          {Object.values(frames).map(({ name, id, width, height }) => (
-            <Fragment key={id}>
-              <p className="f2h__label f2h__label--name">
-                <input
-                  className="f2h__checkbox"
-                  type="checkbox"
-                  checked={selectedFrames.includes(id)}
-                  onClick={() => handleClick(id)}
-                  id={name}
-                  name={name}
-                />
-                <label className="f2h__label--name-text" htmlFor={name}>
-                  {name}
-                </label>
-                <span className="f2h__sel_width">
-                  {width} x {height}
-                </span>
-              </p>
-            </Fragment>
-          ))}
+          {Object.values(frames)
+            .sort((a, b) => (a.width < b.width ? -1 : 1))
+            .map(({ name, id, width, height }) => (
+              <Fragment key={id}>
+                <p className="f2h__label f2h__label--name">
+                  <input
+                    className="f2h__checkbox"
+                    type="checkbox"
+                    checked={selectedFrames.includes(id)}
+                    onClick={() => handleClick(id)}
+                    id={name}
+                    name={name}
+                  />
+                  <label className="f2h__label--name-text" htmlFor={name}>
+                    {name}
+                  </label>
+                  <span className="f2h__sel_width">
+                    {width} x {height}
+                  </span>
+                </p>
+              </Fragment>
+            ))}
         </div>
       </div>
     );
