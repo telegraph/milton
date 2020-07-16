@@ -1,12 +1,10 @@
 import { h, Component } from "preact";
-import produce from "immer";
-import { saveAs } from "file-saver";
+
 import { renderInline } from "../outputRender";
 import { MSG_EVENTS, STAGES, UI_TEXT } from "../constants";
 import { Header } from "./Header";
 import { ResponsiveView } from "./ResponsiveView";
 import { FrameSelection } from "./FrameSelection";
-// import { Preview } from "./Preview";
 import { Save } from "./Save";
 import { decodeSvgToString } from "../utils/svg";
 import { sendMessage, postMan } from "../utils/messages";
@@ -29,6 +27,8 @@ export class App extends Component<AppPropsInterface, AppState> {
     headline: undefined,
     subhead: undefined,
     source: undefined,
+    loading: false,
+    svgObjectUrl: "",
   };
 
   constructor(props) {
@@ -109,7 +109,11 @@ export class App extends Component<AppPropsInterface, AppState> {
       source,
     });
 
-    this.setState({ svgObjectUrl: html, stage: STAGES.RESPONSIVE_PREVIEW });
+    this.setState({
+      svgObjectUrl: html,
+      stage: STAGES.RESPONSIVE_PREVIEW,
+      loading: false,
+    });
   };
 
   // TODO: Merge goNext and goBack
@@ -119,6 +123,7 @@ export class App extends Component<AppPropsInterface, AppState> {
     switch (stage) {
       case STAGES.CHOOSE_FRAMES:
         this.getOutputRender();
+        this.setState({ loading: true });
         return;
 
       case STAGES.RESPONSIVE_PREVIEW:
@@ -159,83 +164,43 @@ export class App extends Component<AppPropsInterface, AppState> {
       });
   };
 
-  toggleProp = (
-    id: string,
-    prop: "selected" | "responsive" | "svgOptimised"
-  ): void => {
-    const { frames } = this.state;
-    const cloneFrames = JSON.parse(JSON.stringify(frames)) as FrameCollection;
-    cloneFrames[id][prop] = !cloneFrames[id][prop];
+  toggleFrameSelect = (id: string): void => {
+    const { selectedFrames } = this.state;
 
-    this.setState({ frames: cloneFrames });
-  };
-
-  toggleFrameSelect = (id: string): void => this.toggleProp(id, "selected");
-
-  toggleAllProp = (propName: "selected" | "responsive"): void => {
-    const { frames } = this.state;
-    const shouldDeselectAll = Object.values(frames).some(
-      (frame) => frame[propName]
-    );
-
-    const draftState = produce(this.state, (draftState) => {
-      Object.values(draftState.frames).forEach(
-        (frame) => (frame[propName] = !shouldDeselectAll)
-      );
+    this.setState({
+      selectedFrames: selectedFrames.includes(id)
+        ? selectedFrames.filter((frameId) => id !== frameId)
+        : [...selectedFrames, id],
     });
-
-    this.setState(draftState);
   };
 
-  toggleSelectAll = (): void => this.toggleAllProp("selected");
+  toggleSelectAll = (): void => {
+    const { selectedFrames, frames } = this.state;
+    if (selectedFrames.length > 0) {
+      this.setState({ selectedFrames: [] });
+    } else {
+      this.setState({ selectedFrames: Object.values(frames).map((f) => f.id) });
+    }
+  };
 
   handleFormUpdate = (props: HeadlinesInterface): void => {
     this.setState({ ...props });
     sendMessage(MSG_EVENTS.UPDATE_HEADLINES, props);
   };
 
-  switchView = (): h.JSX.Element => {
+  render(): h.JSX.Element {
+    const { version } = this.props;
     const {
-      frames,
-      selectedFrames,
+      error,
       stage,
+      loading,
+      svgObjectUrl,
       headline,
       subhead,
       source,
-      svgObjectUrl,
+      selectedFrames,
+      frames,
     } = this.state;
-
-    switch (stage) {
-      case STAGES.CHOOSE_FRAMES:
-        return (
-          <FrameSelection
-            frames={frames}
-            selectedFrames={selectedFrames}
-            handleClick={this.toggleFrameSelect}
-            toggleResonsive={this.toggleResonsive}
-            toggleSelectAll={this.toggleSelectAll}
-            // toggleResponsiveAll={this.toggleResponsiveAll}
-            headline={headline}
-            subhead={subhead}
-            source={source}
-            handleFormUpdate={this.handleFormUpdate}
-          />
-        );
-
-      case STAGES.RESPONSIVE_PREVIEW:
-        return <ResponsiveView svgObjectUrl={svgObjectUrl} />;
-
-      case STAGES.SAVE_OUTPUT:
-        return <Save svgObjectUrl={svgObjectUrl} />;
-
-      default:
-        return <div>Loading...</div>;
-    }
-  };
-
-  render(): h.JSX.Element {
-    const { version } = this.props;
-    const { error, stage } = this.state;
 
     console.log(this.state);
 
@@ -246,11 +211,30 @@ export class App extends Component<AppPropsInterface, AppState> {
           handleBackClick={this.goBack}
           handleNextClick={this.goNext}
           disableNext={stage === STAGES.SAVE_OUTPUT}
-          // frame={selectedFrame}
         />
 
         <div className="f2h__body">
-          {error ? <div className="error">{error}</div> : this.switchView()}
+          {error && <div className="error">{error}</div>}
+          {loading && <div className="loading">Loading</div>}
+
+          {!error && !loading && stage === STAGES.CHOOSE_FRAMES && (
+            <FrameSelection
+              frames={frames}
+              selectedFrames={selectedFrames}
+              handleClick={this.toggleFrameSelect}
+              toggleSelectAll={this.toggleSelectAll}
+              headline={headline}
+              subhead={subhead}
+              source={source}
+              handleFormUpdate={this.handleFormUpdate}
+            />
+          )}
+          {!error && !loading && stage === STAGES.RESPONSIVE_PREVIEW && (
+            <ResponsiveView svgObjectUrl={svgObjectUrl} />
+          )}
+          {!error && !loading && stage === STAGES.SAVE_OUTPUT && (
+            <Save svgObjectUrl={svgObjectUrl} />
+          )}
         </div>
         <p className="f2h__version">Version: {version}</p>
       </div>

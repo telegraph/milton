@@ -75,6 +75,7 @@ export interface AppState {
   readonly source: string | undefined;
   readonly selectedFrames: string[];
   readonly svgObjectUrl: string;
+  readonly loading: boolean;
 }
 
 type textNodeSelectedProps = Pick<
