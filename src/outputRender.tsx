@@ -279,17 +279,15 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
     .sort(([a], [b]) => (a < b ? -1 : 1));
 
   const mediaQueries = idWidths.map(([width, height, uid], i) => {
-    // Always show largest frame
-    console.log(width);
+    // Always show smallest frame
     if (i === 0) {
       return `
-        @media (min-width: ${width}px) {
           .f2h__svg_container,
           .f2h__wrap {
             width: ${width}px;
             height: ${height}px;
           }
-        }`;
+        `;
     }
 
     const [, , prevId] = idWidths[i - 1];
