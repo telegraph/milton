@@ -7,7 +7,7 @@ import { ResponsiveView } from "./ResponsiveView";
 import { FrameSelection } from "./FrameSelection";
 import { Save } from "./Save";
 import { decodeSvgToString } from "../utils/svg";
-import { sendMessage, postMan } from "../utils/messages";
+import { postMan } from "../utils/messages";
 import {
   AppState,
   AppPropsInterface,
@@ -169,7 +169,7 @@ export class App extends Component<AppPropsInterface, AppState> {
 
   handleFormUpdate = (props: HeadlinesInterface): void => {
     this.setState({ ...props });
-    sendMessage(MSG_EVENTS.UPDATE_HEADLINES, props);
+    postMan.send({ workload: MSG_EVENTS.UPDATE_HEADLINES, data: props });
   };
 
   render(): h.JSX.Element {

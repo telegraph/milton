@@ -127,8 +127,6 @@ export function compressImage(props: {
         alpha: true,
       });
 
-      // ctx.drawImage(img, 0, 0, width, height);
-
       // Original image format
       const imageFormat = identifyImageFormat(imgData);
 
@@ -147,13 +145,6 @@ export function compressImage(props: {
           64
         );
         resolve(new Uint8Array(tinyPng));
-        // const blob = await canvas.convertToBlob({
-        //   type: "image/png",
-        // });
-        // const buff = await blob.arrayBuffer();
-        // const uintArry = new Uint8Array(buff);
-
-        // resolve(uintArry);
         return;
       }
 
@@ -183,96 +174,6 @@ export function compressImage(props: {
     const imgUrl = URL.createObjectURL(blob);
     img.src = imgUrl;
   });
-}
-
-// Convert 8-bit array into binary while padding out values to full 8 bit widith
-// then parsing into decimal
-function bitsToDecimal(arr: Uint8Array): number {
-  return parseInt(
-    [...arr].map((v) => v.toString(2).padStart(8, "0")).join(""),
-    2
-  );
-}
-
-// https://stackoverflow.com/a/48488655
-function jpegProps(data: Uint8Array) {
-  // data is an array of bytes
-  var off = 0;
-  while (off < data.length) {
-    while (data[off] == 0xff) off++;
-    var mrkr = data[off];
-    off++;
-
-    if (mrkr == 0xd8) continue; // SOI
-    if (mrkr == 0xd9) break; // EOI
-    if (0xd0 <= mrkr && mrkr <= 0xd7) continue;
-    if (mrkr == 0x01) continue; // TEM
-
-    var len = (data[off] << 8) | data[off + 1];
-    off += 2;
-
-    if (mrkr == 0xc0)
-      return {
-        bpc: data[off], // precission (bits per channel)
-        w: (data[off + 1] << 8) | data[off + 2],
-        h: (data[off + 3] << 8) | data[off + 4],
-        cps: data[off + 5], // number of color components
-      };
-    off += len - 2;
-  }
-}
-
-function getImageDimensions(
-  imgData: Uint8Array,
-  imageFormat: IMAGE_FORMATS
-): null | { width: number; height: number } {
-  let width;
-  let height;
-
-  switch (imageFormat) {
-    case IMAGE_FORMATS.GIF: {
-      const OFFSET = 6;
-      width = bitsToDecimal(imgData.slice(OFFSET, OFFSET + 2).reverse());
-      height = bitsToDecimal(imgData.slice(OFFSET + 2, OFFSET + 4).reverse());
-      break;
-    }
-
-    case IMAGE_FORMATS.PNG: {
-      // PNG signiture is 8 bytes
-      //
-      // PNG header chunks
-      // Length   | Type    | Data    | CRC
-      // 4 bytes  | 4 bytes | x bytes | 4 bytes
-      //
-      // IHDR is first critial chunk and contains width (4 bytes)
-      // and height (4 bytes)
-      // 1 byte = 8 bits
-      const OFFSET = 8 + 4 + 4;
-      width = bitsToDecimal(imgData.slice(OFFSET, OFFSET + 4));
-      height = bitsToDecimal(imgData.slice(OFFSET + 4, OFFSET + 8));
-      break;
-    }
-
-    case IMAGE_FORMATS.JPEG: {
-      const props = jpegProps(imgData);
-      console.log("dimensions for JPGEG", props);
-      if (!props) {
-        return null;
-      }
-
-      width = props.w;
-      height = props.h;
-      break;
-    }
-
-    default:
-      return null;
-  }
-
-  return {
-    width,
-    height,
-  };
 }
 
 // Context: Figma
@@ -380,11 +281,12 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
 }
 
 export function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
-  const { pageNode } = props;
+  const pageNode = figma.currentPage;
   const frames = pageNode.findChildren((node) => node.type === "FRAME");
   const mostLeftPos = Math.min(...frames.map((node) => node.x));
   const mostTopPos = Math.min(...frames.map((node) => node.y));
 
+  // Loop through each headline node names
   for (const name of Object.values(HEADLINE_NODE_NAMES)) {
     let node =
       (pageNode.findChild(
