@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { h } from "preact";
 import render from "preact-render-to-string";
-import { OUTPUT_FORMATS } from "./constants";
 import { textData, FrameDataInterface } from "types";
 
 // Import CSS file as plain text via esbuild loader option
@@ -181,26 +180,6 @@ function Text(props: TextProps) {
   );
 }
 
-// interface FrameContainerProps extends FrameDataInterface {
-//   scale?: number | false;
-// }
-// export function FrameContainer(props: FrameContainerProps): h.JSX.Element {
-//   const { uid, width, height, textNodes, scale } = props;
-
-//   const classNames = `f2h__render ${
-//     responsive ? "f2h__render--responsive" : ""
-//   }`;
-
-//   let style = responsive ? "" : `width: ${width}px;`;
-//   style = scale ? `${style} transform: scale(${scale});` : style;
-
-//   return (
-//     <div className={classNames} style={style} id={uid}>
-//       <div className="f2h__text_container">{textEls}</div>
-//     </div>
-//   );
-// }
-
 interface renderInlineProps {
   frames: FrameDataInterface[];
   svgText: string;
@@ -211,10 +190,6 @@ interface renderInlineProps {
 export function renderInline(props: renderInlineProps): string {
   const { frames, svgText, headline, subhead, source } = props;
   const mediaQuery = genreateMediaQueries(frames);
-
-  const maxWidth = Math.max(...frames.map((f) => f.width));
-  const maxHeight = Math.max(...frames.map((f) => f.height));
-
   const textNodes = [];
 
   for (const frame of frames) {
@@ -224,8 +199,8 @@ export function renderInline(props: renderInlineProps): string {
           <Text
             key={node.characters}
             node={node}
-            width={maxWidth}
-            height={maxHeight}
+            width={frame.width}
+            height={frame.height}
           />
         ))}
       </div>

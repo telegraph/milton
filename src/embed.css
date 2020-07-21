@@ -8,9 +8,16 @@ body {
   font-family: sans-serif;
   transform: translate(-50%, -50%);
   /* white-space: pre; */
+}
 
-  /* DEBUG */
-  /* color: rgba(255, 0, 0, 0.34) !important; */
+.text-nodes {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
 }
 
 .f2h__svg_container {

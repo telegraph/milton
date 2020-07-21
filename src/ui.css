@@ -545,6 +545,7 @@ button:hover {
   background-size: 20px 20px;
   background-position: 0 0, 10px 10px;
   min-height: 60vh;
+  max-width: 98vw;
 }
 
 .responsive_width_btn {
