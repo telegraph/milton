@@ -195,7 +195,8 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
     outputNode.resizeWithoutConstraints(maxWidth, maxHeight);
 
     for (const frame of frames) {
-      const clone = frame?.clone();
+      const clone = frame?.clone() as FrameNode;
+      clone.findAll((n) => n.type === "TEXT").forEach((n) => n.remove());
       outputNode.appendChild(clone);
       clone.x = 0;
       clone.y = 0;
