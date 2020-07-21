@@ -172,6 +172,12 @@ export class App extends Component<AppPropsInterface, AppState> {
     postMan.send({ workload: MSG_EVENTS.UPDATE_HEADLINES, data: props });
   };
 
+  getSelectedFrames = () => {
+    const { frames, selectedFrames } = this.state;
+
+    return Object.values(frames).filter((f) => selectedFrames.includes(f.id));
+  };
+
   render(): h.JSX.Element {
     const { version } = this.props;
     const {
@@ -187,6 +193,9 @@ export class App extends Component<AppPropsInterface, AppState> {
     } = this.state;
 
     console.log(this.state);
+    const frameWidths = this.getSelectedFrames()
+      .map((f) => f.width)
+      .sort();
 
     return (
       <div className="f2h">
@@ -237,7 +246,7 @@ export class App extends Component<AppPropsInterface, AppState> {
             />
           )}
           {!error && !loading && stage === STAGES.RESPONSIVE_PREVIEW && (
-            <ResponsiveView svgMarkup={svgMarkup} />
+            <ResponsiveView svgMarkup={svgMarkup} frameWidths={frameWidths} />
           )}
           {!error && !loading && stage === STAGES.SAVE_OUTPUT && (
             <Save svgMarkup={svgMarkup} />
