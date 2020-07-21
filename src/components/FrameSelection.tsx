@@ -29,9 +29,7 @@ interface FrameSelectionProps
   frames: FrameCollection;
   selectedFrames: string[];
   handleClick: (id: string) => void;
-  toggleResonsive: (id: string) => void;
   toggleSelectAll: () => void;
-  toggleResponsiveAll: () => void;
   handleFormUpdate: (props: HeadlinesInterface) => void;
 }
 
@@ -54,7 +52,6 @@ export class FrameSelection extends Component<FrameSelectionProps> {
       frames,
       handleClick,
       toggleSelectAll,
-      toggleResponsiveAll,
       headline,
       subhead,
       source,
