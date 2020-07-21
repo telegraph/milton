@@ -1,4 +1,5 @@
 import { h } from "preact";
+import { deflate } from "pako";
 import { STAGES, UI_TEXT, FRAME_WARNING_SIZE } from "../constants";
 
 export function SvgInformation(props: { svgMarkup: string }) {
@@ -11,11 +12,16 @@ export function SvgInformation(props: { svgMarkup: string }) {
     fileSizeClassName += " f2h__file_size f2h__notice--error";
   }
 
+  const { byteLength } = deflate(svgMarkup).buffer;
+
   return (
     <p className="f2h__info">
       <span className="f2h__info_meta">
         Filesize
-        <span className={fileSizeClassName}>{fileKbSize.toFixed(2)}kB</span>
+        <span className={fileSizeClassName}>{fileKbSize.toFixed(2)}kB</span> /
+        <span className={fileSizeClassName}>
+          {(byteLength / 1024).toFixed(2)}kB
+        </span>
       </span>
     </p>
   );

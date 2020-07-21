@@ -59,8 +59,6 @@ function generateStyleText(
     fontWeight = 700;
   }
 
-  console.log(fontStyle);
-
   const { unit: letterUnit, value: letterVal } = letterSpacing as {
     value: number;
     unit: "PIXELS" | "PERCENT";
@@ -146,9 +144,8 @@ function generateStyleText(
 
   return `
         font-size: ${String(fontSize)}px;
-        font-family: "${fontName}", Georgia, 'Times New Roman', Times, serif;
+        font-family: "${fontName}", serif;
         font-weight: ${fontWeight};
-        position: absolute;
         color: ${textColour};
         width: ${newWidth}%;
         height: ${(height / frameHeight) * 100}%;
@@ -158,7 +155,6 @@ function generateStyleText(
         letter-spacing: ${letterSpaceValue};
         justify-content: ${justifyItemsValue};
         align-items: ${alignItemsValue};
-        display: flex;
       `;
 }
 

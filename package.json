@@ -14,6 +14,7 @@
     "@figma/plugin-typings": "^1.15.0",
     "esbuild": "^0.6.5",
     "file-saver": "^2.0.2",
+    "pako": "^1.0.11",
     "pica": "^6.1.0",
     "preact": "^10.4.6",
     "preact-render-to-string": "^5.1.10",
@@ -21,10 +22,12 @@
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.1",
+    "@types/pako": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^3.7.0",
     "@typescript-eslint/parser": "^3.7.0",
     "eslint": "^7.5.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-react": "^7.20.3"
-  }
+  },
+  "sideEffects": false
 }
