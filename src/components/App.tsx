@@ -199,7 +199,14 @@ export class App extends Component<AppPropsInterface, AppState> {
 
         <div className="f2h__body">
           {error && <div className="error">{error}</div>}
-          {loading && <div className="loading">Loading</div>}
+          {loading && (
+            <div className="loading">
+              <p className="loading__msg">Merging frames</p>
+              <p className="loading__msg">Rendering HTML</p>
+              <p className="loading__msg">Optimising images</p>
+              <p className="loading__msg">Simplifying shapes</p>
+            </div>
+          )}
 
           {!error && !loading && stage === STAGES.CHOOSE_FRAMES && (
             <FrameSelection
