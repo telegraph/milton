@@ -1,10 +1,5 @@
 import { h, Fragment, Component, createRef, RefObject } from "preact";
-import {
-  FrameDataInterface,
-  AppState,
-  HeadlinesInterface,
-  FrameCollection,
-} from "types";
+import { AppState, HeadlinesInterface, FrameCollection } from "types";
 
 interface InputFieldProps {
   refTarget: RefObject<HTMLInputElement>;
@@ -108,7 +103,7 @@ export class FrameSelection extends Component<FrameSelectionProps> {
             />{" "}
             Frames
           </label>
-          <label className="f2h__sel_header f2h__sel_header--responsive">
+          {/* <label className="f2h__sel_header f2h__sel_header--responsive">
             <input
               type="checkbox"
               id="responsiveAll"
@@ -117,7 +112,7 @@ export class FrameSelection extends Component<FrameSelectionProps> {
               checked={false}
             />{" "}
             Responsive
-          </label>
+          </label> */}
 
           {Object.values(frames)
             .sort((a, b) => (a.width < b.width ? -1 : 1))
