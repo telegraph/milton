@@ -176,7 +176,12 @@ export function compressImage(props: {
   });
 }
 
-// Context: Figma
+/**
+ * Render all specified frames out as SVG element.
+ * Images are optimised for size and image type compression via the frontend UI
+ *
+ * @context figma
+ */
 export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
   const outputNode = figma.createFrame();
   outputNode.name = "output";
@@ -184,29 +189,30 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
   try {
     console.log("inside render worker. Data:", frameIds);
 
-    // Clone each selected frame adding them to the temp container frame
-    // at origin 0,0
+    // Clone each selected frame adding them to the temporary container frame
     const frames = figma.currentPage.children.filter(({ id }) =>
       frameIds.includes(id)
     );
 
+    // Calculate the max dimensions for output container frame
     const maxWidth = Math.max(...frames.map((f) => f.width));
     const maxHeight = Math.max(...frames.map((f) => f.height));
     outputNode.resizeWithoutConstraints(maxWidth, maxHeight);
 
     for (const frame of frames) {
       const clone = frame?.clone() as FrameNode;
+
+      // Find and remove all text nodes
       clone.findAll((n) => n.type === "TEXT").forEach((n) => n.remove());
+
+      // Append cloned frame to temp output frame and position in top left
       outputNode.appendChild(clone);
       clone.x = 0;
       clone.y = 0;
 
+      // Store the frame ID as node name (exported in SVG props)
       clone.name = frame.id;
     }
-
-    const cache: {
-      [id: string]: { width: number; height: number; id: string }[];
-    } = {};
 
     // Find all nodes with image fills
     const nodesWithImages = outputNode.findAll(
@@ -217,8 +223,18 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
         node.fills.some((fill) => fill.type === "IMAGE")
     );
 
-    // Collect dimensions of nodes with images
+    // A single image can be used multiple times on different nodes in different
+    // frames. To ensure images are only optimised once a cache is created
+    // of unique images and used to replace original after the async processing
+    // is completed.
+    const imageCache: {
+      [id: string]: { width: number; height: number; id: string }[];
+    } = {};
+
     for (const node of nodesWithImages) {
+      // The frontend UI which handles the image optimisation needs to know
+      // the sizes of each node that uses the image. The dimensions are stored
+      // with the image hash ID in the cache for later use.
       const dimensions = {
         width: node.width,
         height: node.height,
@@ -226,22 +242,24 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
       };
       const imgPaint = [...node.fills].find((p) => p.type === "IMAGE");
 
-      // Store node information alongside image hash
-      if (cache[imgPaint.imageHash]) {
-        cache[imgPaint.imageHash].push(dimensions);
+      // Add the image dimensions to the cache, or update and existing cache
+      // item with another nodes dimensions
+      if (imageCache[imgPaint.imageHash]) {
+        imageCache[imgPaint.imageHash].push(dimensions);
       } else {
-        cache[imgPaint.imageHash] = [dimensions];
+        imageCache[imgPaint.imageHash] = [dimensions];
       }
     }
 
-    // Send images to UI for compression
-    for (const imageHash in cache) {
+    // Send each image from the imageCache to the frontend for optimisation.
+    // The operation is async and can take some time if the images are large.
+    for (const imageHash in imageCache) {
       const bytes = await figma.getImageByHash(imageHash).getBytesAsync();
       const compressedImage: Uint8Array = await postMan.send({
         workload: MSG_EVENTS.COMPRESSED_IMAGE,
         data: {
           imgData: bytes,
-          nodeDimensions: cache[imageHash],
+          nodeDimensions: imageCache[imageHash],
         },
       });
 
@@ -253,6 +271,7 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
         const imgPaint = [...node.fills].find(
           (p) => p.type === "IMAGE" && p.imageHash === imageHash
         );
+
         if (imgPaint) {
           const newPaint = JSON.parse(JSON.stringify(imgPaint));
           newPaint.imageHash = newImageHash;
@@ -261,11 +280,11 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
       });
     }
 
-    console.log("nodes with images", nodesWithImages, cache);
-
-    // HACK! Wait for fills to be set inside Figma
+    // HACK! Figma takes some time to update the image fills. Waiting some
+    // amount is required otherwise the images appear blank.
     await new Promise((resolve) => setTimeout(resolve, 300));
 
+    // Render output container frames to SVG mark-up (in a uint8 byte array)
     const svg = await outputNode.exportAsync({
       format: "SVG",
       svgSimplifyStroke: true,
@@ -277,6 +296,7 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
   } catch (err) {
     throw new Error(err);
   } finally {
+    // Remove the output frame whatever happens
     outputNode.remove();
   }
 }
