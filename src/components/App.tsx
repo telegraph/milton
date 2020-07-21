@@ -35,7 +35,7 @@ export class App extends Component<AppPropsInterface, AppState> {
     postMan
       .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
       .then(this.updateInitialState)
-      .catch((err) => console.error("erer", err));
+      .catch((err) => console.error("error", err));
   }
 
   updateInitialState = (data: MsgFramesType): void => {
@@ -44,6 +44,19 @@ export class App extends Component<AppPropsInterface, AppState> {
     if (!Array.isArray(frames) || frames?.length < 1) {
       this.setState({ error: "No frames!" });
       console.error("Post error: no frames", data);
+      return;
+    }
+
+    const hasDuplicateWidths = frames
+      .map((f) => f.width)
+      .some((width, _i, arr) => arr.indexOf(width) !== arr.lastIndexOf(width));
+
+    if (hasDuplicateWidths) {
+      this.setState({
+        error:
+          "The are frames with identical widths. Please resize or remove some frames.",
+      });
+
       return;
     }
 
@@ -199,28 +212,30 @@ export class App extends Component<AppPropsInterface, AppState> {
 
     return (
       <div className="f2h">
-        <header className="f2h__header">
-          <HeaderTitle stage={stage} />
+        {!error && (
+          <header className="f2h__header">
+            <HeaderTitle stage={stage} />
 
-          {stage === STAGES.RESPONSIVE_PREVIEW && (
-            <SvgInformation svgMarkup={svgMarkup} />
-          )}
+            {stage === STAGES.RESPONSIVE_PREVIEW && (
+              <SvgInformation svgMarkup={svgMarkup} />
+            )}
 
-          <button
-            onClick={this.goBack}
-            disabled={stage === STAGES.CHOOSE_FRAMES}
-          >
-            Back
-          </button>
+            <button
+              onClick={this.goBack}
+              disabled={stage === STAGES.CHOOSE_FRAMES}
+            >
+              Back
+            </button>
 
-          <button
-            className="btn--primary"
-            onClick={this.goNext}
-            disabled={stage === STAGES.SAVE_OUTPUT}
-          >
-            Next
-          </button>
-        </header>
+            <button
+              className="btn--primary"
+              onClick={this.goNext}
+              disabled={stage === STAGES.SAVE_OUTPUT}
+            >
+              Next
+            </button>
+          </header>
+        )}
 
         <div className="f2h__body">
           {error && <div className="error">{error}</div>}
