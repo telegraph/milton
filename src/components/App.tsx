@@ -28,7 +28,7 @@ export class App extends Component<AppPropsInterface, AppState> {
     subhead: undefined,
     source: undefined,
     loading: false,
-    svgObjectUrl: "",
+    svgMarkup: "",
   };
 
   componentDidMount(): void {
@@ -94,7 +94,7 @@ export class App extends Component<AppPropsInterface, AppState> {
     });
 
     this.setState({
-      svgObjectUrl: html,
+      svgMarkup: html,
       stage: STAGES.RESPONSIVE_PREVIEW,
       loading: false,
     });
@@ -178,7 +178,7 @@ export class App extends Component<AppPropsInterface, AppState> {
       error,
       stage,
       loading,
-      svgObjectUrl,
+      svgMarkup,
       headline,
       subhead,
       source,
@@ -221,10 +221,10 @@ export class App extends Component<AppPropsInterface, AppState> {
             />
           )}
           {!error && !loading && stage === STAGES.RESPONSIVE_PREVIEW && (
-            <ResponsiveView svgObjectUrl={svgObjectUrl} />
+            <ResponsiveView svgMarkup={svgMarkup} />
           )}
           {!error && !loading && stage === STAGES.SAVE_OUTPUT && (
-            <Save svgObjectUrl={svgObjectUrl} />
+            <Save svgMarkup={svgMarkup} />
           )}
         </div>
         <p className="f2h__version">Version: {version}</p>

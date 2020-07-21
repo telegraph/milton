@@ -9,7 +9,7 @@ interface SaveState {
   outputFormat: OUTPUT_FORMATS;
 }
 
-export class Save extends Component<{ svgObjectUrl: string }, SaveState> {
+export class Save extends Component<{ svgMarkup: string }, SaveState> {
   state: SaveState = {
     advancedOpen: false,
     showToast: false,
@@ -49,10 +49,10 @@ export class Save extends Component<{ svgObjectUrl: string }, SaveState> {
   };
 
   saveBinaryFile = (): void => {
-    const { svgObjectUrl } = this.props;
+    const { svgMarkup } = this.props;
 
     const filename = "figma-to-html-test.html";
-    const raw = generateIframeHtml(svgObjectUrl);
+    const raw = generateIframeHtml(svgMarkup);
     const blob = new Blob([raw], { type: "text/html" });
 
     saveAs(blob, filename);
@@ -65,7 +65,7 @@ export class Save extends Component<{ svgObjectUrl: string }, SaveState> {
   };
 
   render(): h.JSX.Element {
-    const { svgObjectUrl } = this.props;
+    const { svgMarkup } = this.props;
     const { advancedOpen, showToast } = this.state;
 
     const advancedBtnText = `${advancedOpen ? "hide" : "show"}`;
@@ -105,7 +105,7 @@ export class Save extends Component<{ svgObjectUrl: string }, SaveState> {
           <textarea
             ref={this.textAreaEl}
             className="f2h__save__raw"
-            value={svgObjectUrl}
+            value={svgMarkup}
           ></textarea>
         </div>
 

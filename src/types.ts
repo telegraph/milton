@@ -74,7 +74,7 @@ export interface AppState {
   readonly subhead: string | undefined;
   readonly source: string | undefined;
   readonly selectedFrames: string[];
-  readonly svgObjectUrl: string;
+  readonly svgMarkup: string;
   readonly loading: boolean;
 }
 

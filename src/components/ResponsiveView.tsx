@@ -4,13 +4,13 @@ import { OUTPUT_FORMATS } from "../constants";
 import { FrameDataInterface, AppState } from "types";
 
 interface ResponsiveViewProps
-  extends Pick<AppState, "source" | "headline" | "subhead" | "svgObjectUrl"> {
+  extends Pick<AppState, "source" | "headline" | "subhead" | "svgMarkup"> {
   frames: FrameDataInterface[];
 }
 
 export class ResponsiveView extends Component<ResponsiveViewProps> {
   render(): h.JSX.Element {
-    const { svgObjectUrl } = this.props;
+    const { svgMarkup } = this.props;
 
     return (
       <div className="f2h__responsive_preview">
@@ -19,7 +19,7 @@ export class ResponsiveView extends Component<ResponsiveViewProps> {
         <div className="f2h__responsive__wrapper">
           <iframe
             className="f2h__responsive__sandbox"
-            srcDoc={svgObjectUrl}
+            srcDoc={svgMarkup}
           ></iframe>
         </div>
       </div>
