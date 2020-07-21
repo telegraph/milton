@@ -82,10 +82,16 @@ export class Save extends Component<{ svgMarkup: string }, SaveState> {
     return (
       <div className="f2h__save">
         <div className="f2h__save_options">
-          <button className="f2h__save_btn" onClick={this.saveToClipboard}>
+          <button
+            className="f2h__save_btn btn--primary"
+            onClick={this.saveToClipboard}
+          >
             Copy embed to clipboard
           </button>
-          <button className="f2h__save_btn" onClick={this.saveBinaryFile}>
+          <button
+            className="f2h__save_btn btn--primary"
+            onClick={this.saveBinaryFile}
+          >
             Download iframe HTML file
           </button>
         </div>

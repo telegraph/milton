@@ -109,21 +109,14 @@ button {
   cursor: pointer;
   border-radius: var(--border-radius-small, 0);
   outline: none;
-  border: 1px solid transparent;
-
-  background: var(--colours-main, #f0f);
+  border: 1px solid var(--colours-grey-3, #f0f);
+  background: #fff;
 }
 
 .btn--primary {
   color: #fff;
   background: var(--colours-main, #f0f);
-}
-
-.btn--secondary {
-  color: var(--colours-grey-1, #f0f);
-  border-color: var(--colours-grey-2, #f0f);
-  background-color: transparent;
-  margin-right: var(--padding-small, 0);
+  border-color: var(--colours-main, #f0f);
 }
 
 button:disabled {
@@ -153,15 +146,11 @@ button:hover {
   border-bottom: 1px solid #e4e4e4;
   background: #f9f9f9;
 }
-.f2h__nav {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-}
 
 .f2h__title {
   font-family: var(--font-family-sans-serif, sans-serif);
   font-size: var(--font-size--medium, 1em);
+  flex: 1;
 }
 .f2h__info {
   margin-left: var(--padding-medium, 0);
@@ -176,22 +165,18 @@ button:hover {
 
 .f2h__info_meta {
   font-size: var(--font-size--medium, 1em);
-  padding-left: var(--padding-small, 0);
+  margin: 0 var(--padding-small, 0);
+}
+.f2h__file_size {
   margin-left: var(--padding-small, 0);
-  border-left: 1px solid var(--colours-grey-4, #f0f);
-}
-.f2h__info_responsive--no {
-  text-decoration: line-through;
-}
-.f2h__svg_optimise {
-  margin-left: var(--padding-medium, 0);
-  padding-left: var(--padding-small, 0);
-  border-left: 1px solid var(--colours-grey-4, #f0f);
-}
-.f2h__svg_optimise span {
-  padding-left: var(--padding-small, 0);
+  font-weight: bold;
 }
 
+.f2h__header button {
+  margin-left: var(--padding-small, 0);
+}
+
+/* [ Body ] */
 .f2h__body {
   display: flex;
   padding: var(--padding-large, 0) var(--padding-huge, 0);
@@ -201,6 +186,7 @@ button:hover {
   background-color: var(--colours-grey-5, #f0f);
 }
 
+/* [ Footer ] */
 .f2h__version {
   position: absolute;
   bottom: var(--padding-small, 0);

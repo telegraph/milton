@@ -2,7 +2,7 @@ import { h, Component } from "preact";
 
 import { renderInline } from "../outputRender";
 import { MSG_EVENTS, STAGES, UI_TEXT } from "../constants";
-import { Header } from "./Header";
+import { SvgInformation, HeaderTitle } from "./Header";
 import { ResponsiveView } from "./ResponsiveView";
 import { FrameSelection } from "./FrameSelection";
 import { Save } from "./Save";
@@ -190,12 +190,28 @@ export class App extends Component<AppPropsInterface, AppState> {
 
     return (
       <div className="f2h">
-        <Header
-          stage={stage}
-          handleBackClick={this.goBack}
-          handleNextClick={this.goNext}
-          disableNext={stage === STAGES.SAVE_OUTPUT}
-        />
+        <header className="f2h__header">
+          <HeaderTitle stage={stage} />
+
+          {stage === STAGES.RESPONSIVE_PREVIEW && (
+            <SvgInformation svgMarkup={svgMarkup} />
+          )}
+
+          <button
+            onClick={this.goBack}
+            disabled={stage === STAGES.CHOOSE_FRAMES}
+          >
+            Back
+          </button>
+
+          <button
+            className="btn--primary"
+            onClick={this.goNext}
+            disabled={stage === STAGES.SAVE_OUTPUT}
+          >
+            Next
+          </button>
+        </header>
 
         <div className="f2h__body">
           {error && <div className="error">{error}</div>}

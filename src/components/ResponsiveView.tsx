@@ -1,6 +1,4 @@
-import { h, Component, createRef } from "preact";
-import { renderInline } from "../outputRender";
-import { OUTPUT_FORMATS } from "../constants";
+import { h, Component } from "preact";
 import { FrameDataInterface, AppState } from "types";
 
 interface ResponsiveViewProps
