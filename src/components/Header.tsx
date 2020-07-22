@@ -12,15 +12,17 @@ export function SvgInformation(props: { svgMarkup: string }) {
     fileSizeClassName += " f2h__file_size f2h__notice--error";
   }
 
-  const { byteLength } = deflate(svgMarkup).buffer;
+  const gzipSize = (deflate(svgMarkup).buffer.byteLength / 1024).toFixed(2);
 
   return (
     <p className="f2h__info">
       <span className="f2h__info_meta">
         Filesize
-        <span className={fileSizeClassName}>{fileKbSize.toFixed(2)}kB</span> /
-        <span className={fileSizeClassName}>
-          {(byteLength / 1024).toFixed(2)}kB
+        <span
+          className={fileSizeClassName}
+          title={`Uncompressed ${fileKbSize.toFixed(2)}KB`}
+        >
+          {gzipSize}KB
         </span>
       </span>
     </p>
