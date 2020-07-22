@@ -1,4 +1,4 @@
-import { textData, setHeadlinesAndSourceProps } from "types";
+import { textData, setHeadlinesAndSourceProps, IFrameData } from "types";
 import { HEADLINE_NODE_NAMES, MSG_EVENTS } from "./constants";
 import { postMan } from "utils/messages";
 import UPNG from "upng-js";
@@ -45,6 +45,105 @@ export function identifyImageFormat(imageData: Uint8Array): IMAGE_FORMATS {
   return IMAGE_FORMATS.UNKNOWN;
 }
 
+interface IresizeImage {
+  img: HTMLImageElement;
+  imgData: Uint8Array;
+  nodeDimensions: { width: number; height: number }[];
+  resolve: (data: Uint8Array) => void;
+  reject: (e: Error) => void;
+}
+
+// Uint8Array
+
+async function resizeImage(props: IresizeImage): Promise<void> {
+  const { img, imgData, nodeDimensions, resolve, reject } = props;
+  // Scale to largest dimension
+  const aspectRatio = img.width / img.height;
+
+  // WORK OUT MAX NODE SIZE
+  let width = 200;
+  let height = 200;
+
+  if (aspectRatio < 1) {
+    // 200x300 portrait  = 2/3 = 0.66
+    const maxAspectHeight = Math.max(
+      ...nodeDimensions.flatMap((d) => d.width / aspectRatio)
+    );
+    const maxNodeHeight = Math.max(...nodeDimensions.flatMap((d) => d.height));
+
+    height = Math.max(maxNodeHeight, maxAspectHeight);
+    width = height * aspectRatio;
+
+    // width = Math.max(...nodeDimensions.flatMap((d) => d.width));
+    // height = width / aspectRatio;
+  } else {
+    // 300x200 portrait  = 3/2 = 1.5
+    // Landscape or square
+    const maxAspectWidth = Math.max(
+      ...nodeDimensions.flatMap((d) => d.height * aspectRatio)
+    );
+    const maxNodeWidth = Math.max(...nodeDimensions.flatMap((d) => d.width));
+
+    width = Math.max(maxNodeWidth, maxAspectWidth);
+    height = width / aspectRatio;
+  }
+
+  let targetWidth = 0;
+  let targetHeight = 0;
+
+  // Don't scale image up if node is larger than image
+  if (width > img.width || height > img.height) {
+    targetWidth = img.width;
+    targetHeight = img.height;
+  } else {
+    targetWidth = Math.round(width);
+    targetHeight = Math.round(height);
+  }
+
+  const canvas = new OffscreenCanvas(targetWidth, targetHeight);
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) {
+    reject(new Error("Unable to get 2d context"));
+    return;
+  }
+
+  // Enable high-quality scaling
+  ctx.imageSmoothingQuality = "high";
+
+  // Use image resizing library to create a sharper downscaled image
+  const pica = new Pica();
+  await pica.resize(img, (canvas as unknown) as HTMLCanvasElement, {
+    unsharpAmount: 50,
+    alpha: true,
+  });
+
+  // Original image format
+  const imageFormat = identifyImageFormat(imgData);
+
+  if (imageFormat === IMAGE_FORMATS.PNG || imageFormat === IMAGE_FORMATS.GIF) {
+    // Resize & convert to blob
+    const data = ctx.getImageData(0, 0, targetWidth, targetHeight).data;
+
+    const tinyPng = UPNG.encode([data.buffer], targetWidth, targetHeight, 64);
+    resolve(new Uint8Array(tinyPng));
+    return;
+  }
+
+  if (
+    imageFormat === IMAGE_FORMATS.JPEG ||
+    imageFormat === IMAGE_FORMATS.UNKNOWN
+  ) {
+    const blob = await canvas.convertToBlob({
+      type: "image/jpeg",
+      quality: 0.85,
+    });
+    const buff = await blob.arrayBuffer();
+    resolve(new Uint8Array(buff));
+    return;
+  }
+}
+
 // Context: UI
 export function compressImage(props: {
   imgData: Uint8Array;
@@ -53,116 +152,15 @@ export function compressImage(props: {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const { imgData, nodeDimensions } = props;
-    console.log("Compressing image", nodeDimensions);
 
-    img.addEventListener("load", async () => {
-      // Scale to largest dimension
-      const aspectRatio = img.width / img.height;
-      console.log(aspectRatio, img.width, img.height);
-
-      // WORK OUT MAX NODE SIZE
-      let width = 200;
-      let height = 200;
-
-      if (aspectRatio < 1) {
-        // 200x300 portrait  = 2/3 = 0.66
-        const maxAspectHeight = Math.max(
-          ...nodeDimensions.flatMap((d) => d.width / aspectRatio)
-        );
-        const maxNodeHeight = Math.max(
-          ...nodeDimensions.flatMap((d) => d.height)
-        );
-
-        height = Math.max(maxNodeHeight, maxAspectHeight);
-        width = height * aspectRatio;
-
-        // width = Math.max(...nodeDimensions.flatMap((d) => d.width));
-        // height = width / aspectRatio;
-      } else {
-        // 300x200 portrait  = 3/2 = 1.5
-        // Landscape or square
-        const maxAspectWidth = Math.max(
-          ...nodeDimensions.flatMap((d) => d.height * aspectRatio)
-        );
-        const maxNodeWidth = Math.max(
-          ...nodeDimensions.flatMap((d) => d.width)
-        );
-
-        width = Math.max(maxNodeWidth, maxAspectWidth);
-        height = width / aspectRatio;
-      }
-
-      let targetWidth = 0;
-      let targetHeight = 0;
-
-      // Don't scale image up if node is larger than image
-      if (width > img.width || height > img.height) {
-        targetWidth = img.width;
-        targetHeight = img.height;
-      } else {
-        targetWidth = Math.round(width);
-        targetHeight = Math.round(height);
-      }
-
-      const canvas = new OffscreenCanvas(targetWidth, targetHeight);
-      const ctx = canvas.getContext("2d");
-
-      if (!ctx) {
-        reject(new Error("Unable to get 2d context"));
-        return;
-      }
-
-      ctx.imageSmoothingQuality = "high";
-
-      console.log(
-        "COMPRESSING IMAGE",
-        width,
-        height,
-        targetWidth,
-        targetHeight
-      );
-      const pica = new Pica();
-      await pica.resize(img, canvas, {
-        unsharpAmount: 50,
-        alpha: true,
-      });
-
-      // Original image format
-      const imageFormat = identifyImageFormat(imgData);
-
-      if (
-        imageFormat === IMAGE_FORMATS.PNG ||
-        imageFormat === IMAGE_FORMATS.GIF
-      ) {
-        console.log("IMAGE FORMAT IS PNG");
-        // Resize & convert to blob
-        const data = ctx.getImageData(0, 0, targetWidth, targetHeight).data;
-
-        const tinyPng = UPNG.encode(
-          [data.buffer],
-          targetWidth,
-          targetHeight,
-          64
-        );
-        resolve(new Uint8Array(tinyPng));
-        return;
-      }
-
-      if (
-        imageFormat === IMAGE_FORMATS.JPEG ||
-        imageFormat === IMAGE_FORMATS.UNKNOWN
-      ) {
-        console.log("IMAGE FORMAT IS JPEG");
-        const blob = await canvas.convertToBlob({
-          type: "image/jpeg",
-          quality: 0.85,
-        });
-        const buff = await blob.arrayBuffer();
-        const uintArry = new Uint8Array(buff);
-
-        resolve(uintArry);
-        return;
-      }
+    img.addEventListener("load", () => {
+      resizeImage({
+        img,
+        imgData,
+        nodeDimensions,
+        resolve,
+        reject,
+      }).catch((err) => reject(err));
     });
 
     img.addEventListener("error", (err) => {
@@ -176,6 +174,12 @@ export function compressImage(props: {
   });
 }
 
+function supportsFills(
+  node: SceneNode
+): node is Exclude<SceneNode, SliceNode | GroupNode> {
+  return node.type !== "SLICE" && node.type !== "GROUP";
+}
+
 /**
  * Render all specified frames out as SVG element.
  * Images are optimised for size and image type compression via the frontend UI
@@ -187,8 +191,6 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
   outputNode.name = "output";
 
   try {
-    console.log("inside render worker. Data:", frameIds);
-
     // Clone each selected frame adding them to the temporary container frame
     const frames = figma.currentPage.children.filter(({ id }) =>
       frameIds.includes(id)
@@ -217,8 +219,7 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
     // Find all nodes with image fills
     const nodesWithImages = outputNode.findAll(
       (node) =>
-        node.type !== "SLICE" &&
-        node.type !== "GROUP" &&
+        supportsFills(node) &&
         node.fills !== figma.mixed &&
         node.fills.some((fill) => fill.type === "IMAGE")
     );
@@ -232,22 +233,26 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
     } = {};
 
     for (const node of nodesWithImages) {
-      // The frontend UI which handles the image optimisation needs to know
-      // the sizes of each node that uses the image. The dimensions are stored
-      // with the image hash ID in the cache for later use.
-      const dimensions = {
-        width: node.width,
-        height: node.height,
-        id: node.id,
-      };
-      const imgPaint = [...node.fills].find((p) => p.type === "IMAGE");
+      if (supportsFills(node) && node.fills !== figma.mixed) {
+        // The frontend UI which handles the image optimisation needs to know
+        // the sizes of each node that uses the image. The dimensions are stored
+        // with the image hash ID in the cache for later use.
+        const dimensions = {
+          width: node.width,
+          height: node.height,
+          id: node.id,
+        };
+        const imgPaint = [...node.fills].find((p) => p.type === "IMAGE");
 
-      // Add the image dimensions to the cache, or update and existing cache
-      // item with another nodes dimensions
-      if (imageCache[imgPaint.imageHash]) {
-        imageCache[imgPaint.imageHash].push(dimensions);
-      } else {
-        imageCache[imgPaint.imageHash] = [dimensions];
+        if (imgPaint?.type === "IMAGE" && imgPaint.imageHash) {
+          // Add the image dimensions to the cache, or update and existing cache
+          // item with another nodes dimensions
+          if (imageCache[imgPaint.imageHash]) {
+            imageCache[imgPaint.imageHash].push(dimensions);
+          } else {
+            imageCache[imgPaint.imageHash] = [dimensions];
+          }
+        }
       }
     }
 
@@ -256,7 +261,7 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
     for (const imageHash in imageCache) {
       const bytes = await figma.getImageByHash(imageHash).getBytesAsync();
       const compressedImage: Uint8Array = await postMan.send({
-        workload: MSG_EVENTS.COMPRESSED_IMAGE,
+        workload: MSG_EVENTS.COMPRESS_IMAGE,
         data: {
           imgData: bytes,
           nodeDimensions: imageCache[imageHash],
@@ -268,14 +273,16 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
 
       // Update nodes will new image paint fill
       nodesWithImages.forEach((node) => {
-        const imgPaint = [...node.fills].find(
-          (p) => p.type === "IMAGE" && p.imageHash === imageHash
-        );
+        if (supportsFills(node) && node.fills !== figma.mixed) {
+          const imgPaint = [...node.fills].find(
+            (p) => p.type === "IMAGE" && p.imageHash === imageHash
+          );
 
-        if (imgPaint) {
-          const newPaint = JSON.parse(JSON.stringify(imgPaint));
-          newPaint.imageHash = newImageHash;
-          node.fills = [newPaint];
+          if (imgPaint) {
+            const newPaint = JSON.parse(JSON.stringify(imgPaint));
+            newPaint.imageHash = newImageHash;
+            node.fills = [newPaint];
+          }
         }
       });
     }
@@ -301,7 +308,7 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
   }
 }
 
-export function setHeadlinesAndSource(props: setHeadlinesAndSourceProps) {
+export function setHeadlinesAndSource(props: setHeadlinesAndSourceProps): void {
   const pageNode = figma.currentPage;
   const frames = pageNode.findChildren((node) => node.type === "FRAME");
   const mostLeftPos = Math.min(...frames.map((node) => node.x));
@@ -424,28 +431,18 @@ function getTextNodes(frame: FrameNode): textData[] {
   );
 }
 
-function getHeadlinesAndSource(pageNode: PageNode) {
-  const NODE_NAMES = ["headline", "subhead", "source"];
-
-  const result: { [id: string]: string | undefined } = {};
-  for (const name of NODE_NAMES) {
-    const node = pageNode.findChild(
-      (node) => node.name === name && node.type === "TEXT"
-    ) as TextNode | null;
-
-    result[name] = node?.characters;
-  }
-
-  return result;
+function getNodeText(rootNode: PageNode, nodeName: string): string | undefined {
+  const foundNode = rootNode.findChild((node) => node.name === nodeName);
+  return foundNode && foundNode.type === "TEXT"
+    ? foundNode.characters
+    : undefined;
 }
 
-export function getRootFrames() {
+export function getRootFrames(): IFrameData {
   const { currentPage } = figma;
   const rootFrames = currentPage.children.filter(
     (node) => node.type === "FRAME"
   ) as FrameNode[];
-
-  const headlinesAndSource = getHeadlinesAndSource(currentPage);
 
   const framesData = rootFrames.map((frame) => {
     const { name, width, height, id } = frame;
@@ -457,17 +454,13 @@ export function getRootFrames() {
       height,
       id,
       textNodes,
-      responsive: false,
-      selected: true,
     };
   });
 
   return {
     frames: framesData,
-    windowWidth: 22,
-    windowHeight: 222,
-    responsive: false,
-    selected: true,
-    ...headlinesAndSource,
+    headline: getNodeText(currentPage, HEADLINE_NODE_NAMES.HEADLINE),
+    subhead: getNodeText(currentPage, HEADLINE_NODE_NAMES.HEADLINE),
+    source: getNodeText(currentPage, HEADLINE_NODE_NAMES.HEADLINE),
   };
 }

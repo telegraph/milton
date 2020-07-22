@@ -2,7 +2,7 @@ import { h } from "preact";
 import { deflate } from "pako";
 import { STAGES, UI_TEXT, FRAME_WARNING_SIZE } from "../constants";
 
-export function SvgInformation(props: { svgMarkup: string }) {
+export function SvgInformation(props: { svgMarkup: string }): h.JSX.Element {
   const { svgMarkup } = props;
 
   const fileKbSize = svgMarkup.length / 1000;
@@ -29,7 +29,7 @@ export function SvgInformation(props: { svgMarkup: string }) {
   );
 }
 
-export function HeaderTitle(props: { stage: STAGES }) {
+export function HeaderTitle(props: { stage: STAGES }): h.JSX.Element {
   const { stage } = props;
 
   let title = "";

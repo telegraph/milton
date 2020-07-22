@@ -21,7 +21,7 @@ injectCss(embedCss);
 injectCss(fontsCss);
 
 // Register post message workers
-postMan.registerWorker(MSG_EVENTS.COMPRESSED_IMAGE, compressImage);
+postMan.registerWorker(MSG_EVENTS.COMPRESS_IMAGE, compressImage);
 
 // Render app
 render(<App version={VERSION} />, document.body);

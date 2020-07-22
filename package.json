@@ -23,6 +23,8 @@
   "devDependencies": {
     "@types/file-saver": "^2.0.1",
     "@types/pako": "^1.0.1",
+    "@types/pica": "^5.1.1",
+    "@types/upng-js": "^2.1.1",
     "@typescript-eslint/eslint-plugin": "^3.7.0",
     "@typescript-eslint/parser": "^3.7.0",
     "eslint": "^7.5.0",

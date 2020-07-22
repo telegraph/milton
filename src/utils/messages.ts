@@ -49,7 +49,6 @@ class Postman {
         this.callbackStore[uid](data, err);
       } else {
         const workloadResult = await this.workers[workload](data);
-        console.log("RUNNING WORKLOAD", workload, workloadResult);
         this.postBack({ data: workloadResult, uid });
       }
     } catch (err) {
@@ -59,7 +58,6 @@ class Postman {
   };
 
   public registerWorker = (eventType: MSG_EVENTS, fn: Function) => {
-    console.log("REGISTER", this, eventType, fn);
     this.workers[eventType] = fn;
   };
 

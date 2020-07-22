@@ -16,14 +16,15 @@ export type MsgEventType =
   | MsgErrorType
   | MsgCompressImageType;
 
-export interface MsgFramesType {
-  type: MSG_EVENTS.FOUND_FRAMES;
+export interface IFrameData {
   frames: Omit<FrameDataInterface, "uid">[];
-  windowWidth: number;
-  windowHeight: number;
   headline: string | undefined;
   subhead: string | undefined;
   source: string | undefined;
+}
+
+export interface MsgFramesType extends IFrameData {
+  type: MSG_EVENTS.FOUND_FRAMES;
 }
 
 export interface MsgRenderType {
@@ -46,13 +47,6 @@ export interface MsgCompressImageType {
   image: Uint8Array;
   width: number;
   height: number;
-  quality: number;
-  uid: string;
-}
-
-export interface MsgCompressedImageType {
-  type: MSG_EVENTS.COMPRESSED_IMAGE;
-  image: Uint8Array;
   uid: string;
 }
 
@@ -101,9 +95,6 @@ export interface textData extends textNodeSelectedProps {
 interface MsgCloseInterface {
   type: MSG_EVENTS.CLOSE;
 }
-interface MsgDomReadyInterface {
-  type: MSG_EVENTS.DOM_READY;
-}
 
 interface MsgRenderInterface {
   type: MSG_EVENTS.RENDER;
@@ -112,12 +103,6 @@ interface MsgRenderInterface {
 
 interface MsgErrorInterface {
   type: MSG_EVENTS.ERROR;
-}
-
-interface MsgResizeInterface {
-  type: MSG_EVENTS.RESIZE;
-  width: number;
-  height: number;
 }
 
 interface MsgHeadlinesInterface {
@@ -131,8 +116,6 @@ export type PostMsg =
   | MsgCompressedImageType
   | MsgErrorInterface
   | MsgCloseInterface
-  | MsgDomReadyInterface
-  | MsgResizeInterface
   | MsgRenderInterface
   | MsgHeadlinesInterface;
 

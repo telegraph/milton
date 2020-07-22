@@ -13,6 +13,11 @@ export async function decodeSvgToString(svg: Uint8Array, ids: string[][]) {
   const emptyDiv = document.createElement("div");
   emptyDiv.innerHTML = svgStr;
   const svgEl = emptyDiv.querySelector("svg");
+
+  if (!svgEl) {
+    throw new Error("SVG decode failed. Missing SVG element");
+  }
+
   crunchSvg(svgEl);
   // BUG: Remove empty clip paths
   [...(svgEl?.querySelectorAll("clipPath") || [])].forEach((clipPath) => {
@@ -21,7 +26,7 @@ export async function decodeSvgToString(svg: Uint8Array, ids: string[][]) {
     }
   });
 
-  return svgEl?.outerHTML;
+  return svgEl.outerHTML;
 }
 
 export async function getSvgString(url: string): Promise<string> {

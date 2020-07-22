@@ -1,7 +1,7 @@
 import { h, Component } from "preact";
 
 import { renderInline } from "../outputRender";
-import { MSG_EVENTS, STAGES, UI_TEXT } from "../constants";
+import { MSG_EVENTS, STAGES } from "../constants";
 import { SvgInformation, HeaderTitle } from "./Header";
 import { ResponsiveView } from "./ResponsiveView";
 import { FrameSelection } from "./FrameSelection";
@@ -14,6 +14,7 @@ import {
   MsgFramesType,
   FrameCollection,
   HeadlinesInterface,
+  FrameDataInterface,
 } from "types";
 
 export class App extends Component<AppPropsInterface, AppState> {
@@ -32,10 +33,11 @@ export class App extends Component<AppPropsInterface, AppState> {
   };
 
   componentDidMount(): void {
+    // Once the UI is mounted request the root frames from Figma's backend
     postMan
       .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
       .then(this.updateInitialState)
-      .catch((err) => console.error("error", err));
+      .catch((err) => console.error("error requesting frames", err));
   }
 
   updateInitialState = (data: MsgFramesType): void => {
@@ -89,10 +91,7 @@ export class App extends Component<AppPropsInterface, AppState> {
     const { selectedFrames, frames, headline, subhead, source } = this.state;
 
     const ids = selectedFrames.map((id) => [id, frames[id].uid]);
-    console.log("IDS", ids);
-    let svgText = await decodeSvgToString(svgData, ids);
-
-    console.log("SVG file size", (svgText?.length || 1) / 1024);
+    const svgText = await decodeSvgToString(svgData, ids);
 
     const selected = Object.values(frames).filter((f) =>
       selectedFrames.includes(f.id)
@@ -100,7 +99,7 @@ export class App extends Component<AppPropsInterface, AppState> {
 
     const html = renderInline({
       frames: selected,
-      svgText: svgText,
+      svgText,
       headline,
       subhead,
       source,
@@ -182,10 +181,12 @@ export class App extends Component<AppPropsInterface, AppState> {
 
   handleFormUpdate = (props: HeadlinesInterface): void => {
     this.setState({ ...props });
-    postMan.send({ workload: MSG_EVENTS.UPDATE_HEADLINES, data: props });
+    postMan
+      .send({ workload: MSG_EVENTS.UPDATE_HEADLINES, data: props })
+      .catch(() => this.setState({ error: "Form update failed" }));
   };
 
-  getSelectedFrames = () => {
+  getSelectedFrames = (): FrameDataInterface[] => {
     const { frames, selectedFrames } = this.state;
 
     return Object.values(frames).filter((f) => selectedFrames.includes(f.id));

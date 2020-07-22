@@ -12,7 +12,7 @@ export class ResponsiveView extends Component<ResponsiveViewProps> {
     widthIndex: 0,
   };
 
-  setIndex = (i: number) => {
+  setIndex = (i: number): void => {
     this.setState({ widthIndex: i });
 
     if (this.iframeEl.current) {
@@ -30,6 +30,7 @@ export class ResponsiveView extends Component<ResponsiveViewProps> {
       <div className="f2h__responsive_preview">
         {frameWidths.map((width, i) => (
           <p
+            key={width}
             className={`responsive_width_btn ${
               widthIndex === i ? "active" : ""
             }`}

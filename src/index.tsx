@@ -2,7 +2,7 @@ import { MSG_EVENTS } from "./constants";
 import { postMan } from "./utils/messages";
 import { getRootFrames, renderFrames, setHeadlinesAndSource } from "./helpers";
 
-// Register messager event functions
+// Register messenger event functions
 postMan.registerWorker(MSG_EVENTS.GET_ROOT_FRAMES, getRootFrames);
 postMan.registerWorker(MSG_EVENTS.RENDER, renderFrames);
 postMan.registerWorker(MSG_EVENTS.UPDATE_HEADLINES, setHeadlinesAndSource);
