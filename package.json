@@ -1,14 +1,14 @@
 {
   "name": "2020-05-06-figma2html",
-  "version": "0.1.0",
-  "description": "",
+  "version": "0.2.0",
+  "description": "Export frames from Figma to HTML",
   "main": "index.js",
   "scripts": {
     "dev": "watchexec --exts css,html,tsx,ts -w ./src ./build.sh",
     "check": "tsc --noEmit",
     "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx"
   },
-  "author": "",
+  "author": "Andrew Mason",
   "license": "ISC",
   "dependencies": {
     "@figma/plugin-typings": "^1.15.0",
