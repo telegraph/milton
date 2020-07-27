@@ -127,16 +127,16 @@ function generateStyleText(
       break;
   }
 
-  let justifyItemsValue = "auto";
+  let justifyItemsValue = "left";
   switch (textAlignHorizontal) {
     case "LEFT":
-      justifyItemsValue = "flex-start";
+      justifyItemsValue = "left";
       break;
     case "CENTER":
       justifyItemsValue = "center";
       break;
     case "RIGHT":
-      justifyItemsValue = "flex-end";
+      justifyItemsValue = "right";
       break;
   }
 
@@ -153,7 +153,7 @@ function generateStyleText(
         top: ${top};
         line-height: ${lineHeightValue};
         letter-spacing: ${letterSpaceValue};
-        justify-content: ${justifyItemsValue};
+        text-align: ${justifyItemsValue};
         align-items: ${alignItemsValue};
       `;
 }
