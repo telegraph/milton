@@ -1,4 +1,5 @@
-import { textData, setHeadlinesAndSourceProps, IFrameData } from "types";
+import { setHeadlinesAndSourceProps, IFrameData } from "types";
+import { getNodeText, getTextNodes } from "helpers/figmaText";
 import { HEADLINE_NODE_NAMES, MSG_EVENTS } from "./constants";
 import { postMan } from "utils/messages";
 import UPNG from "upng-js";
@@ -368,74 +369,6 @@ export function setHeadlinesAndSource(props: setHeadlinesAndSourceProps): void {
         console.error("Failed to load font", err);
       });
   }
-}
-
-function getTextNodes(frame: FrameNode): textData[] {
-  const textNodes = frame.findAll(({ type }) => type === "TEXT") as TextNode[];
-  const { absoluteTransform } = frame;
-  const rootX = absoluteTransform[0][2];
-  const rootY = absoluteTransform[1][2];
-
-  return textNodes.map(
-    (node): textData => {
-      const {
-        absoluteTransform,
-        width,
-        height,
-        fontSize: fontSizeData,
-        fontName,
-        fills,
-        characters,
-        lineHeight,
-        letterSpacing,
-        textAlignHorizontal,
-        textAlignVertical,
-      } = node;
-
-      // NOTE: Figma node x, y are relative to first parent, we want them
-      // relative to the root frame
-      const textX = absoluteTransform[0][2];
-      const textY = absoluteTransform[1][2];
-      const x = textX - rootX;
-      const y = textY - rootY;
-
-      // Extract basic fill colour
-      const [fill] = fills === figma.mixed ? [] : fills;
-      let colour = { r: 0, g: 0, b: 0, a: 1 };
-      if (fill.type === "SOLID") {
-        colour = { ...colour, a: fill.opacity || 1 };
-      }
-
-      // Extract font info
-      // TODO: Confirm fallback fonts
-      const fontSize = fontSizeData !== figma.mixed ? fontSizeData : 16;
-      const fontFamily = fontName !== figma.mixed ? fontName.family : "Arial";
-      const fontStyle = fontName !== figma.mixed ? fontName.style : "Regular";
-
-      return {
-        x,
-        y,
-        width,
-        height,
-        fontSize,
-        fontFamily,
-        fontStyle,
-        colour,
-        characters,
-        lineHeight,
-        letterSpacing,
-        textAlignHorizontal,
-        textAlignVertical,
-      };
-    }
-  );
-}
-
-function getNodeText(rootNode: PageNode, nodeName: string): string | undefined {
-  const foundNode = rootNode.findChild((node) => node.name === nodeName);
-  return foundNode && foundNode.type === "TEXT"
-    ? foundNode.characters
-    : undefined;
 }
 
 export function getRootFrames(): IFrameData {

@@ -90,7 +90,7 @@ function generateStyleText(
       if (fontFamily === "Telesans Text") {
         letterSpaceValue = "-0.37px";
       } else if (fontFamily === "Telesans Agate") {
-        letterSpaceValue = "-0.19}px";
+        letterSpaceValue = "-0.19px";
       } else {
         letterSpaceValue = `0`;
       }
@@ -153,8 +153,11 @@ function generateStyleText(
         top: ${top};
         line-height: ${lineHeightValue};
         letter-spacing: ${letterSpaceValue};
-        text-align: ${justifyItemsValue};
-        align-items: ${alignItemsValue};
+        text-align:  ${justifyItemsValue};
+        align-items: ${justifyItemsValue};
+        justify-content: ${alignItemsValue};
+        flex-direction: column;
+        display: block;
       `;
 }
 
@@ -166,12 +169,33 @@ type TextProps = {
 function Text(props: TextProps) {
   const { node, width, height } = props;
 
-  const { characters } = node;
+  // TODO: Style containing DIV with dimensions
+  // TODO: Split characters based on styles and wrap them in <span>s
   const styleText = generateStyleText(node, width, height);
+
+  // Split text onto multiple lines based on linebreaks
+  const { characters } = node;
+  const lines = characters.split("\n");
+  console.log(lines);
 
   return (
     <p className="f2h__text" style={styleText}>
-      {characters}
+      {node.styles.map((style) => (
+        <span
+          key={style.chars}
+          style={`
+
+          letter-spacing: ${style.letterSpace};
+          line-height: ${style.lineHeight};
+          font-size: ${style.size}px;
+          color: rgb(${style.colour.r * 255},${style.colour.g * 255},${
+            style.colour.b * 255
+          }); font-family: "${style.font.family}";`}
+          dangerouslySetInnerHTML={{
+            __html: style.chars.replace(/\n/g, "<br />"),
+          }}
+        ></span>
+      ))}
     </p>
   );
 }
