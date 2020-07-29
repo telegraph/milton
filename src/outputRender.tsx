@@ -178,6 +178,36 @@ function Text(props: TextProps) {
   const lines = characters.split("\n");
   console.log(lines);
 
+  // FIXME: Spit spans accross <p> elements for proper line-heights
+
+  // Find all the line breaks
+  let previousIndex = 0;
+  let foundIndex = 0;
+  do {
+    // Start search position from 0 or the next char from previous location
+    const position = previousIndex ? previousIndex + 1 : 0;
+    foundIndex = characters.indexOf("\n", position);
+
+    // End location is with recent find or end of string
+    const endPosition = foundIndex > -1 ? foundIndex : undefined;
+
+    // Extact string from found positions
+    console.log({ previousIndex, foundIndex, endPosition: endPosition });
+    const str = characters.substring(position, endPosition);
+    console.log(`Chars "${str}"`);
+
+    // Find all styles that fall with found range
+    const styleNodes = node.styles.filter((style) => {
+      const { start, end } = style;
+      return previousIndex >= start && foundIndex <= end - 1;
+    });
+
+    console.log(styleNodes);
+
+    // Store reference to found position
+    previousIndex = foundIndex;
+  } while (foundIndex != -1);
+
   return (
     <p className="f2h__text" style={styleText}>
       {node.styles.map((style) => (
