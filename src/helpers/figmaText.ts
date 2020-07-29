@@ -145,10 +145,14 @@ export function getTextNodes(frame: FrameNode): textData[] {
             lineHeights.push({ ...props });
             startRange = i;
           } else {
-            const value =
-              sizeValue.unit === "PIXELS"
-                ? `${sizeValue.value}px`
-                : `${sizeValue.value / 100}rem`;
+            let value = undefined;
+            if (sizeValue.unit !== "AUTO") {
+              value =
+                sizeValue.unit === "PIXELS"
+                  ? `${sizeValue.value}px`
+                  : `${sizeValue.value / 100}rem`;
+            }
+
             props = { start: startRange, end: i, value };
           }
         }

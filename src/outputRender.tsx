@@ -55,6 +55,7 @@ function generateStyleText(
   const textColour = `rgba(${colourVals.join(",")}, ${a})`;
   const fontName = `${fontFamily}`;
   let fontWeight = 400;
+  console.log("fontStylefontStylefontStyle", fontStyle);
   if (fontStyle === "Semibold" || fontStyle === "Bold") {
     fontWeight = 700;
   }
@@ -142,22 +143,29 @@ function generateStyleText(
 
   const newWidth = Math.ceil((width / frameWidth) * 100);
 
+  const newheight = `${(height / frameHeight) * 100}%`;
+
   return `
         font-size: ${String(fontSize)}px;
         font-family: "${fontName}", serif;
         font-weight: ${fontWeight};
         color: ${textColour};
-        width: ${newWidth}%;
-        height: ${(height / frameHeight) * 100}%;
+        width: ${width}px;
+        
+
+  
+      
+        transform: translate(-50%, -50%);
+         
         left: ${left};
         top: ${top};
-        line-height: ${lineHeightValue};
+        
         letter-spacing: ${letterSpaceValue};
         text-align:  ${justifyItemsValue};
-        align-items: ${justifyItemsValue};
-        justify-content: ${alignItemsValue};
-        flex-direction: column;
-        display: block;
+
+    display: block;
+
+      
       `;
 }
 
@@ -216,11 +224,19 @@ function Text(props: TextProps) {
           style={`
 
           letter-spacing: ${style.letterSpace};
-          line-height: ${style.lineHeight};
+          ${style.lineHeight ? `line-height: ${style.lineHeight}` : ""};
           font-size: ${style.size}px;
           color: rgb(${style.colour.r * 255},${style.colour.g * 255},${
             style.colour.b * 255
-          }); font-family: "${style.font.family}";`}
+          });
+          font-family: "${style.font.family}";
+    
+          font-weight: ${
+            style.font.style === "Bold" || style.font.style === "Semibold"
+              ? 700
+              : 400
+          };
+        `}
           dangerouslySetInnerHTML={{
             __html: style.chars.replace(/\n/g, "<br />"),
           }}
@@ -260,7 +276,7 @@ export function renderInline(props: renderInlineProps): string {
   }
 
   const html = render(
-    <div className="f2h__embed">
+    <div className="f2h__embed f2h--responsive">
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -299,26 +315,42 @@ export function renderInline(props: renderInlineProps): string {
 
 function genreateMediaQueries(frames: FrameDataInterface[]) {
   // Sort frames by ascending height. Small > big
-  const idWidths = frames
-    .map(({ width, height, uid }) => [width, height, uid])
-    .sort(([a], [b]) => (a < b ? -1 : 1));
+  const sortedFrames = Object.values(frames)
+    .map(({ width, height, uid }) => ({ width, height, uid }))
+    .sort((a, b) => (a.width < b.width ? -1 : 1));
 
-  const mediaQueries = idWidths.map(([width, height, uid], i) => {
-    // Always show smallest frame
+  const largestWidth = Math.max(...sortedFrames.map(({ width }) => width));
+
+  let cssText = "";
+  for (let i = 0; i < sortedFrames.length; i++) {
+    const { uid, width, height } = sortedFrames[i];
+
     if (i === 0) {
-      return `
-          .f2h__svg_container,
-          .f2h__wrap {
-            width: ${width}px;
-            height: ${height}px;
-          }
-        `;
+      cssText += `
+            .f2h__svg_container,
+            .f2h__wrap {
+              width: ${width}px;
+              height: ${height}px;
+            }
+
+            .f2h--responsive .f2h__svg_container,
+            .f2h--responsive .f2h__wrap
+            {
+              width: 100%;
+              height: ${(height / width) * 100}vw;
+            }
+
+            .f2h--responsive svg {
+              width: ${(largestWidth / width) * 100}%;
+              height: auto;
+            }
+          `;
+
+      continue;
     }
 
-    const [, , prevId] = idWidths[i - 1];
-
-    // Note: Cascade order is important
-    return `
+    const { uid: prevId } = sortedFrames[i - 1];
+    cssText += `
       /* Hide until width is reached */
       @media (max-width: ${width}px) {
         .${uid} { display: none; }
@@ -326,6 +358,10 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
 
       /* Hide previous and show current frame */
       @media (min-width: ${width}px) {
+        .f2h--responsive svg {
+          width: ${(largestWidth / width) * 100}%;
+        }
+
         .${prevId} { display: none; }
         .${uid} { display: block; }
         .f2h__svg_container,
@@ -333,9 +369,15 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
           width: ${width}px;
           height: ${height}px;
         }
-      }
-    `;
-  });
 
-  return mediaQueries.join("");
+        .f2h--responsive .f2h__svg_container,
+        .f2h--responsive .f2h__wrap {
+          height: ${(height / width) * 100}vw;
+         }
+
+        }
+      `;
+  }
+
+  return cssText;
 }
