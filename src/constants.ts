@@ -35,15 +35,6 @@ export const UI_TEXT = {
   BUTTON_PREVIOUS: "Back",
 };
 
-export const INITIAL_UI_SIZE = {
-  width: 480,
-  height: 500,
-  maxWidth: 1200,
-  maxHeight: 900,
-  minWidth: 420,
-  minHeight: 480,
-};
-
 export const FRAME_WARNING_SIZE = 300;
 
 export enum HEADLINE_NODE_NAMES {
