@@ -2,150 +2,12 @@ import { setHeadlinesAndSourceProps, IFrameData } from "types";
 import { getNodeText, getTextNodes } from "helpers/figmaText";
 import { HEADLINE_NODE_NAMES, MSG_EVENTS } from "./constants";
 import { postMan } from "utils/messages";
-import UPNG from "upng-js";
-import Pica from "pica";
+import { resizeAndOptimiseImage } from "./helpers/imageHelper";
 
-const JPEG_MAGIC_BYTES = [
-  [0xff, 0xd8, 0xff, 0xdb],
-  [0xff, 0xd8, 0xff, 0xee],
-  [0xff, 0xd8, 0xff, 0xe1],
-  [0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01],
-];
-const PNG_MAGIC_BYTES = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
-const GIF_MAGIC_BYTES = [
-  [0x47, 0x49, 0x46, 0x38, 0x37, 0x61],
-  [0x47, 0x49, 0x46, 0x38, 0x39, 0x61],
-];
-enum IMAGE_FORMATS {
-  PNG,
-  JPEG,
-  GIF,
-  UNKNOWN,
-}
-
-export function identifyImageFormat(imageData: Uint8Array): IMAGE_FORMATS {
-  const isPng = PNG_MAGIC_BYTES.every((val, i) => val === imageData[i]);
-  if (isPng) {
-    return IMAGE_FORMATS.PNG;
-  }
-
-  const isJpeg = JPEG_MAGIC_BYTES.some((bytes) =>
-    bytes.every((val, i) => val === imageData[i])
-  );
-  if (isJpeg) {
-    return IMAGE_FORMATS.JPEG;
-  }
-
-  const isGif = GIF_MAGIC_BYTES.some((bytes) =>
-    bytes.every((val, i) => val === imageData[i])
-  );
-  if (isGif) {
-    return IMAGE_FORMATS.GIF;
-  }
-
-  return IMAGE_FORMATS.UNKNOWN;
-}
-
-interface IresizeImage {
-  img: HTMLImageElement;
-  imgData: Uint8Array;
-  nodeDimensions: { width: number; height: number }[];
-  resolve: (data: Uint8Array) => void;
-  reject: (e: Error) => void;
-}
-
-// Uint8Array
-
-async function resizeImage(props: IresizeImage): Promise<void> {
-  const { img, imgData, nodeDimensions, resolve, reject } = props;
-  // Scale to largest dimension
-  const aspectRatio = img.width / img.height;
-
-  // WORK OUT MAX NODE SIZE
-  let width = 200;
-  let height = 200;
-
-  if (aspectRatio < 1) {
-    // 200x300 portrait  = 2/3 = 0.66
-    const maxAspectHeight = Math.max(
-      ...nodeDimensions.flatMap((d) => d.width / aspectRatio)
-    );
-    const maxNodeHeight = Math.max(...nodeDimensions.flatMap((d) => d.height));
-
-    height = Math.max(maxNodeHeight, maxAspectHeight);
-    width = height * aspectRatio;
-
-    // width = Math.max(...nodeDimensions.flatMap((d) => d.width));
-    // height = width / aspectRatio;
-  } else {
-    // 300x200 portrait  = 3/2 = 1.5
-    // Landscape or square
-    const maxAspectWidth = Math.max(
-      ...nodeDimensions.flatMap((d) => d.height * aspectRatio)
-    );
-    const maxNodeWidth = Math.max(...nodeDimensions.flatMap((d) => d.width));
-
-    width = Math.max(maxNodeWidth, maxAspectWidth);
-    height = width / aspectRatio;
-  }
-
-  let targetWidth = 0;
-  let targetHeight = 0;
-
-  // Don't scale image up if node is larger than image
-  if (width > img.width || height > img.height) {
-    targetWidth = img.width;
-    targetHeight = img.height;
-  } else {
-    targetWidth = Math.round(width);
-    targetHeight = Math.round(height);
-  }
-
-  const canvas = new OffscreenCanvas(targetWidth, targetHeight);
-  const ctx = canvas.getContext("2d");
-
-  if (!ctx) {
-    reject(new Error("Unable to get 2d context"));
-    return;
-  }
-
-  // Enable high-quality scaling
-  ctx.imageSmoothingQuality = "high";
-
-  // Use image resizing library to create a sharper downscaled image
-  const pica = new Pica();
-  await pica.resize(img, (canvas as unknown) as HTMLCanvasElement, {
-    unsharpAmount: 50,
-    alpha: true,
-  });
-
-  // Original image format
-  const imageFormat = identifyImageFormat(imgData);
-
-  if (imageFormat === IMAGE_FORMATS.PNG || imageFormat === IMAGE_FORMATS.GIF) {
-    // Resize & convert to blob
-    const data = ctx.getImageData(0, 0, targetWidth, targetHeight).data;
-
-    const tinyPng = UPNG.encode([data.buffer], targetWidth, targetHeight, 64);
-    resolve(new Uint8Array(tinyPng));
-    return;
-  }
-
-  if (
-    imageFormat === IMAGE_FORMATS.JPEG ||
-    imageFormat === IMAGE_FORMATS.UNKNOWN
-  ) {
-    const blob = await canvas.convertToBlob({
-      type: "image/jpeg",
-      quality: 0.85,
-    });
-    const buff = await blob.arrayBuffer();
-    resolve(new Uint8Array(buff));
-    return;
-  }
-}
-
-// Context: UI
+/**
+ * Compress image using browser's native image decoding support
+ * @context Browser (UI)
+ */
 export function compressImage(props: {
   imgData: Uint8Array;
   nodeDimensions: { width: number; height: number }[];
@@ -155,7 +17,7 @@ export function compressImage(props: {
     const { imgData, nodeDimensions } = props;
 
     img.addEventListener("load", () => {
-      resizeImage({
+      resizeAndOptimiseImage({
         img,
         imgData,
         nodeDimensions,
@@ -175,6 +37,9 @@ export function compressImage(props: {
   });
 }
 
+/**
+ * Test if Figma node supports fill property type
+ */
 function supportsFills(
   node: SceneNode
 ): node is Exclude<SceneNode, SliceNode | GroupNode> {
@@ -272,7 +137,7 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
       // Store the new image in figma and get the new image hash
       const newImageHash = figma.createImage(compressedImage).hash;
 
-      // Update nodes will new image paint fill
+      // Update nodes with new image paint fill
       nodesWithImages.forEach((node) => {
         if (supportsFills(node) && node.fills !== figma.mixed) {
           const imgPaint = [...node.fills].find(
@@ -309,6 +174,11 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
   }
 }
 
+/**
+ * Create, update or delete headline text in figma document from plugin UI
+ *
+ * @context figma
+ */
 export function setHeadlinesAndSource(props: setHeadlinesAndSourceProps): void {
   const pageNode = figma.currentPage;
   const frames = pageNode.findChildren((node) => node.type === "FRAME");
@@ -329,15 +199,17 @@ export function setHeadlinesAndSource(props: setHeadlinesAndSourceProps): void {
       return;
     }
 
+    // Do nothing is there's no text content
     if (!textContent) {
       return;
     }
 
-    // Create node if it doesn't exist
+    // Create node if it doesn't already exist
     if (!node) {
       node = figma.createText();
       node.name = name;
 
+      // Position new text node top-left of the first frame in the page
       let y = mostTopPos - 60;
       if (name === HEADLINE_NODE_NAMES.HEADLINE) {
         y -= 60;

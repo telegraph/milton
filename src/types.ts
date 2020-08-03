@@ -92,33 +92,6 @@ export interface textData extends textNodeSelectedProps {
   fontStyle: string;
 }
 
-interface MsgCloseInterface {
-  type: MSG_EVENTS.CLOSE;
-}
-
-interface MsgRenderInterface {
-  type: MSG_EVENTS.RENDER;
-  frameId: string;
-}
-
-interface MsgErrorInterface {
-  type: MSG_EVENTS.ERROR;
-}
-
-interface MsgHeadlinesInterface {
-  type: MSG_EVENTS.UPDATE_HEADLINES;
-  headline: string | undefined;
-  subhead: string | undefined;
-  source: string | undefined;
-}
-
-export type PostMsg =
-  | MsgCompressedImageType
-  | MsgErrorInterface
-  | MsgCloseInterface
-  | MsgRenderInterface
-  | MsgHeadlinesInterface;
-
 export interface setHeadlinesAndSourceProps {
   pageNode: PageNode;
   headline: string | undefined;
@@ -136,4 +109,12 @@ export interface UiPostMessageEvent extends MessageEvent {
   data: {
     pluginMessage: MsgEventType;
   };
+}
+
+export interface IresizeImage {
+  img: HTMLImageElement;
+  imgData: Uint8Array;
+  nodeDimensions: { width: number; height: number }[];
+  resolve: (data: Uint8Array) => void;
+  reject: (e: Error) => void;
 }

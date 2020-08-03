@@ -5,8 +5,7 @@ import { App } from "./components/App";
 import { postMan } from "utils/messages";
 import { MSG_EVENTS } from "constants";
 import { compressImage } from "helpers";
-
-const VERSION = "alpha-0.2";
+import { version } from "../package.json";
 
 // Import CSS files as plain text via esbuild loader option
 // @ts-expect-error
@@ -24,4 +23,4 @@ injectCss(fontsCss);
 postMan.registerWorker(MSG_EVENTS.COMPRESS_IMAGE, compressImage);
 
 // Render app
-render(<App version={VERSION} />, document.body);
+render(<App version={version} />, document.body);
