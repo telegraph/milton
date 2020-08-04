@@ -29,7 +29,7 @@ export async function decodeSvgToString(svg: Uint8Array, ids: string[][]) {
 
   // Remove text nodes
   [...(svgEl?.querySelectorAll("text") || [])].forEach((textNode) => {
-    // textNode.parentNode?.removeChild(textNode);
+    textNode.parentNode?.removeChild(textNode);
   });
 
   return svgEl.outerHTML;
