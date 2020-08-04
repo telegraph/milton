@@ -30,18 +30,40 @@ function generateParagraphStyle(
   frameWidth: number,
   frameHeight: number
 ) {
-  const { x, y, width, height } = node;
+  const { x, y, width, height, textAlignHorizontal, textAlignVertical } = node;
+
+  // FIXME: HACK - HTML text widths are larger than text node in figma resulting
+  // in wrapping text. Need a smarter way to calculate addition width based
+  // on font, letter-spacing and number of characters
+  const BUFFER = 4;
+  console.log("alignment", textAlignHorizontal, textAlignVertical);
 
   // Position center aligned
   const left = `${((x + width / 2) / frameWidth) * 100}%`;
   const top = `${((y + height / 2) / frameHeight) * 100}%`;
 
+  let alignVertical = "";
+  switch (textAlignVertical) {
+    case "TOP":
+      alignVertical = "flex-start";
+      break;
+    case "CENTER":
+      alignVertical = "center";
+      break;
+    case "BOTTOM":
+      alignVertical = "flex-end";
+      break;
+  }
+
   return `
-        width: ${width}px;
+        width: ${((width + BUFFER) / frameWidth) * 100}%;
+        height: ${((height + BUFFER) / frameHeight) * 100}%;
         transform: translate(-50%, -50%);
         left: ${left};
         top: ${top};
-        display: block;
+        text-align: ${textAlignHorizontal.toLocaleLowerCase()};
+        display: flex;
+        align-items: ${alignVertical};
       `;
 }
 
@@ -57,56 +79,20 @@ function Text(props: TextProps) {
   // TODO: Split characters based on styles and wrap them in <span>s
   const styleText = generateParagraphStyle(node, width, height);
 
-  // Split text onto multiple lines based on linebreaks
-  const { characters } = node;
-  const lines = characters.split("\n");
-  console.log(lines);
-
-  // FIXME: Spit spans accross <p> elements for proper line-heights
-
-  // Find all the line breaks
-  let previousIndex = 0;
-  let foundIndex = 0;
-  do {
-    // Start search position from 0 or the next char from previous location
-    const position = previousIndex ? previousIndex + 1 : 0;
-    foundIndex = characters.indexOf("\n", position);
-
-    // End location is with recent find or end of string
-    const endPosition = foundIndex > -1 ? foundIndex : undefined;
-
-    // Extact string from found positions
-    console.log({ previousIndex, foundIndex, endPosition: endPosition });
-    const str = characters.substring(position, endPosition);
-    console.log(`Chars "${str}"`);
-
-    console.log(node.rangeStyles);
-
-    // Find all styles that fall with found range
-    const styleNodes = node.rangeStyles.filter((style) => {
-      const { start, end } = style;
-      return previousIndex >= start && foundIndex <= end - 1;
-    });
-
-    console.log(styleNodes);
-
-    // Store reference to found position
-    previousIndex = foundIndex;
-  } while (foundIndex != -1);
-
   return (
-    <p className="f2h__text" style={styleText}>
-      {node.rangeStyles.map((style) => (
-        <span
-          key={style.chars}
-          style={`
+    <div className="f2h__text" style={styleText}>
+      <p style="margin: 0; line-height: 0; width: 100%;">
+        {node.rangeStyles.map((style) => (
+          <span
+            key={style.chars}
+            style={`
 
           letter-spacing: ${style.letterSpace};
           ${style.lineHeight ? `line-height: ${style.lineHeight}` : ""};
           font-size: ${style.size}px;
           color: rgb(${style.colour.r * 255},${style.colour.g * 255},${
-            style.colour.b * 255
-          });
+              style.colour.b * 255
+            });
           font-family: "${style.font.family}";
     
           font-weight: ${
@@ -115,12 +101,13 @@ function Text(props: TextProps) {
               : 400
           };
         `}
-          dangerouslySetInnerHTML={{
-            __html: style.chars.replace(/\n/g, "<br />"),
-          }}
-        ></span>
-      ))}
-    </p>
+            dangerouslySetInnerHTML={{
+              __html: style.chars.replace(/\n/g, "<br />"),
+            }}
+          ></span>
+        ))}
+      </p>
+    </div>
   );
 }
 
