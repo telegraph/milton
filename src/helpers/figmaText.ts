@@ -1,4 +1,4 @@
-import { textData } from "types";
+import { textData, ITextPropRange } from "types";
 
 export function getNodeText(
   rootNode: PageNode,
@@ -16,7 +16,7 @@ function calculateLetterSpacing(
 ) {
   const { unit: letterUnit, value: letterVal } = letterSpacing;
   let letterSpaceValue = "0";
-  console.log(letterUnit, letterSpacing, fontFamily);
+
   switch (letterUnit) {
     case "PIXELS":
       // TODO: FIX ME
@@ -53,306 +53,190 @@ function calculateLetterSpacing(
   return letterSpaceValue;
 }
 
-export function getTextNodes(frame: FrameNode): textData[] {
+enum RANGE_TYPES {
+  LETTER_SPACING,
+  LINE_HEIGHT,
+  FONT_SIZE,
+  COLOUR,
+  FONT,
+}
+
+function getRangeVal(
+  textNode: TextNode,
+  rangeType: RANGE_TYPES,
+  start: number,
+  end: number
+) {
+  switch (rangeType) {
+    case RANGE_TYPES.LETTER_SPACING: {
+      const letterSpace = textNode.getRangeLetterSpacing(start, end);
+      if (letterSpace === figma.mixed) {
+        return letterSpace;
+      } else {
+        return letterSpace.unit === "PERCENT"
+          ? `${letterSpace.value / 100}rem`
+          : `${letterSpace.value}px`;
+      }
+    }
+
+    case RANGE_TYPES.LINE_HEIGHT: {
+      const lineHeight = textNode.getRangeLineHeight(start, end);
+      if (lineHeight === figma.mixed) {
+        return lineHeight;
+      } else if (lineHeight.unit === "AUTO") {
+        return;
+      } else {
+        return lineHeight.unit === "PERCENT"
+          ? `${lineHeight.value / 100}rem`
+          : `${lineHeight.value}px`;
+      }
+    }
+
+    case RANGE_TYPES.FONT_SIZE:
+      return textNode.getRangeFontSize(start, end);
+
+    case RANGE_TYPES.COLOUR: {
+      const paint = textNode.getRangeFills(start, end);
+      if (paint === figma.mixed) {
+        return paint;
+      } else if (paint[0].type === "SOLID") {
+        return { ...paint[0].color };
+      } else {
+        return { r: 0, g: 0, b: 0 };
+      }
+    }
+
+    case RANGE_TYPES.FONT:
+      return textNode.getRangeFontName(start, end);
+
+    default:
+      return null;
+  }
+}
+
+function getTypeValues(
+  textNode: TextNode,
+  rangeType: RANGE_TYPES
+): ITextPropRange[] {
+  const { characters } = textNode;
+
+  // If there's no mixed style then short circuit response
+  const fullRangeValue = getRangeVal(textNode, rangeType, 0, characters.length);
+  if (fullRangeValue !== figma.mixed) {
+    return [{ start: 0, end: characters.length, value: fullRangeValue }];
+  }
+
+  // There's mixed styles. Go through each char to extract style ranges
+  // Bootstrap range values with first character which is never mixed type
+  const values: ITextPropRange[] = [
+    { start: 0, end: 1, value: getRangeVal(textNode, rangeType, 0, 1) },
+  ];
+
+  // Loop through each character to find ranges.
+  // When a mixed range is found update the current end position and
+  // create a new range with the next style
+  for (let i = 1; i <= characters.length; i++) {
+    const prop = values[values.length - 1];
+
+    // Update end position of current style
+    prop.end = i;
+
+    const currentValue = getRangeVal(textNode, rangeType, prop.start, i);
+
+    if (currentValue === figma.mixed) {
+      // Set end of the current range
+      prop.end = i - 1;
+
+      // Create and store next range style
+      values.push({
+        start: i,
+        end: i + 1,
+        value: getRangeVal(textNode, rangeType, i - 1, i),
+      });
+    }
+  }
+
+  return values;
+}
+
+function findItemInRange(items: any[], start: number, end: number): any {
+  return items.find((item) => start >= item.start && end <= item.end);
+}
+
+function getTextRangeValues(textNode: TextNode) {
+  const { characters } = textNode;
+
+  const ranges = {
+    letterSpace: getTypeValues(textNode, RANGE_TYPES.LETTER_SPACING),
+    lineHeight: getTypeValues(textNode, RANGE_TYPES.LINE_HEIGHT),
+    size: getTypeValues(textNode, RANGE_TYPES.FONT_SIZE),
+    colour: getTypeValues(textNode, RANGE_TYPES.COLOUR),
+    font: getTypeValues(textNode, RANGE_TYPES.FONT),
+  };
+
+  console.log(ranges, "ranges");
+
+  // Collect all end indexed, sort accending and remove duplicates
+  const ends = Object.values(ranges)
+    .flatMap((range) => range.map((item) => item.end))
+    .sort((a, b) => (a > b ? 1 : -1))
+    .filter((n, i, self) => self.indexOf(n) === i);
+
+  // TODO: Simplify end index logic
+  const styles = [];
+  let iStart = 0;
+  for (let iEnd of ends) {
+    if (iStart === iEnd) {
+      iEnd++;
+    }
+
+    const style = {
+      start: iStart,
+      end: iEnd,
+      chars: characters.substring(iStart, iEnd),
+      font: findItemInRange(ranges.font, iStart + 1, iEnd)?.value,
+      colour: findItemInRange(ranges.colour, iStart + 1, iEnd)?.value,
+      size: findItemInRange(ranges.size, iStart + 1, iEnd)?.value,
+      letterSpace: findItemInRange(ranges.letterSpace, iStart + 1, iEnd)?.value,
+      lineHeight: findItemInRange(ranges.lineHeight, iStart + 1, iEnd)?.value,
+    };
+
+    styles.push(style);
+    iStart = iEnd;
+  }
+
+  return styles;
+}
+
+export function getTextNodesFromFrame(frame: FrameNode): textData[] {
   const textNodes = frame.findAll(({ type }) => type === "TEXT") as TextNode[];
   const { absoluteTransform } = frame;
   const rootX = absoluteTransform[0][2];
   const rootY = absoluteTransform[1][2];
 
-  return textNodes.map(
-    (node): textData => {
-      const {
-        absoluteTransform,
-        width,
-        height,
-        fontSize: fontSizeData,
-        fontName,
-        fills,
-        characters,
-        lineHeight,
-        letterSpacing,
-        textAlignHorizontal,
-        textAlignVertical,
-      } = node;
+  const textCollection: textData[] = [];
+  for (const textNode of textNodes) {
+    const { absoluteTransform, width, height, characters } = textNode;
 
-      // NOTE: Figma node x, y are relative to first parent, we want them
-      // relative to the root frame
-      const textX = absoluteTransform[0][2];
-      const textY = absoluteTransform[1][2];
-      const x = textX - rootX;
-      const y = textY - rootY;
+    // NOTE: Figma node x, y are relative to first parent, we want them
+    // relative to the root frame
+    const textX = absoluteTransform[0][2];
+    const textY = absoluteTransform[1][2];
+    const x = textX - rootX;
+    const y = textY - rootY;
 
-      // Extract basic fill colour
-      let colour = { r: 0, g: 0, b: 0, a: 1 };
+    // Get font sizes ranges
+    const rangeStyles = getTextRangeValues(textNode);
 
-      interface ITextPropRange {
-        start: number;
-        end: number;
-        value: number;
-      }
+    textCollection.push({
+      x,
+      y,
+      width,
+      height,
+      characters,
+      rangeStyles,
+    });
+  }
 
-      function getTextRangeValues(textNode: TextNode) {
-        const { characters } = node;
-
-        console.log(JSON.stringify(characters));
-        console.log(characters.length);
-
-        // Letter spacing
-        const letterSpacing: ITextPropRange[] = [];
-        let startRange = 0;
-        let props: ITextPropRange = { start: 0, end: 0, value: 0 };
-
-        for (let i = 1; i < characters.length; i++) {
-          const sizeValue = textNode.getRangeLetterSpacing(startRange, i);
-
-          if (i === characters.length - 1) {
-            props.end = characters.length;
-            letterSpacing.push({ ...props });
-            break;
-          }
-
-          if (sizeValue === figma.mixed) {
-            props.end = i - 1;
-            letterSpacing.push({ ...props });
-            startRange = i;
-          } else {
-            props = {
-              start: startRange,
-              end: i,
-              value: sizeValue,
-            };
-          }
-        }
-
-        console.log("letter spacing", letterSpacing);
-
-        // Line heights
-        const lineHeights = [];
-        startRange = 0;
-        props = { start: 0, end: 0, value: 16 };
-
-        for (let i = 1; i < characters.length; i++) {
-          const sizeValue = textNode.getRangeLineHeight(startRange, i);
-
-          if (i === characters.length - 1) {
-            props.end = characters.length;
-            lineHeights.push({ ...props });
-            break;
-          }
-
-          if (sizeValue === figma.mixed) {
-            props.end = i - 1;
-            lineHeights.push({ ...props });
-            startRange = i;
-          } else {
-            let value = undefined;
-            if (sizeValue.unit !== "AUTO") {
-              value =
-                sizeValue.unit === "PIXELS"
-                  ? `${sizeValue.value}px`
-                  : `${sizeValue.value / 100}rem`;
-            }
-
-            props = { start: startRange, end: i, value };
-          }
-        }
-
-        console.log(lineHeights);
-
-        // Font sizes
-        const fontSizes: ITextPropRange[] = [];
-        startRange = 0;
-        props = { start: 0, end: 0, value: 16 };
-
-        for (let i = 1; i < characters.length; i++) {
-          const sizeValue = textNode.getRangeFontSize(startRange, i);
-
-          if (i === characters.length - 1) {
-            props.end = characters.length;
-            fontSizes.push({ ...props });
-            break;
-          }
-
-          if (sizeValue === figma.mixed) {
-            props.end = i - 1;
-            fontSizes.push({ ...props });
-            startRange = i;
-          } else {
-            props = { start: startRange, end: i, value: sizeValue };
-          }
-        }
-
-        console.log(fontSizes);
-
-        const paints: any[] = [];
-        startRange = 0;
-        props = { start: 0, end: 0, value: 16 };
-
-        for (let i = 1; i < characters.length; i++) {
-          const paintValue = textNode.getRangeFills(startRange, i);
-
-          if (i === characters.length - 1) {
-            props.end = characters.length;
-            paints.push({ ...props });
-            break;
-          }
-
-          if (paintValue === figma.mixed) {
-            props.end = i - 1;
-            paints.push({ ...props });
-            startRange = i;
-          } else {
-            let colour = { r: 0, g: 0, b: 0 };
-            if (paintValue[0].type === "SOLID") {
-              colour = { ...paintValue[0].color };
-            }
-
-            props = {
-              start: startRange,
-              end: i - 1,
-              value: colour,
-            };
-          }
-        }
-
-        console.log(paints);
-
-        const fonts: any[] = [];
-        startRange = 0;
-        props = { start: 0, end: 0, value: 16 };
-
-        for (let i = 1; i < characters.length; i++) {
-          const fontValue = textNode.getRangeFontName(startRange, i);
-
-          if (i === characters.length - 1) {
-            props.end = characters.length;
-            fonts.push({ ...props });
-            console.log("ENDING FONTS", i, props);
-            break;
-          }
-
-          if (fontValue === figma.mixed) {
-            props.end = i - 1;
-            fonts.push({ ...props });
-            startRange = i;
-          } else {
-            props = { start: startRange, end: i, value: fontValue };
-          }
-        }
-
-        console.log(fonts);
-
-        // Collect all end indexed, sort accending and remove duplicates
-        const ends = [
-          ...fonts.map((f) => f.end),
-          ...paints.map((f) => f.end),
-          ...fontSizes.map((f) => f.end),
-          ...letterSpacing.map((f) => f.end),
-          ...lineHeights.map((f) => f.end),
-        ]
-          .sort((a, b) => (a > b ? 1 : -1))
-          .filter((n, i, self) => self.indexOf(n) === i);
-
-        console.log("ends", ends);
-        const styles = [];
-        let startIndex = 0;
-        for (let end of ends) {
-          if (startIndex === end) {
-            end++;
-          }
-
-          console.log(
-            `Start: ${startIndex}, End: ${end}, chars: ${JSON.stringify(
-              characters.substring(startIndex, end)
-            )}`
-          );
-          const colour = paints.find(
-            (f) => startIndex + 1 >= f.start && end <= f.end
-          );
-
-          const font = fonts.find(
-            (f) => startIndex + 1 >= f.start && end <= f.end
-          );
-
-          const fontSize = fontSizes.find(
-            (f) => startIndex + 1 >= f.start && end <= f.end
-          );
-
-          const letterSpace = letterSpacing.find(
-            (f) => startIndex + 1 >= f.start && end <= f.end
-          );
-
-          const lineHeight = lineHeights.find(
-            (f) => startIndex + 1 >= f.start && end <= f.end
-          );
-
-          if (!fontSize) {
-            console.log(
-              "Missing font size",
-              startIndex,
-              end,
-              JSON.stringify(characters.substring(startIndex, end))
-            );
-          }
-
-          if (!font) {
-            console.log(
-              "missing font",
-              startIndex,
-              end,
-              font,
-              JSON.stringify(characters.substring(startIndex, end))
-            );
-          }
-
-          const style = {
-            start: startIndex,
-            end: end,
-            chars: characters.substring(startIndex, end),
-            font: font.value,
-            colour: colour.value,
-            size: fontSize?.value,
-            letterSpace: calculateLetterSpacing(
-              font.value.family,
-              letterSpace?.value
-            ),
-            lineHeight: lineHeight?.value,
-          };
-
-          styles.push(style);
-          startIndex = end;
-        }
-
-        return styles;
-      }
-
-      // Get font sizes ranges
-      const styles = getTextRangeValues(node);
-
-      console.log(styles);
-
-      // Extract font info
-      // TODO: Confirm fallback fonts
-      // const fontSize = fontSizeData !== figma.mixed ? fontSizeData : 16;
-      const fontFamily = fontName !== figma.mixed ? fontName.family : "Arial";
-      const fontStyle = fontName !== figma.mixed ? fontName.style : "Regular";
-
-      return {
-        x,
-        y,
-        width,
-        height,
-        fontSize: 12,
-        fontFamily,
-        fontStyle,
-        colour: { r: 0, g: 0, b: 0 },
-        characters,
-        lineHeight: "AUTO",
-        letterSpacing: "auto",
-        textAlignHorizontal,
-        textAlignVertical,
-        styles,
-      };
-    }
-  );
+  return textCollection;
 }

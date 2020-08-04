@@ -118,3 +118,9 @@ export interface IresizeImage {
   resolve: (data: Uint8Array) => void;
   reject: (e: Error) => void;
 }
+
+export interface ITextPropRange {
+  start: number;
+  end: number;
+  value: number;
+}

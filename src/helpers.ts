@@ -1,5 +1,5 @@
 import { setHeadlinesAndSourceProps, IFrameData } from "types";
-import { getNodeText, getTextNodes } from "helpers/figmaText";
+import { getNodeText, getTextNodesFromFrame } from "helpers/figmaText";
 import { HEADLINE_NODE_NAMES, MSG_EVENTS } from "./constants";
 import { postMan } from "utils/messages";
 import { resizeAndOptimiseImage } from "./helpers/imageHelper";
@@ -251,7 +251,7 @@ export function getRootFrames(): IFrameData {
 
   const framesData = rootFrames.map((frame) => {
     const { name, width, height, id } = frame;
-    const textNodes = getTextNodes(frame);
+    const textNodes = getTextNodesFromFrame(frame);
 
     return {
       name,

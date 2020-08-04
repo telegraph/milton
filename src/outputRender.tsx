@@ -25,147 +25,23 @@ export function generateIframeHtml(body: string): string {
   `;
 }
 
-function generateStyleText(
+function generateParagraphStyle(
   node: textData,
   frameWidth: number,
   frameHeight: number
 ) {
-  const {
-    x,
-    y,
-    width,
-    height,
-    fontSize,
-    fontFamily,
-    colour,
-    letterSpacing,
-    lineHeight,
-    textAlignHorizontal,
-    textAlignVertical,
-    fontStyle,
-  } = node;
+  const { x, y, width, height } = node;
 
   // Position center aligned
   const left = `${((x + width / 2) / frameWidth) * 100}%`;
   const top = `${((y + height / 2) / frameHeight) * 100}%`;
 
-  // Colour
-  const { r, g, b, a } = colour;
-  const colourVals = [r, g, b].map((val = 0) => Math.round(val * 255));
-  const textColour = `rgba(${colourVals.join(",")}, ${a})`;
-  const fontName = `${fontFamily}`;
-  let fontWeight = 400;
-  console.log("fontStylefontStylefontStyle", fontStyle);
-  if (fontStyle === "Semibold" || fontStyle === "Bold") {
-    fontWeight = 700;
-  }
-
-  const { unit: letterUnit, value: letterVal } = letterSpacing as {
-    value: number;
-    unit: "PIXELS" | "PERCENT";
-  };
-  let letterSpaceValue = "0";
-  switch (letterUnit) {
-    case "PIXELS":
-      // TODO: FIX ME
-      if (fontFamily === "Telesans Text") {
-        letterSpaceValue = `${letterVal - 0.33}px`;
-      } else if (fontFamily === "Telesans Agate") {
-        letterSpaceValue = `${letterVal - 0.19}px`;
-      } else {
-        letterSpaceValue = `${letterVal}px`;
-      }
-      break;
-    case "PERCENT":
-      letterSpaceValue = `${letterVal / 100}em`;
-
-      if (fontFamily === "Telesans Text") {
-        letterSpaceValue = `${letterVal / 100 - 0.022}em`;
-      } else if (fontFamily === "Telesans Agate") {
-        letterSpaceValue = `${letterVal / 100 - 0.015}em`;
-      } else {
-        letterSpaceValue = `${letterVal / 100}em`;
-      }
-      break;
-    default:
-      if (fontFamily === "Telesans Text") {
-        letterSpaceValue = "-0.37px";
-      } else if (fontFamily === "Telesans Agate") {
-        letterSpaceValue = "-0.19px";
-      } else {
-        letterSpaceValue = `0`;
-      }
-      break;
-  }
-
-  const { unit: lineUnit, value: lineVal } = lineHeight as {
-    value: number;
-    unit: "AUTO" | "PIXELS" | "PERCENT";
-  };
-  let lineHeightValue = "auto";
-  switch (lineUnit) {
-    case "PIXELS":
-      lineHeightValue = `${lineVal}px`;
-      break;
-    case "PERCENT":
-      lineHeightValue = `${lineVal * 1.15}%`;
-      break;
-    case "AUTO":
-      lineHeightValue = "1.2";
-      break;
-  }
-
-  let alignItemsValue = "auto";
-  switch (textAlignVertical) {
-    case "TOP":
-      alignItemsValue = "flex-start";
-      break;
-    case "CENTER":
-      alignItemsValue = "center";
-      break;
-    case "BOTTOM":
-      alignItemsValue = "flex-end";
-      break;
-  }
-
-  let justifyItemsValue = "left";
-  switch (textAlignHorizontal) {
-    case "LEFT":
-      justifyItemsValue = "left";
-      break;
-    case "CENTER":
-      justifyItemsValue = "center";
-      break;
-    case "RIGHT":
-      justifyItemsValue = "right";
-      break;
-  }
-
-  const newWidth = Math.ceil((width / frameWidth) * 100);
-
-  const newheight = `${(height / frameHeight) * 100}%`;
-
   return `
-        font-size: ${String(fontSize)}px;
-        font-family: "${fontName}", serif;
-        font-weight: ${fontWeight};
-        color: ${textColour};
         width: ${width}px;
-        
-
-  
-      
         transform: translate(-50%, -50%);
-         
         left: ${left};
         top: ${top};
-        
-        letter-spacing: ${letterSpaceValue};
-        text-align:  ${justifyItemsValue};
-
-    display: block;
-
-      
+        display: block;
       `;
 }
 
@@ -179,7 +55,7 @@ function Text(props: TextProps) {
 
   // TODO: Style containing DIV with dimensions
   // TODO: Split characters based on styles and wrap them in <span>s
-  const styleText = generateStyleText(node, width, height);
+  const styleText = generateParagraphStyle(node, width, height);
 
   // Split text onto multiple lines based on linebreaks
   const { characters } = node;
@@ -204,8 +80,10 @@ function Text(props: TextProps) {
     const str = characters.substring(position, endPosition);
     console.log(`Chars "${str}"`);
 
+    console.log(node.rangeStyles);
+
     // Find all styles that fall with found range
-    const styleNodes = node.styles.filter((style) => {
+    const styleNodes = node.rangeStyles.filter((style) => {
       const { start, end } = style;
       return previousIndex >= start && foundIndex <= end - 1;
     });
@@ -218,7 +96,7 @@ function Text(props: TextProps) {
 
   return (
     <p className="f2h__text" style={styleText}>
-      {node.styles.map((style) => (
+      {node.rangeStyles.map((style) => (
         <span
           key={style.chars}
           style={`
