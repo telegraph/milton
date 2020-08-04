@@ -17,7 +17,11 @@ body::-webkit-scrollbar {
   transform: translate(-50%, -50%);
   position: absolute;
   display: flex;
-  /* white-space: pre; */
+}
+.f2h__text_inner {
+  margin: 0;
+  line-height: 0;
+  width: 100%;
 }
 
 .text-nodes {

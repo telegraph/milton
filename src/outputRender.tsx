@@ -30,7 +30,15 @@ function generateParagraphStyle(
   frameWidth: number,
   frameHeight: number
 ) {
-  const { x, y, width, height, textAlignHorizontal, textAlignVertical } = node;
+  const {
+    x,
+    y,
+    width,
+    height,
+    textAlignHorizontal,
+    textAlignVertical,
+    constraints,
+  } = node;
 
   // FIXME: HACK - HTML text widths are larger than text node in figma resulting
   // in wrapping text. Need a smarter way to calculate addition width based
@@ -43,27 +51,39 @@ function generateParagraphStyle(
   const top = `${((y + height / 2) / frameHeight) * 100}%`;
 
   let alignVertical = "";
-  switch (textAlignVertical) {
-    case "TOP":
+  switch (constraints.vertical) {
+    case "MIN":
       alignVertical = "flex-start";
       break;
     case "CENTER":
       alignVertical = "center";
       break;
-    case "BOTTOM":
+    case "MAX":
       alignVertical = "flex-end";
+      break;
+  }
+
+  let alignHorizontal = "";
+  switch (constraints.horizontal) {
+    case "MIN":
+      alignHorizontal = "flex-start";
+      break;
+    case "CENTER":
+      alignHorizontal = "center";
+      break;
+    case "MAX":
+      alignHorizontal = "flex-end";
       break;
   }
 
   return `
         width: ${((width + BUFFER) / frameWidth) * 100}%;
         height: ${((height + BUFFER) / frameHeight) * 100}%;
-        transform: translate(-50%, -50%);
         left: ${left};
         top: ${top};
         text-align: ${textAlignHorizontal.toLocaleLowerCase()};
-        display: flex;
         align-items: ${alignVertical};
+        justify-content: ${alignHorizontal}
       `;
 }
 
@@ -81,7 +101,7 @@ function Text(props: TextProps) {
 
   return (
     <div className="f2h__text" style={styleText}>
-      <p style="margin: 0; line-height: 0; width: 100%;">
+      <p className="f2h__text_inner">
         {node.rangeStyles.map((style) => (
           <span
             key={style.chars}

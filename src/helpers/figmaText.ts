@@ -225,6 +225,7 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       characters,
       textAlignHorizontal,
       textAlignVertical,
+      constraints,
     } = textNode;
 
     // NOTE: Figma node x, y are relative to first parent, we want them
@@ -236,7 +237,6 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
 
     // Get font sizes ranges
     const rangeStyles = getTextRangeValues(textNode);
-
     textCollection.push({
       x,
       y,
@@ -245,6 +245,7 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       characters,
       textAlignHorizontal,
       textAlignVertical,
+      constraints,
       rangeStyles,
     });
   }

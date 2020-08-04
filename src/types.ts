@@ -81,6 +81,7 @@ type textNodeSelectedProps = Pick<
   | "characters"
   | "textAlignHorizontal"
   | "textAlignVertical"
+  | "constraints"
 >;
 
 export interface textData extends textNodeSelectedProps {

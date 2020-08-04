@@ -70,8 +70,9 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
     for (const frame of frames) {
       const clone = frame?.clone() as FrameNode;
 
-      // Find and remove all text nodes
-      clone.findAll((n) => n.type === "TEXT").forEach((n) => n.remove());
+      // NOTE: Previously text nodes were removed here but this caused
+      // width changes in auto-layout. Text is removed as part of the
+      // SVG optimisation step.
 
       // Append cloned frame to temp output frame and position in top left
       outputNode.appendChild(clone);

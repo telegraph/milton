@@ -19,11 +19,17 @@ export async function decodeSvgToString(svg: Uint8Array, ids: string[][]) {
   }
 
   crunchSvg(svgEl);
+
   // BUG: Remove empty clip paths
   [...(svgEl?.querySelectorAll("clipPath") || [])].forEach((clipPath) => {
     if (clipPath.childElementCount === 0) {
       clipPath.parentNode?.removeChild(clipPath);
     }
+  });
+
+  // Remove text nodes
+  [...(svgEl?.querySelectorAll("text") || [])].forEach((textNode) => {
+    // textNode.parentNode?.removeChild(textNode);
   });
 
   return svgEl.outerHTML;
