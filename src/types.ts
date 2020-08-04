@@ -127,7 +127,7 @@ export interface ITextStyle {
   end: number;
   chars: string;
   font: FontName;
-  color: RGB;
+  colour: RGB;
   size: number;
   letterSpace: string;
   lineHeight: string;

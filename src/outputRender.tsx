@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { h } from "preact";
 import render from "preact-render-to-string";
-import { textData, FrameDataInterface } from "types";
+import { textData, FrameDataInterface, ITextStyle } from "types";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-ignore
@@ -87,6 +87,22 @@ function generateParagraphStyle(
       `;
 }
 
+function generateSpanStyles(style: ITextStyle): string {
+  const { r, g, b } = style.colour;
+  const colour = `rgb(${r * 255}, ${g * 255}, ${b * 255})`;
+  const fontWeight =
+    style.font.style === "Bold" || style.font.style === "Semibold" ? 700 : 400;
+
+  return `
+    letter-spacing: ${style.letterSpace};
+    line-height: ${style.lineHeight};
+    font-size: ${style.size}px;
+    color: ${colour};
+    font-family: "${style.font.family}";
+    font-weight: ${fontWeight};
+`;
+}
+
 type TextProps = {
   node: textData;
   width: number;
@@ -95,32 +111,16 @@ type TextProps = {
 function Text(props: TextProps) {
   const { node, width, height } = props;
 
-  // TODO: Style containing DIV with dimensions
-  // TODO: Split characters based on styles and wrap them in <span>s
-  const styleText = generateParagraphStyle(node, width, height);
-
   return (
-    <div className="f2h__text" style={styleText}>
+    <div
+      className="f2h__text"
+      style={generateParagraphStyle(node, width, height)}
+    >
       <p className="f2h__text_inner">
         {node.rangeStyles.map((style) => (
           <span
             key={style.chars}
-            style={`
-
-          letter-spacing: ${style.letterSpace};
-          ${style.lineHeight ? `line-height: ${style.lineHeight}` : ""};
-          font-size: ${style.size}px;
-          color: rgb(${style.colour.r * 255},${style.colour.g * 255},${
-              style.colour.b * 255
-            });
-          font-family: "${style.font.family}";
-    
-          font-weight: ${
-            style.font.style === "Bold" || style.font.style === "Semibold"
-              ? 700
-              : 400
-          };
-        `}
+            style={generateSpanStyles(style)}
             dangerouslySetInnerHTML={{
               __html: style.chars.replace(/\n/g, "<br />"),
             }}
