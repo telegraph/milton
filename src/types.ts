@@ -79,17 +79,12 @@ type textNodeSelectedProps = Pick<
   | "width"
   | "height"
   | "characters"
-  | "lineHeight"
-  | "letterSpacing"
   | "textAlignHorizontal"
   | "textAlignVertical"
 >;
 
 export interface textData extends textNodeSelectedProps {
-  colour: { r: number; g: number; b: number; a: number };
-  fontSize: number;
-  fontFamily: string;
-  fontStyle: string;
+  rangeStyles: ITextStyle[];
 }
 
 export interface setHeadlinesAndSourceProps {
@@ -119,8 +114,20 @@ export interface IresizeImage {
   reject: (e: Error) => void;
 }
 
-export interface ITextPropRange {
+export interface ITextProp {
   start: number;
   end: number;
-  value: number;
+
+  value: PluginAPI["mixed"] | string | number | FontName | RGB | undefined;
+}
+
+export interface ITextStyle {
+  start: number;
+  end: number;
+  chars: string;
+  font: FontName;
+  color: RGB;
+  size: number;
+  letterSpace: string;
+  lineHeight: string;
 }

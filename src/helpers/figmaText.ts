@@ -1,4 +1,4 @@
-import { textData, ITextPropRange } from "types";
+import { textData, ITextProp, ITextStyle } from "types";
 
 export function getNodeText(
   rootNode: PageNode,
@@ -10,48 +10,48 @@ export function getNodeText(
     : undefined;
 }
 
-function calculateLetterSpacing(
-  fontFamily: string,
-  letterSpacing: LetterSpacing
-) {
-  const { unit: letterUnit, value: letterVal } = letterSpacing;
-  let letterSpaceValue = "0";
+// function calculateLetterSpacing(
+//   fontFamily: string,
+//   letterSpacing: LetterSpacing
+// ) {
+//   const { unit: letterUnit, value: letterVal } = letterSpacing;
+//   let letterSpaceValue = "0";
 
-  switch (letterUnit) {
-    case "PIXELS":
-      // TODO: FIX ME
-      if (fontFamily === "Telesans Text") {
-        letterSpaceValue = `${letterVal - 0.33}px`;
-      } else if (fontFamily === "Telesans Agate") {
-        letterSpaceValue = `${letterVal - 0.19}px`;
-      } else {
-        letterSpaceValue = `${letterVal}px`;
-      }
-      break;
-    case "PERCENT":
-      letterSpaceValue = `${letterVal / 100}em`;
+//   switch (letterUnit) {
+//     case "PIXELS":
+//       // TODO: FIX ME
+//       if (fontFamily === "Telesans Text") {
+//         letterSpaceValue = `${letterVal - 0.33}px`;
+//       } else if (fontFamily === "Telesans Agate") {
+//         letterSpaceValue = `${letterVal - 0.19}px`;
+//       } else {
+//         letterSpaceValue = `${letterVal}px`;
+//       }
+//       break;
+//     case "PERCENT":
+//       letterSpaceValue = `${letterVal / 100}em`;
 
-      if (fontFamily === "Telesans Text") {
-        letterSpaceValue = `${letterVal / 100 - 0.022}em`;
-      } else if (fontFamily === "Telesans Agate") {
-        letterSpaceValue = `${letterVal / 100 - 0.015}em`;
-      } else {
-        letterSpaceValue = `${letterVal / 100}em`;
-      }
-      break;
-    default:
-      if (fontFamily === "Telesans Text") {
-        letterSpaceValue = "-0.37px";
-      } else if (fontFamily === "Telesans Agate") {
-        letterSpaceValue = "-0.19px";
-      } else {
-        letterSpaceValue = `0`;
-      }
-      break;
-  }
+//       if (fontFamily === "Telesans Text") {
+//         letterSpaceValue = `${letterVal / 100 - 0.022}em`;
+//       } else if (fontFamily === "Telesans Agate") {
+//         letterSpaceValue = `${letterVal / 100 - 0.015}em`;
+//       } else {
+//         letterSpaceValue = `${letterVal / 100}em`;
+//       }
+//       break;
+//     default:
+//       if (fontFamily === "Telesans Text") {
+//         letterSpaceValue = "-0.37px";
+//       } else if (fontFamily === "Telesans Agate") {
+//         letterSpaceValue = "-0.19px";
+//       } else {
+//         letterSpaceValue = `0`;
+//       }
+//       break;
+//   }
 
-  return letterSpaceValue;
-}
+//   return letterSpaceValue;
+// }
 
 enum RANGE_TYPES {
   LETTER_SPACING,
@@ -84,7 +84,7 @@ function getRangeVal(
       if (lineHeight === figma.mixed) {
         return lineHeight;
       } else if (lineHeight.unit === "AUTO") {
-        return;
+        return "normal";
       } else {
         return lineHeight.unit === "PERCENT"
           ? `${lineHeight.value / 100}rem`
@@ -102,7 +102,7 @@ function getRangeVal(
       } else if (paint[0].type === "SOLID") {
         return { ...paint[0].color };
       } else {
-        return { r: 0, g: 0, b: 0 };
+        return { r: 0, g: 0, b: 0 } as RGB;
       }
     }
 
@@ -110,14 +110,14 @@ function getRangeVal(
       return textNode.getRangeFontName(start, end);
 
     default:
-      return null;
+      return undefined;
   }
 }
 
 function getTypeValues(
   textNode: TextNode,
   rangeType: RANGE_TYPES
-): ITextPropRange[] {
+): ITextProp[] {
   const { characters } = textNode;
 
   // If there's no mixed style then short circuit response
@@ -128,7 +128,7 @@ function getTypeValues(
 
   // There's mixed styles. Go through each char to extract style ranges
   // Bootstrap range values with first character which is never mixed type
-  const values: ITextPropRange[] = [
+  const values: ITextProp[] = [
     { start: 0, end: 1, value: getRangeVal(textNode, rangeType, 0, 1) },
   ];
 
@@ -159,11 +159,15 @@ function getTypeValues(
   return values;
 }
 
-function findItemInRange(items: any[], start: number, end: number): any {
+function findItemInRange(
+  items: ITextProp[],
+  start: number,
+  end: number
+): ITextProp | undefined {
   return items.find((item) => start >= item.start && end <= item.end);
 }
 
-function getTextRangeValues(textNode: TextNode) {
+function getTextRangeValues(textNode: TextNode): ITextStyle[] {
   const { characters } = textNode;
 
   const ranges = {
@@ -173,8 +177,6 @@ function getTextRangeValues(textNode: TextNode) {
     colour: getTypeValues(textNode, RANGE_TYPES.COLOUR),
     font: getTypeValues(textNode, RANGE_TYPES.FONT),
   };
-
-  console.log(ranges, "ranges");
 
   // Collect all end indexed, sort accending and remove duplicates
   const ends = Object.values(ranges)
@@ -190,7 +192,7 @@ function getTextRangeValues(textNode: TextNode) {
       iEnd++;
     }
 
-    const style = {
+    const style: ITextStyle = {
       start: iStart,
       end: iEnd,
       chars: characters.substring(iStart, iEnd),
@@ -216,7 +218,14 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
 
   const textCollection: textData[] = [];
   for (const textNode of textNodes) {
-    const { absoluteTransform, width, height, characters } = textNode;
+    const {
+      absoluteTransform,
+      width,
+      height,
+      characters,
+      textAlignHorizontal,
+      textAlignVertical,
+    } = textNode;
 
     // NOTE: Figma node x, y are relative to first parent, we want them
     // relative to the root frame
@@ -234,6 +243,8 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       width,
       height,
       characters,
+      textAlignHorizontal,
+      textAlignVertical,
       rangeStyles,
     });
   }
