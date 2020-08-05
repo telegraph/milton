@@ -38,28 +38,15 @@ body::-webkit-scrollbar {
   overflow: hidden;
 }
 
-.f2h__render {
-  position: relative;
-  overflow: hidden;
-}
-
-.f2h__render svg {
-  display: block;
-  margin: 0;
-}
-
-.f2h__render svg text {
-  /* DEBUG */
-  display: none;
-}
-
-.f2h__render--responsive {
-  width: 100%;
-}
-
-.f2h__render--responsive svg {
-  width: 100%;
-  height: auto;
+.f2h__svg_container path,
+.f2h__svg_container rect,
+.f2h__svg_container circle,
+.f2h__svg_container line,
+.f2h__svg_container polyline,
+.f2h__svg_container polygon,
+.f2h__svg_container path,
+.f2h__svg_container ellipse {
+  vector-effect: non-scaling-stroke;
 }
 
 .f2h_headline {
