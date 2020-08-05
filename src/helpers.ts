@@ -58,9 +58,7 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
 
   try {
     // Clone each selected frame adding them to the temporary container frame
-    const frames = figma.currentPage.children.filter(({ id }) =>
-      frameIds.includes(id)
-    );
+    const frames = figma.currentPage.findAll(({ id }) => frameIds.includes(id));
 
     // Calculate the max dimensions for output container frame
     const maxWidth = Math.max(...frames.map((f) => f.width));
@@ -182,9 +180,8 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
  */
 export function setHeadlinesAndSource(props: setHeadlinesAndSourceProps): void {
   const pageNode = figma.currentPage;
-  const frames = pageNode.findChildren((node) => node.type === "FRAME");
-  const mostLeftPos = Math.min(...frames.map((node) => node.x));
-  const mostTopPos = Math.min(...frames.map((node) => node.y));
+  const mostLeftPos = Math.min(...pageNode.children.map((node) => node.x));
+  const mostTopPos = Math.min(...pageNode.children.map((node) => node.y));
 
   // Loop through each headline node names
   for (const name of Object.values(HEADLINE_NODE_NAMES)) {
@@ -246,11 +243,18 @@ export function setHeadlinesAndSource(props: setHeadlinesAndSourceProps): void {
 
 export function getRootFrames(): IFrameData {
   const { currentPage } = figma;
-  const rootFrames = currentPage.children.filter(
+
+  let selectedFrames = currentPage.selection.filter(
     (node) => node.type === "FRAME"
   ) as FrameNode[];
 
-  const framesData = rootFrames.map((frame) => {
+  if (selectedFrames.length === 0) {
+    selectedFrames = currentPage.children.filter(
+      (node) => node.type === "FRAME"
+    ) as FrameNode[];
+  }
+
+  const framesData = selectedFrames.map((frame) => {
     const { name, width, height, id } = frame;
     const textNodes = getTextNodesFromFrame(frame);
 
