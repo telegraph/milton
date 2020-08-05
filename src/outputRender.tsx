@@ -145,7 +145,6 @@ function Text(props: TextProps) {
           <span
             key={style.chars}
             data-text={node.strokeWeight ? style.chars : ""}
-            data-width={node.strokeWeight ? node.strokeWeight : ""}
             style={generateSpanStyles(style)}
             dangerouslySetInnerHTML={{
               __html: style.chars.replace(/\n/g, "<br />"),
