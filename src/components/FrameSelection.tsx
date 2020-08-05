@@ -1,5 +1,5 @@
 import { h, Fragment, Component, createRef, RefObject } from "preact";
-import { FrameDataInterface, AppState, HeadlinesInterface } from "types";
+import { AppState, HeadlinesInterface, FrameCollection } from "types";
 
 interface InputFieldProps {
   refTarget: RefObject<HTMLInputElement>;
@@ -25,13 +25,13 @@ function InputField(props: InputFieldProps) {
 }
 
 interface FrameSelectionProps
-  extends Pick<AppState, "source" | "headline" | "subhead"> {
-  frames: FrameDataInterface[];
+  extends Pick<AppState, "source" | "headline" | "subhead" | "responsive"> {
+  frames: FrameCollection;
+  selectedFrames: string[];
   handleClick: (id: string) => void;
-  toggleResonsive: (id: string) => void;
   toggleSelectAll: () => void;
-  toggleResponsiveAll: () => void;
   handleFormUpdate: (props: HeadlinesInterface) => void;
+  toggleResponsive: () => void;
 }
 
 export class FrameSelection extends Component<FrameSelectionProps> {
@@ -52,22 +52,19 @@ export class FrameSelection extends Component<FrameSelectionProps> {
     const {
       frames,
       handleClick,
-      toggleResonsive,
       toggleSelectAll,
-      toggleResponsiveAll,
       headline,
       subhead,
       source,
+      selectedFrames,
+      responsive,
+      toggleResponsive,
     } = this.props;
 
-    const selectCount = frames.filter((frame) => frame.selected).length;
-    const someFramesSelected = selectCount > 0 && selectCount < frames.length;
-    const allSelected = selectCount === frames.length;
-
-    const responseCount = frames.filter((frame) => frame.responsive).length;
-    const someResponsiveSelected =
-      responseCount > 0 && responseCount < frames.length;
-    const allResponsiveSelected = responseCount === frames.length;
+    const frameCount = Object.values(frames).length;
+    const selectCount = selectedFrames.length;
+    const someFramesSelected = selectCount > 0 && selectCount < frameCount;
+    const allSelected = selectCount === frameCount;
 
     return (
       <div className="f2h__choose_frames">
@@ -111,42 +108,34 @@ export class FrameSelection extends Component<FrameSelectionProps> {
               type="checkbox"
               id="responsiveAll"
               name="responsiveAll"
-              onClick={toggleResponsiveAll}
-              checked={allResponsiveSelected}
-              ref={(el) => el && (el.indeterminate = someResponsiveSelected)}
+              onClick={toggleResponsive}
+              checked={responsive}
             />{" "}
             Responsive
           </label>
 
-          {frames.map(({ name, id, width, height, selected, responsive }) => (
-            <Fragment key={id}>
-              <p className="f2h__label f2h__label--name">
-                <input
-                  className="f2h__checkbox"
-                  type="checkbox"
-                  checked={selected}
-                  onClick={() => handleClick(id)}
-                  id={name}
-                  name={name}
-                />
-                <label className="f2h__label--name-text" htmlFor={name}>
-                  {name}
-                </label>
-                <span className="f2h__sel_width">
-                  {width} x {height}
-                </span>
-              </p>
-
-              <input
-                className="f2h__checkbox f2h__input--responsive"
-                type="checkbox"
-                checked={responsive}
-                onClick={() => toggleResonsive(id)}
-                id={name}
-                name={name}
-              />
-            </Fragment>
-          ))}
+          {Object.values(frames)
+            .sort((a, b) => (a.width < b.width ? -1 : 1))
+            .map(({ name, id, width, height }) => (
+              <Fragment key={id}>
+                <p className="f2h__label f2h__label--name">
+                  <input
+                    className="f2h__checkbox"
+                    type="checkbox"
+                    checked={selectedFrames.includes(id)}
+                    onClick={() => handleClick(id)}
+                    id={name}
+                    name={name}
+                  />
+                  <label className="f2h__label--name-text" htmlFor={name}>
+                    {name}
+                  </label>
+                  <span className="f2h__sel_width">
+                    {width} x {height}
+                  </span>
+                </p>
+              </Fragment>
+            ))}
         </div>
       </div>
     );

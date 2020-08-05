@@ -1,64 +1,47 @@
 import { h, Component } from "preact";
-import produce from "immer";
-import { MSG_EVENTS, STAGES, UI_TEXT, INITIAL_UI_SIZE } from "../constants";
-import { Header } from "./Header";
+
+import { renderInline } from "../outputRender";
+import { MSG_EVENTS, STAGES } from "../constants";
+import { SvgInformation, HeaderTitle } from "./Header";
 import { ResponsiveView } from "./ResponsiveView";
 import { FrameSelection } from "./FrameSelection";
-import { Preview } from "./Preview";
 import { Save } from "./Save";
 import { decodeSvgToString } from "../utils/svg";
-import { compressImage } from "../utils/compressImage";
-import { sendMessage } from "../utils/messages";
+import { postMan } from "../utils/messages";
 import {
   AppState,
   AppPropsInterface,
   MsgFramesType,
   FrameCollection,
-  MsgCompressImageType,
-  MsgRenderType,
-  MsgEventType,
   HeadlinesInterface,
-  UiPostMessageEvent,
+  FrameDataInterface,
 } from "types";
-import { crunchSvg } from "utils/crunchSvg";
 
 export class App extends Component<AppPropsInterface, AppState> {
-  state: AppState = {
+  readonly state: AppState = {
     error: undefined,
     ready: false,
     frames: {},
     stage: STAGES.CHOOSE_FRAMES,
-    previewIndex: 0,
-    isResizing: false,
-    mouseStartX: 0,
-    mouseStartY: 0,
-    windowWidth: INITIAL_UI_SIZE.width,
-    windowHeight: INITIAL_UI_SIZE.height,
+    selectedFrames: [],
     responsive: true,
     headline: undefined,
     subhead: undefined,
     source: undefined,
     loading: false,
+    svgMarkup: "",
   };
 
   componentDidMount(): void {
-    // Listen for events from the backend
-    window.addEventListener("message", (e: UiPostMessageEvent) =>
-      this.handleEvents(e.data.pluginMessage)
-    );
-
-    sendMessage(MSG_EVENTS.DOM_READY);
+    // Once the UI is mounted request the root frames from Figma's backend
+    postMan
+      .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
+      .then(this.updateInitialState)
+      .catch((err) => console.error("error requesting frames", err));
   }
 
   updateInitialState = (data: MsgFramesType): void => {
-    const {
-      frames,
-      windowHeight,
-      windowWidth,
-      headline,
-      subhead,
-      source,
-    } = data;
+    const { frames, headline, subhead, source } = data;
 
     if (!Array.isArray(frames) || frames?.length < 1) {
       this.setState({ error: "No frames!" });
@@ -66,114 +49,90 @@ export class App extends Component<AppPropsInterface, AppState> {
       return;
     }
 
+    const hasDuplicateWidths = frames
+      .map((f) => f.width)
+      .some((width, _i, arr) => arr.indexOf(width) !== arr.lastIndexOf(width));
+
+    if (hasDuplicateWidths) {
+      this.setState({
+        error:
+          "The are frames with identical widths. Please resize or remove some frames.",
+      });
+
+      return;
+    }
+
     const frameData: FrameCollection = {};
     for (const frame of frames) {
       const { id } = frame;
-      const rndId = Math.random().toString(32).substr(2);
-
-      frameData[id] = { ...frame, uid: `f2h-${rndId}`, svgOptimised: false };
+      const rndId = btoa(`${Math.random()}`).substr(6, 6);
+      frameData[id] = { ...frame, uid: `f2h__${rndId}` };
     }
+
+    const selectedFrames = frames.map((frame) => frame.id);
 
     this.setState({
       frames: frameData,
       ready: true,
-      windowWidth,
-      windowHeight,
       headline,
       subhead,
       source,
+      selectedFrames,
     });
   };
 
-  compressImage = async (msg: MsgCompressImageType): Promise<void> => {
-    try {
-      const { image, width, height, uid } = msg;
-      const imgData = await compressImage(image, width * 2, height * 2);
-      sendMessage(MSG_EVENTS.COMPRESSED_IMAGE, { image: imgData, uid });
-    } catch (err) {
-      console.error("UI failed to compress image", err);
-      this.setState({ error: "Failed to compress image" });
-    }
-  };
-
-  handleRenderMessage = (data: MsgRenderType): void => {
-    const { frameId, svg } = data;
-    if (!frameId || !svg) {
-      this.setState({ error: "Failed to render", loading: false });
-      console.error("Post message: failed to render", data);
+  handleRenderMessage = async (svgData: Uint8Array): Promise<void> => {
+    if (!svgData) {
+      this.setState({ error: "Failed to render" });
+      console.error("Post message: failed to render");
       return;
     }
 
-    const { frames } = this.state;
-    const svgStr = decodeSvgToString(svg);
-    const cloneFrames = JSON.parse(JSON.stringify(frames)) as FrameCollection;
-    cloneFrames[frameId].svg = svgStr;
-    this.setState({ frames: cloneFrames, loading: false });
-  };
+    const {
+      selectedFrames,
+      frames,
+      headline,
+      subhead,
+      source,
+      responsive,
+    } = this.state;
 
-  handleEvents = (data: MsgEventType): void => {
-    console.log("UI post", data);
-    switch (data.type) {
-      case MSG_EVENTS.FOUND_FRAMES:
-        this.updateInitialState(data);
-        break;
+    const ids = selectedFrames.map((id) => [id, frames[id].uid]);
+    const svgText = await decodeSvgToString(svgData, ids);
 
-      case MSG_EVENTS.NO_FRAMES:
-        this.setState({ error: UI_TEXT.ERROR_MISSING_FRAMES });
-        break;
+    const selected = Object.values(frames).filter((f) =>
+      selectedFrames.includes(f.id)
+    );
 
-      case MSG_EVENTS.ERROR:
-        console.error("UI post message error", data);
-        this.setState({
-          error: `${UI_TEXT.ERROR_UNEXPECTED}: ${data.errorText}`,
-        });
-        break;
+    const html = renderInline({
+      frames: selected,
+      svgText,
+      headline,
+      subhead,
+      source,
+      responsive,
+    });
 
-      case MSG_EVENTS.RENDER:
-        this.handleRenderMessage(data);
-        break;
-
-      case MSG_EVENTS.COMPRESS_IMAGE:
-        this.compressImage(data).catch((err) => {
-          console.error("UI compress image event", err);
-          this.setState({
-            error:
-              err instanceof Error ? err.message : "Compress images failed",
-          });
-        });
-        break;
-
-      default:
-        this.setState({ error: "Unknown post message" });
-        console.error("UI post message error", data);
-        break;
-    }
+    this.setState({
+      svgMarkup: html,
+      stage: STAGES.RESPONSIVE_PREVIEW,
+      loading: false,
+    });
   };
 
   // TODO: Merge goNext and goBack
   goNext = (): void => {
-    const { stage, previewIndex, frames } = this.state;
-    const { length } = Object.values(frames).filter((f) => f.selected);
-
-    if (length === 0) {
-      return;
-    }
-
-    const nextIndex = previewIndex + 1;
+    const { stage } = this.state;
 
     switch (stage) {
       case STAGES.CHOOSE_FRAMES:
-        return this.setState({ stage: STAGES.PREVIEW_OUTPUT });
-
-      case STAGES.PREVIEW_OUTPUT:
-        if (length === nextIndex) {
-          return this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
-        } else {
-          return this.setState({ previewIndex: nextIndex });
-        }
+        this.getOutputRender();
+        this.setState({ loading: true });
+        return;
 
       case STAGES.RESPONSIVE_PREVIEW:
-        return this.setState({ stage: STAGES.SAVE_OUTPUT });
+        this.setState({ stage: STAGES.SAVE_OUTPUT });
+        return;
 
       case STAGES.SAVE_OUTPUT:
         return;
@@ -181,196 +140,148 @@ export class App extends Component<AppPropsInterface, AppState> {
   };
 
   goBack = (): void => {
-    const { stage, previewIndex } = this.state;
+    const { stage } = this.state;
 
     switch (stage) {
       case STAGES.CHOOSE_FRAMES:
         return;
 
-      case STAGES.PREVIEW_OUTPUT:
-        if (previewIndex === 0) {
-          this.setState({ stage: STAGES.CHOOSE_FRAMES });
-        } else {
-          this.setState({ previewIndex: previewIndex - 1 });
-        }
-        return;
-
       case STAGES.RESPONSIVE_PREVIEW:
-        return this.setState({ stage: STAGES.PREVIEW_OUTPUT });
+        this.setState({ stage: STAGES.CHOOSE_FRAMES });
+        return;
 
       case STAGES.SAVE_OUTPUT:
-        return this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
-    }
-  };
-
-  getOutputRender = (frameId: string): void => {
-    this.setState({ loading: true });
-    sendMessage(MSG_EVENTS.RENDER, { frameId });
-  };
-
-  toggleProp = (
-    id: string,
-    prop: "selected" | "responsive" | "svgOptimised"
-  ): void => {
-    const { frames } = this.state;
-    const cloneFrames = JSON.parse(JSON.stringify(frames)) as FrameCollection;
-    cloneFrames[id][prop] = !cloneFrames[id][prop];
-
-    this.setState({ frames: cloneFrames });
-  };
-
-  toggleFrameSelect = (id: string): void => this.toggleProp(id, "selected");
-
-  toggleResonsive = (id: string): void => this.toggleProp(id, "responsive");
-
-  toggleOptimised = (id: string): void => {
-    const { frames } = this.state;
-    const { svgCompressed, svg, svgOptimised } = frames[id];
-
-    if (svg && !svgOptimised && !svgCompressed) {
-      const el = document.createElement("div");
-      el.innerHTML = svg;
-      const svgEl = el.querySelector("svg");
-
-      if (!svgEl) {
-        console.error("Missing SVG in SVG string");
+        this.setState({ stage: STAGES.RESPONSIVE_PREVIEW });
         return;
-      }
-
-      crunchSvg(svgEl);
-      const cloneFrames = JSON.parse(JSON.stringify(frames)) as FrameCollection;
-      cloneFrames[id].svgCompressed = svgEl.outerHTML;
-      cloneFrames[id].svgOptimised = true;
-      this.setState({ frames: cloneFrames });
-    } else {
-      this.toggleProp(id, "svgOptimised");
     }
   };
 
-  toggleAllProp = (propName: "selected" | "responsive"): void => {
-    const { frames } = this.state;
-    const shouldDeselectAll = Object.values(frames).some(
-      (frame) => frame[propName]
-    );
+  getOutputRender = (): void => {
+    const { selectedFrames } = this.state;
 
-    const draftState = produce(this.state, (draftState) => {
-      Object.values(draftState.frames).forEach(
-        (frame) => (frame[propName] = !shouldDeselectAll)
-      );
-    });
-
-    this.setState(draftState);
+    // sendMessage(MSG_EVENTS.RENDER, { ids: selectedFrames });
+    postMan
+      .send({ workload: MSG_EVENTS.RENDER, data: selectedFrames })
+      .then(this.handleRenderMessage)
+      .catch((err) => {
+        console.error("error getting render", err);
+      });
   };
 
-  toggleSelectAll = (): void => this.toggleAllProp("selected");
+  toggleFrameSelect = (id: string): void => {
+    const { selectedFrames } = this.state;
 
-  toggleResponsiveAll = (): void => this.toggleAllProp("responsive");
+    this.setState({
+      selectedFrames: selectedFrames.includes(id)
+        ? selectedFrames.filter((frameId) => id !== frameId)
+        : [...selectedFrames, id],
+    });
+  };
+
+  toggleSelectAll = (): void => {
+    const { selectedFrames, frames } = this.state;
+    if (selectedFrames.length > 0) {
+      this.setState({ selectedFrames: [] });
+    } else {
+      this.setState({ selectedFrames: Object.values(frames).map((f) => f.id) });
+    }
+  };
 
   handleFormUpdate = (props: HeadlinesInterface): void => {
     this.setState({ ...props });
-    sendMessage(MSG_EVENTS.UPDATE_HEADLINES, props);
+    postMan
+      .send({ workload: MSG_EVENTS.UPDATE_HEADLINES, data: props })
+      .catch(() => this.setState({ error: "Form update failed" }));
   };
 
-  switchView = (): h.JSX.Element => {
-    const {
-      frames,
-      stage,
-      previewIndex,
-      windowHeight,
-      windowWidth,
-      headline,
-      subhead,
-      source,
-      loading,
-    } = this.state;
+  getSelectedFrames = (): FrameDataInterface[] => {
+    const { frames, selectedFrames } = this.state;
 
-    const framesArr = Object.values(frames).sort((a, b) =>
-      a.width <= b.width ? -1 : 1
-    );
-    const selectedFrames = framesArr.filter((frame) => frame.selected);
+    return Object.values(frames).filter((f) => selectedFrames.includes(f.id));
+  };
 
-    // If previewing frame without a render then request if from the backends
-    // TODO: Move out of render
-    if (
-      stage === STAGES.PREVIEW_OUTPUT &&
-      !selectedFrames[previewIndex].svg &&
-      loading === false
-    ) {
-      this.getOutputRender(selectedFrames[previewIndex].id);
-    }
-
-    switch (stage) {
-      case STAGES.CHOOSE_FRAMES:
-        return (
-          <FrameSelection
-            frames={framesArr}
-            handleClick={this.toggleFrameSelect}
-            toggleResonsive={this.toggleResonsive}
-            toggleSelectAll={this.toggleSelectAll}
-            toggleResponsiveAll={this.toggleResponsiveAll}
-            headline={headline}
-            subhead={subhead}
-            source={source}
-            handleFormUpdate={this.handleFormUpdate}
-          />
-        );
-
-      case STAGES.PREVIEW_OUTPUT:
-        return (
-          <Preview
-            frame={selectedFrames[previewIndex]}
-            windowHeight={windowHeight}
-            windowWidth={windowWidth}
-          />
-        );
-
-      case STAGES.RESPONSIVE_PREVIEW:
-        return (
-          <ResponsiveView
-            windowHeight={windowHeight}
-            windowWidth={windowWidth}
-            frames={selectedFrames}
-            headline={headline}
-            subhead={subhead}
-            source={source}
-          />
-        );
-
-      case STAGES.SAVE_OUTPUT:
-        return (
-          <Save
-            frames={selectedFrames}
-            headline={headline}
-            subhead={subhead}
-            source={source}
-          />
-        );
-
-      default:
-        return <div>Loading...</div>;
-    }
+  toggleResponsive = (): void => {
+    this.setState({ responsive: !this.state.responsive });
   };
 
   render(): h.JSX.Element {
     const { version } = this.props;
-    const { error, frames, stage, previewIndex, loading } = this.state;
-    // TODO: Don't rely on object prop order
-    const selectedFrame = Object.values(frames)[previewIndex];
+    const {
+      error,
+      stage,
+      loading,
+      svgMarkup,
+      headline,
+      subhead,
+      source,
+      selectedFrames,
+      frames,
+      responsive,
+    } = this.state;
+
     console.log(this.state);
+    const frameWidths = this.getSelectedFrames()
+      .map((f) => f.width)
+      .sort();
 
     return (
       <div className="f2h">
-        <Header
-          stage={stage}
-          handleBackClick={this.goBack}
-          handleNextClick={this.goNext}
-          disableNext={loading || stage === STAGES.SAVE_OUTPUT}
-          frame={selectedFrame}
-          handleOptimseClick={this.toggleOptimised}
-        />
+        {!error && (
+          <header className="f2h__header">
+            <HeaderTitle stage={stage} />
+
+            {stage === STAGES.RESPONSIVE_PREVIEW && (
+              <SvgInformation svgMarkup={svgMarkup} />
+            )}
+
+            <button
+              onClick={this.goBack}
+              disabled={stage === STAGES.CHOOSE_FRAMES}
+            >
+              Back
+            </button>
+
+            <button
+              className="btn--primary"
+              onClick={this.goNext}
+              disabled={stage === STAGES.SAVE_OUTPUT}
+            >
+              Next
+            </button>
+          </header>
+        )}
 
         <div className="f2h__body">
-          {error ? <div className="error">{error}</div> : this.switchView()}
+          {error && <div className="error">{error}</div>}
+          {loading && (
+            <div className="loading">
+              <p className="loading__msg">Merging frames</p>
+              <p className="loading__msg">Rendering HTML</p>
+              <p className="loading__msg">Optimising images</p>
+              <p className="loading__msg">Simplifying shapes</p>
+            </div>
+          )}
+
+          {!error && !loading && stage === STAGES.CHOOSE_FRAMES && (
+            <FrameSelection
+              frames={frames}
+              selectedFrames={selectedFrames}
+              handleClick={this.toggleFrameSelect}
+              toggleSelectAll={this.toggleSelectAll}
+              responsive={responsive}
+              toggleResponsive={this.toggleResponsive}
+              headline={headline}
+              subhead={subhead}
+              source={source}
+              handleFormUpdate={this.handleFormUpdate}
+            />
+          )}
+          {!error && !loading && stage === STAGES.RESPONSIVE_PREVIEW && (
+            <ResponsiveView svgMarkup={svgMarkup} frameWidths={frameWidths} />
+          )}
+          {!error && !loading && stage === STAGES.SAVE_OUTPUT && (
+            <Save svgMarkup={svgMarkup} />
+          )}
         </div>
         <p className="f2h__version">Version: {version}</p>
       </div>

@@ -7,11 +7,6 @@ export interface FrameDataInterface {
   id: string;
   uid: string;
   textNodes: textData[];
-  responsive: boolean;
-  selected: boolean;
-  svg: string | undefined;
-  svgCompressed: string | undefined;
-  svgOptimised: boolean;
 }
 
 export type MsgEventType =
@@ -21,14 +16,15 @@ export type MsgEventType =
   | MsgErrorType
   | MsgCompressImageType;
 
-export interface MsgFramesType {
-  type: MSG_EVENTS.FOUND_FRAMES;
+export interface IFrameData {
   frames: Omit<FrameDataInterface, "uid">[];
-  windowWidth: number;
-  windowHeight: number;
   headline: string | undefined;
   subhead: string | undefined;
   source: string | undefined;
+}
+
+export interface MsgFramesType extends IFrameData {
+  type: MSG_EVENTS.FOUND_FRAMES;
 }
 
 export interface MsgRenderType {
@@ -51,13 +47,6 @@ export interface MsgCompressImageType {
   image: Uint8Array;
   width: number;
   height: number;
-  quality: number;
-  uid: string;
-}
-
-export interface MsgCompressedImageType {
-  type: MSG_EVENTS.COMPRESSED_IMAGE;
-  image: Uint8Array;
   uid: string;
 }
 
@@ -70,20 +59,16 @@ export interface AppPropsInterface {
 }
 
 export interface AppState {
-  readonly error: undefined | string;
+  readonly error: string | undefined;
   readonly ready: boolean;
   readonly frames: FrameCollection;
   readonly stage: STAGES;
-  readonly previewIndex: number;
-  readonly isResizing: boolean;
-  readonly mouseStartX: number;
-  readonly mouseStartY: number;
-  readonly windowWidth: number;
-  readonly windowHeight: number;
   readonly responsive: boolean;
   readonly headline: string | undefined;
   readonly subhead: string | undefined;
   readonly source: string | undefined;
+  readonly selectedFrames: string[];
+  readonly svgMarkup: string;
   readonly loading: boolean;
 }
 
@@ -94,56 +79,14 @@ type textNodeSelectedProps = Pick<
   | "width"
   | "height"
   | "characters"
-  | "lineHeight"
-  | "letterSpacing"
   | "textAlignHorizontal"
   | "textAlignVertical"
+  | "constraints"
 >;
 
 export interface textData extends textNodeSelectedProps {
-  colour: { r: number; g: number; b: number; a: number };
-  fontSize: number;
-  fontFamily: string;
-  fontStyle: string;
+  rangeStyles: ITextStyle[];
 }
-
-interface MsgCloseInterface {
-  type: MSG_EVENTS.CLOSE;
-}
-interface MsgDomReadyInterface {
-  type: MSG_EVENTS.DOM_READY;
-}
-
-interface MsgRenderInterface {
-  type: MSG_EVENTS.RENDER;
-  frameId: string;
-}
-
-interface MsgErrorInterface {
-  type: MSG_EVENTS.ERROR;
-}
-
-interface MsgResizeInterface {
-  type: MSG_EVENTS.RESIZE;
-  width: number;
-  height: number;
-}
-
-interface MsgHeadlinesInterface {
-  type: MSG_EVENTS.UPDATE_HEADLINES;
-  headline: string | undefined;
-  subhead: string | undefined;
-  source: string | undefined;
-}
-
-export type PostMsg =
-  | MsgCompressedImageType
-  | MsgErrorInterface
-  | MsgCloseInterface
-  | MsgDomReadyInterface
-  | MsgResizeInterface
-  | MsgRenderInterface
-  | MsgHeadlinesInterface;
 
 export interface setHeadlinesAndSourceProps {
   pageNode: PageNode;
@@ -162,4 +105,30 @@ export interface UiPostMessageEvent extends MessageEvent {
   data: {
     pluginMessage: MsgEventType;
   };
+}
+
+export interface IresizeImage {
+  img: HTMLImageElement;
+  imgData: Uint8Array;
+  nodeDimensions: { width: number; height: number }[];
+  resolve: (data: Uint8Array) => void;
+  reject: (e: Error) => void;
+}
+
+export interface ITextProp {
+  start: number;
+  end: number;
+
+  value: PluginAPI["mixed"] | string | number | FontName | RGB | undefined;
+}
+
+export interface ITextStyle {
+  start: number;
+  end: number;
+  chars: string;
+  font: FontName;
+  colour: RGB;
+  size: number;
+  letterSpace: string;
+  lineHeight: string;
 }

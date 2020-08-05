@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { h } from "preact";
 import render from "preact-render-to-string";
-import { OUTPUT_FORMATS } from "./constants";
-import { textData, FrameDataInterface } from "types";
+import { textData, FrameDataInterface, ITextStyle } from "types";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-ignore
@@ -10,7 +9,7 @@ import embedCss from "./embed.css";
 // @ts-expect-error
 import fontsCss from "./fonts.css";
 
-function generateIframeHtml(body: string) {
+export function generateIframeHtml(body: string): string {
   return `
     <!doctype html>
     <html>
@@ -26,7 +25,7 @@ function generateIframeHtml(body: string) {
   `;
 }
 
-function generateStyleText(
+function generateParagraphStyle(
   node: textData,
   frameWidth: number,
   frameHeight: number
@@ -36,131 +35,82 @@ function generateStyleText(
     y,
     width,
     height,
-    fontSize,
-    fontFamily,
-    colour,
-    letterSpacing,
-    lineHeight,
     textAlignHorizontal,
     textAlignVertical,
-    fontStyle,
+    constraints,
   } = node;
+
+  // FIXME: HACK - HTML text widths are larger than text node in figma resulting
+  // in wrapping text. Need a smarter way to calculate addition width based
+  // on font, letter-spacing and number of characters
+  const BUFFER = 4;
+  console.log("alignment", textAlignHorizontal, textAlignVertical);
 
   // Position center aligned
   const left = `${((x + width / 2) / frameWidth) * 100}%`;
   const top = `${((y + height / 2) / frameHeight) * 100}%`;
 
-  // Colour
-  const { r, g, b, a } = colour;
-  const colourVals = [r, g, b].map((val = 0) => Math.round(val * 255));
-  const textColour = `rgba(${colourVals.join(",")}, ${a})`;
-  const fontName = `${fontFamily}`;
-  let fontWeight = 400;
-  if (fontStyle === "Semibold" || fontStyle === "Bold") {
-    fontWeight = 700;
-  }
+  // TODO: Add sensible logic for vertical alignment in responsive view
+  const alignVertical = "center";
+  // switch (constraints.vertical) {
+  //   case "MIN":
+  //     alignVertical = "flex-start";
+  //     break;
+  //   case "CENTER":
+  //     alignVertical = "center";
+  //     break;
+  //   case "MAX":
+  //     alignVertical = "flex-end";
+  //     break;
+  // }
 
-  console.log(fontStyle);
-
-  const { unit: letterUnit, value: letterVal } = letterSpacing as {
-    value: number;
-    unit: "PIXELS" | "PERCENT";
-  };
-  let letterSpaceValue = "0";
-  switch (letterUnit) {
-    case "PIXELS":
-      // TODO: FIX ME
-      if (fontFamily === "Telesans Text") {
-        letterSpaceValue = `${letterVal - 0.33}px`;
-      } else if (fontFamily === "Telesans Agate") {
-        letterSpaceValue = `${letterVal - 0.19}px`;
-      } else {
-        letterSpaceValue = `${letterVal}px`;
-      }
-      break;
-    case "PERCENT":
-      letterSpaceValue = `${letterVal / 100}em`;
-
-      if (fontFamily === "Telesans Text") {
-        letterSpaceValue = `${letterVal / 100 - 0.022}em`;
-      } else if (fontFamily === "Telesans Agate") {
-        letterSpaceValue = `${letterVal / 100 - 0.015}em`;
-      } else {
-        letterSpaceValue = `${letterVal / 100}em`;
-      }
-      break;
-    default:
-      if (fontFamily === "Telesans Text") {
-        letterSpaceValue = "-0.37px";
-      } else if (fontFamily === "Telesans Agate") {
-        letterSpaceValue = "-0.19}px";
-      } else {
-        letterSpaceValue = `0`;
-      }
-      break;
-  }
-
-  const { unit: lineUnit, value: lineVal } = lineHeight as {
-    value: number;
-    unit: "AUTO" | "PIXELS" | "PERCENT";
-  };
-  let lineHeightValue = "auto";
-  switch (lineUnit) {
-    case "PIXELS":
-      lineHeightValue = `${lineVal}px`;
-      break;
-    case "PERCENT":
-      lineHeightValue = `${lineVal * 1.15}%`;
-      break;
-    case "AUTO":
-      lineHeightValue = "1.2";
-      break;
-  }
-
-  let alignItemsValue = "auto";
-  switch (textAlignVertical) {
-    case "TOP":
-      alignItemsValue = "flex-start";
+  let alignHorizontal = "center";
+  switch (constraints.horizontal) {
+    case "MIN":
+      alignHorizontal = "flex-start";
       break;
     case "CENTER":
-      alignItemsValue = "center";
+      alignHorizontal = "center";
       break;
-    case "BOTTOM":
-      alignItemsValue = "flex-end";
-      break;
-  }
-
-  let justifyItemsValue = "auto";
-  switch (textAlignHorizontal) {
-    case "LEFT":
-      justifyItemsValue = "flex-start";
-      break;
-    case "CENTER":
-      justifyItemsValue = "center";
-      break;
-    case "RIGHT":
-      justifyItemsValue = "flex-end";
+    case "MAX":
+      alignHorizontal = "flex-end";
       break;
   }
-
-  const newWidth = Math.ceil((width / frameWidth) * 100);
 
   return `
-        font-size: ${String(fontSize)}px;
-        font-family: "${fontName}", Georgia, 'Times New Roman', Times, serif;
-        font-weight: ${fontWeight};
-        position: absolute;
-        color: ${textColour};
-        width: ${newWidth}%;
-        height: ${(height / frameHeight) * 100}%;
+        width: ${((width + BUFFER) / frameWidth) * 100}%;
+        height: ${((height + BUFFER) / frameHeight) * 100}%;
         left: ${left};
         top: ${top};
-        line-height: ${lineHeightValue};
-        letter-spacing: ${letterSpaceValue};
-        justify-content: ${justifyItemsValue};
-        align-items: ${alignItemsValue};
-        display: flex;
+        text-align: ${textAlignHorizontal.toLocaleLowerCase()};
+        align-items: ${alignVertical};
+        justify-content: ${alignHorizontal}
       `;
+}
+
+function generateSpanStyles(style: ITextStyle): string {
+  const { r, g, b } = style.colour;
+  const colour = `rgb(${r * 255}, ${g * 255}, ${b * 255})`;
+  const fontWeight =
+    style.font.style === "Bold" || style.font.style === "Semibold" ? 700 : 400;
+
+  // HACK: Fix letter spacing font rendering by adding offset
+  let letterSpaceOffset = "0px";
+  if (style.font.family === "Telesans Text") {
+    letterSpaceOffset = "0.022em";
+  }
+  if (style.font.family === "Telesans Agate") {
+    letterSpaceOffset = "0.013em";
+  }
+
+  return `
+    letter-spacing: calc(${style.letterSpace} - ${letterSpaceOffset});
+    line-height: ${style.lineHeight};
+    font-size: ${style.size}px;
+    color: ${colour};
+    font-family: "${style.font.family}";
+    font-weight: ${fontWeight};
+`;
 }
 
 type TextProps = {
@@ -171,69 +121,58 @@ type TextProps = {
 function Text(props: TextProps) {
   const { node, width, height } = props;
 
-  const { characters } = node;
-  const styleText = generateStyleText(node, width, height);
-
   return (
-    <p className="f2h__text" style={styleText}>
-      {characters}
-    </p>
-  );
-}
-
-interface FrameContainerProps extends FrameDataInterface {
-  scale?: number | false;
-}
-export function FrameContainer(props: FrameContainerProps): h.JSX.Element {
-  const {
-    uid,
-    width,
-    height,
-    textNodes,
-    svg = "",
-    svgCompressed = "",
-    svgOptimised,
-    responsive,
-    scale,
-  } = props;
-  const textEls = textNodes.map((node) => (
-    <Text key={node.characters} node={node} width={width} height={height} />
-  ));
-  const classNames = `f2h__render ${
-    responsive ? "f2h__render--responsive" : ""
-  }`;
-
-  let style = responsive ? "" : `width: ${width}px;`;
-  style = scale ? `${style} transform: scale(${scale});` : style;
-
-  return (
-    <div className={classNames} style={style} id={uid}>
-      <div
-        className="f2h__svg_container"
-        dangerouslySetInnerHTML={{ __html: svgOptimised ? svgCompressed : svg }}
-      />
-      <div className="f2h__text_container">{textEls}</div>
+    <div
+      className="f2h__text"
+      style={generateParagraphStyle(node, width, height)}
+    >
+      <p className="f2h__text_inner">
+        {node.rangeStyles.map((style) => (
+          <span
+            key={style.chars}
+            style={generateSpanStyles(style)}
+            dangerouslySetInnerHTML={{
+              __html: style.chars.replace(/\n/g, "<br />"),
+            }}
+          ></span>
+        ))}
+      </p>
     </div>
   );
 }
 
 interface renderInlineProps {
   frames: FrameDataInterface[];
-  iframe: OUTPUT_FORMATS;
+  svgText: string;
   headline?: string | undefined;
   subhead?: string | undefined;
   source?: string | undefined;
+  responsive: boolean;
 }
 export function renderInline(props: renderInlineProps): string {
-  const { frames, iframe, headline, subhead, source } = props;
+  const { frames, svgText, headline, subhead, source, responsive } = props;
   const mediaQuery = genreateMediaQueries(frames);
+  const textNodes = [];
 
-  const renderedFrames = frames.map((frame) => (
-    <FrameContainer key={frame.uid} {...frame} />
-  ));
+  for (const frame of frames) {
+    const tNode = (
+      <div id={`textblock-${frame.id}`} className={frame.uid}>
+        {frame.textNodes.map((node) => (
+          <Text
+            key={node.characters}
+            node={node}
+            width={frame.width}
+            height={frame.height}
+          />
+        ))}
+      </div>
+    );
 
-  let html = render(
-    <div className="f2h__embed">
+    textNodes.push(tNode);
+  }
+
+  const html = render(
+    <div className={`f2h__embed ${responsive ? "f2h--responsive" : ""}`}>
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -251,7 +190,13 @@ export function renderInline(props: renderInlineProps): string {
         </header>
       )}
 
-      {renderedFrames}
+      <div className="f2h__wrap" style={`position: relative;`}>
+        <div
+          className="f2h__svg_container"
+          dangerouslySetInnerHTML={{ __html: svgText }}
+        />
+        <div className="text-nodes">{textNodes}</div>
+      </div>
 
       {source && (
         <footer>
@@ -261,37 +206,74 @@ export function renderInline(props: renderInlineProps): string {
     </div>
   );
 
-  if (iframe === OUTPUT_FORMATS.IFRAME) {
-    html = generateIframeHtml(html);
-  }
-
   return html;
-  // return html.replace(/\n|\r|\s{2,}/g, "");
 }
 
 function genreateMediaQueries(frames: FrameDataInterface[]) {
-  const idWidths = frames
-    .map(({ width, uid }) => [width, uid])
-    .sort(([a], [b]) => (a < b ? -1 : 1));
+  // Sort frames by ascending height. Small > big
+  const sortedFrames = Object.values(frames)
+    .map(({ width, height, uid }) => ({ width, height, uid }))
+    .sort((a, b) => (a.width < b.width ? -1 : 1));
 
-  const mediaQueries = idWidths.map(([width, uid], i) => {
+  const largestWidth = Math.max(...sortedFrames.map(({ width }) => width));
+
+  let cssText = "";
+  for (let i = 0; i < sortedFrames.length; i++) {
+    const { uid, width, height } = sortedFrames[i];
+
     if (i === 0) {
-      return "";
+      cssText += `
+            .f2h__svg_container,
+            .f2h__wrap {
+              width: ${width}px;
+              height: ${height}px;
+            }
+
+            .f2h--responsive .f2h__svg_container,
+            .f2h--responsive .f2h__wrap
+            {
+              width: 100%;
+              height: ${(height / width) * 100}vw;
+            }
+
+            .f2h--responsive svg {
+              width: ${(largestWidth / width) * 100}%;
+              height: auto;
+            }
+          `;
+
+      continue;
     }
 
-    const [, prevId] = idWidths[i - 1];
-
-    // Note: Cascade order is important.
-    return `
+    const { uid: prevId } = sortedFrames[i - 1];
+    cssText += `
+      /* Hide until width is reached */
       @media (max-width: ${width}px) {
-        #${uid} { display: none; }
+        .${uid} { display: none; }
       }
-      @media (min-width: ${width}px) {
-        #${prevId} { display: none; }
-        #${uid} { display: block; }
-      }
-    `;
-  });
 
-  return mediaQueries.join("");
+      /* Hide previous and show current frame */
+      @media (min-width: ${width}px) {
+        .f2h--responsive svg {
+          width: ${(largestWidth / width) * 100}%;
+        }
+
+        .${prevId} { display: none; }
+        .${uid} { display: block; }
+        .f2h__svg_container,
+        .f2h__wrap {
+          width: ${width}px;
+          height: ${height}px;
+        }
+
+        .f2h--responsive .f2h__svg_container,
+        .f2h--responsive .f2h__wrap {
+          height: ${(height / width) * 100}vw;
+         }
+
+        }
+      `;
+  }
+
+  return cssText;
 }

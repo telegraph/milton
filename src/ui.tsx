@@ -2,8 +2,10 @@
 import { h, render } from "preact";
 import { injectCss } from "./utils/css";
 import { App } from "./components/App";
-
-const VERSION = "alpha-0.1";
+import { postMan } from "utils/messages";
+import { MSG_EVENTS } from "constants";
+import { compressImage } from "helpers";
+import { version } from "../package.json";
 
 // Import CSS files as plain text via esbuild loader option
 // @ts-expect-error
@@ -17,5 +19,8 @@ injectCss(uiCss);
 injectCss(embedCss);
 injectCss(fontsCss);
 
+// Register post message workers
+postMan.registerWorker(MSG_EVENTS.COMPRESS_IMAGE, compressImage);
+
 // Render app
-render(<App version={VERSION} />, document.body);
+render(<App version={version} />, document.body);

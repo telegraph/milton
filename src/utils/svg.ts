@@ -1,28 +1,44 @@
-export function decodeSvgToString(svg: Uint8Array) {
+import { crunchSvg } from "./crunchSvg";
+
+export async function decodeSvgToString(svg: Uint8Array, ids: string[][]) {
   let svgStr = new TextDecoder("utf-8").decode(svg);
-  // NOTE: Figma generates non-unique IDs for masks which can clash when
-  // embedding multiple SVGSs. We do a string replace for unique IDs
-  const regex = /id="(.+?)"/g;
-  const ids: string[] = [];
-  let matches;
-
-  while ((matches = regex.exec(svgStr))) {
-    const [, id] = matches;
-    ids.push(id);
-  }
-
-  ids.forEach((id) => {
-    const rnd = btoa(Math.random().toString()).substr(6, 6);
-    const randomId = `${id}-${rnd}`;
-    // Replace ID
-    svgStr = svgStr.replace(`id="${id}"`, `id="${randomId}"`);
-    // Replace anchor refs
-    const regex = new RegExp(`#${id}`, "g");
-    svgStr = svgStr.replace(regex, `#${randomId}`);
-  });
-
   // Update HTTP links to HTTPS
   svgStr = svgStr.replace(/http:\/\//g, "https://");
 
-  return svgStr;
+  // Replace figma IDs "00:00" with CSS valid IDs
+  ids.forEach(([id, uid]) => {
+    svgStr = svgStr.replace(`id="${id}"`, `id="${id}" class="${uid}" `);
+  });
+
+  const emptyDiv = document.createElement("div");
+  emptyDiv.innerHTML = svgStr;
+  const svgEl = emptyDiv.querySelector("svg");
+
+  if (!svgEl) {
+    throw new Error("SVG decode failed. Missing SVG element");
+  }
+
+  crunchSvg(svgEl);
+
+  // BUG: Remove empty clip paths
+  [...(svgEl?.querySelectorAll("clipPath") || [])].forEach((clipPath) => {
+    if (clipPath.childElementCount === 0) {
+      clipPath.parentNode?.removeChild(clipPath);
+    }
+  });
+
+  // Remove text nodes
+  [...(svgEl?.querySelectorAll("text") || [])].forEach((textNode) => {
+    textNode.parentNode?.removeChild(textNode);
+  });
+
+  return svgEl.outerHTML;
+}
+
+export async function getSvgString(url: string): Promise<string> {
+  return fetch(url).then((res) => {
+    if (res.ok === false) throw new Error("Failed to fetch SVG blob");
+
+    return res.text();
+  });
 }

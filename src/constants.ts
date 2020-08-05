@@ -1,21 +1,18 @@
 export enum STAGES {
   CHOOSE_FRAMES,
-  PREVIEW_OUTPUT,
   RESPONSIVE_PREVIEW,
   SAVE_OUTPUT,
 }
 
 export enum MSG_EVENTS {
-  DOM_READY,
-  NO_FRAMES,
   FOUND_FRAMES,
-  RESIZE,
+  NO_FRAMES,
   RENDER,
   CLOSE,
   ERROR,
   UPDATE_HEADLINES,
   COMPRESS_IMAGE,
-  COMPRESSED_IMAGE,
+  GET_ROOT_FRAMES,
 }
 
 export enum OUTPUT_FORMATS {
@@ -36,15 +33,6 @@ export const UI_TEXT = {
   BUTTON_NEXT: "Next",
   BUTTON_DOWNLOAD: "Download",
   BUTTON_PREVIOUS: "Back",
-};
-
-export const INITIAL_UI_SIZE = {
-  width: 480,
-  height: 500,
-  maxWidth: 1200,
-  maxHeight: 900,
-  minWidth: 420,
-  minHeight: 480,
 };
 
 export const FRAME_WARNING_SIZE = 300;

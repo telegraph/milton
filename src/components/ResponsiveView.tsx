@@ -1,50 +1,56 @@
-import { h } from "preact";
-import { renderInline } from "../outputRender";
-import { OUTPUT_FORMATS } from "../constants";
-import { FrameDataInterface, AppState } from "types";
+import { h, Component, createRef, RefObject } from "preact";
+import { AppState } from "types";
 
-interface ResponsiveViewProps
-  extends Pick<
-    AppState,
-    "source" | "headline" | "subhead" | "windowWidth" | "windowHeight"
-  > {
-  frames: FrameDataInterface[];
+interface ResponsiveViewProps extends Pick<AppState, "svgMarkup"> {
+  frameWidths: number[];
 }
 
-export function ResponsiveView(props: ResponsiveViewProps): h.JSX.Element {
-  const {
-    frames,
-    headline,
-    subhead,
-    source,
-    windowHeight,
-    windowWidth,
-  } = props;
+export class ResponsiveView extends Component<ResponsiveViewProps> {
+  iframeEl: RefObject<HTMLIFrameElement> = createRef();
 
-  const maxWidth = Math.max(...frames.map((f) => f.width));
-  const maxHeight = Math.max(...frames.map((f) => f.height));
-  const minWidth = Math.min(windowWidth - 100, maxWidth);
-  const minHeight = Math.min(windowHeight - 160, maxHeight);
+  state = {
+    widthIndex: 0,
+  };
 
-  const rawHtml = renderInline({
-    frames,
-    iframe: OUTPUT_FORMATS.IFRAME,
-    headline,
-    subhead,
-    source,
-  });
+  setIndex = (i: number): void => {
+    this.setState({ widthIndex: i });
 
-  return (
-    <div className="f2h__responsive_preview">
-      <p>Use the window below to test how the frames behave when resizing.</p>
+    if (this.iframeEl.current) {
+      const { frameWidths } = this.props;
+      this.iframeEl.current.style.width = `${frameWidths[i]}px`;
+    }
+  };
 
-      <div className="f2h__responsive__wrapper">
-        <iframe
-          style={`height: ${minHeight}px; width: ${minWidth}px;`}
-          className="f2h__responsive__sandbox"
-          srcDoc={rawHtml}
-        ></iframe>
+  render(): h.JSX.Element {
+    const { widthIndex } = this.state;
+    const { svgMarkup, frameWidths } = this.props;
+    const maxWidth = Math.max(...frameWidths);
+
+    return (
+      <div className="f2h__responsive_preview">
+        {frameWidths.map((width, i) => (
+          <p
+            key={width}
+            className={`responsive_width_btn ${
+              widthIndex === i ? "active" : ""
+            }`}
+            onClick={() => this.setIndex(i)}
+            style={`width: ${(width / maxWidth) * 100}%`}
+          >
+            {width}
+          </p>
+        ))}
+
+        <div className="f2h__responsive__wrapper">
+          <iframe
+            style={`width: {frameWidths[widthIndex]}px`}
+            width={frameWidths[0]}
+            className="f2h__responsive__sandbox"
+            srcDoc={svgMarkup}
+            ref={this.iframeEl}
+          ></iframe>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
