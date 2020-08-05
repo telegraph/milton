@@ -88,3 +88,14 @@ body::-webkit-scrollbar {
   color: #999;
   margin: 12px 0 0;
 }
+
+/* Experiment stroking text */
+.stroked:after {
+  content: attr(data-text);
+  color: inherit;
+  position: absolute;
+  left: 0;
+  font-size: 1em;
+  z-index: -2;
+  -webkit-text-stroke: white 4px;
+}
