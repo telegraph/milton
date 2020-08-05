@@ -50,20 +50,21 @@ function generateParagraphStyle(
   const left = `${((x + width / 2) / frameWidth) * 100}%`;
   const top = `${((y + height / 2) / frameHeight) * 100}%`;
 
-  let alignVertical = "";
-  switch (constraints.vertical) {
-    case "MIN":
-      alignVertical = "flex-start";
-      break;
-    case "CENTER":
-      alignVertical = "center";
-      break;
-    case "MAX":
-      alignVertical = "flex-end";
-      break;
-  }
+  // TODO: Add sensible logic for vertical alignment in responsive view
+  const alignVertical = "center";
+  // switch (constraints.vertical) {
+  //   case "MIN":
+  //     alignVertical = "flex-start";
+  //     break;
+  //   case "CENTER":
+  //     alignVertical = "center";
+  //     break;
+  //   case "MAX":
+  //     alignVertical = "flex-end";
+  //     break;
+  // }
 
-  let alignHorizontal = "";
+  let alignHorizontal = "center";
   switch (constraints.horizontal) {
     case "MIN":
       alignHorizontal = "flex-start";
@@ -93,8 +94,17 @@ function generateSpanStyles(style: ITextStyle): string {
   const fontWeight =
     style.font.style === "Bold" || style.font.style === "Semibold" ? 700 : 400;
 
+  // HACK: Fix letter spacing font rendering by adding offset
+  let letterSpaceOffset = "0px";
+  if (style.font.family === "Telesans Text") {
+    letterSpaceOffset = "0.022em";
+  }
+  if (style.font.family === "Telesans Agate") {
+    letterSpaceOffset = "0.013em";
+  }
+
   return `
-    letter-spacing: ${style.letterSpace};
+    letter-spacing: calc(${style.letterSpace} - ${letterSpaceOffset});
     line-height: ${style.lineHeight};
     font-size: ${style.size}px;
     color: ${colour};
