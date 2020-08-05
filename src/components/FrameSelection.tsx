@@ -25,12 +25,13 @@ function InputField(props: InputFieldProps) {
 }
 
 interface FrameSelectionProps
-  extends Pick<AppState, "source" | "headline" | "subhead"> {
+  extends Pick<AppState, "source" | "headline" | "subhead" | "responsive"> {
   frames: FrameCollection;
   selectedFrames: string[];
   handleClick: (id: string) => void;
   toggleSelectAll: () => void;
   handleFormUpdate: (props: HeadlinesInterface) => void;
+  toggleResponsive: () => void;
 }
 
 export class FrameSelection extends Component<FrameSelectionProps> {
@@ -56,6 +57,8 @@ export class FrameSelection extends Component<FrameSelectionProps> {
       subhead,
       source,
       selectedFrames,
+      responsive,
+      toggleResponsive,
     } = this.props;
 
     const frameCount = Object.values(frames).length;
@@ -100,16 +103,16 @@ export class FrameSelection extends Component<FrameSelectionProps> {
             />{" "}
             Frames
           </label>
-          {/* <label className="f2h__sel_header f2h__sel_header--responsive">
+          <label className="f2h__sel_header f2h__sel_header--responsive">
             <input
               type="checkbox"
               id="responsiveAll"
               name="responsiveAll"
-              onClick={toggleResponsiveAll}
-              checked={false}
+              onClick={toggleResponsive}
+              checked={responsive}
             />{" "}
             Responsive
-          </label> */}
+          </label>
 
           {Object.values(frames)
             .sort((a, b) => (a.width < b.width ? -1 : 1))

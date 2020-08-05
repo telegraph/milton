@@ -137,9 +137,10 @@ interface renderInlineProps {
   headline?: string | undefined;
   subhead?: string | undefined;
   source?: string | undefined;
+  responsive: boolean;
 }
 export function renderInline(props: renderInlineProps): string {
-  const { frames, svgText, headline, subhead, source } = props;
+  const { frames, svgText, headline, subhead, source, responsive } = props;
   const mediaQuery = genreateMediaQueries(frames);
   const textNodes = [];
 
@@ -161,7 +162,7 @@ export function renderInline(props: renderInlineProps): string {
   }
 
   const html = render(
-    <div className="f2h__embed f2h--responsive">
+    <div className={`f2h__embed ${responsive ? "f2h--responsive" : ""}`}>
       <style
         dangerouslySetInnerHTML={{
           __html: `

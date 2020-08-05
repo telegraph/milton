@@ -88,7 +88,14 @@ export class App extends Component<AppPropsInterface, AppState> {
       return;
     }
 
-    const { selectedFrames, frames, headline, subhead, source } = this.state;
+    const {
+      selectedFrames,
+      frames,
+      headline,
+      subhead,
+      source,
+      responsive,
+    } = this.state;
 
     const ids = selectedFrames.map((id) => [id, frames[id].uid]);
     const svgText = await decodeSvgToString(svgData, ids);
@@ -103,6 +110,7 @@ export class App extends Component<AppPropsInterface, AppState> {
       headline,
       subhead,
       source,
+      responsive,
     });
 
     this.setState({
@@ -192,6 +200,10 @@ export class App extends Component<AppPropsInterface, AppState> {
     return Object.values(frames).filter((f) => selectedFrames.includes(f.id));
   };
 
+  toggleResponsive = (): void => {
+    this.setState({ responsive: !this.state.responsive });
+  };
+
   render(): h.JSX.Element {
     const { version } = this.props;
     const {
@@ -204,6 +216,7 @@ export class App extends Component<AppPropsInterface, AppState> {
       source,
       selectedFrames,
       frames,
+      responsive,
     } = this.state;
 
     console.log(this.state);
@@ -255,6 +268,8 @@ export class App extends Component<AppPropsInterface, AppState> {
               selectedFrames={selectedFrames}
               handleClick={this.toggleFrameSelect}
               toggleSelectAll={this.toggleSelectAll}
+              responsive={responsive}
+              toggleResponsive={this.toggleResponsive}
               headline={headline}
               subhead={subhead}
               source={source}
