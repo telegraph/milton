@@ -180,7 +180,7 @@ button:hover {
 .f2h__body {
   display: flex;
   padding: var(--padding-large, 0) var(--padding-huge, 0);
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   height: 100%;
   background-color: var(--colours-grey-5, #f0f);
@@ -481,7 +481,6 @@ button:hover {
   /* width: 300px; */
   display: flex;
   flex-direction: column;
-  align-self: center;
 }
 
 .f2h__responsive__wrapper {
@@ -491,31 +490,23 @@ button:hover {
   width: 500px;
 }
 
-.f2h__ruler {
-  position: relative;
-  display: grid;
-  justify-items: center;
+.f2h__responsive_info {
+  display: flex;
+  border-bottom: 1px solid var(--colours-grey-3, #f0f);
+  padding-bottom: var(--padding-small, 0);
 }
-.f2h__ruler_break {
-  height: var(--padding-medium, 10px);
-  background-color: var(--colours-grey-4, #f0f);
-  border: 2px solid #fff;
-  grid-row: 1/2;
-  grid-column: 1/2;
-  border-top: none;
-  border-bottom: none;
+.f2h__responsive_width {
+  flex: 1;
 }
-.f2h__ruler_break--0 {
-  width: 320px;
-  z-index: 3;
+
+.f2h__responsive_input {
+  width: 5em;
+  text-align: right;
+  margin-right: var(--padding-small, 0);
+  display: inline-block;
 }
-.f2h__ruler_break--1 {
-  width: 450px;
-  z-index: 2;
-}
-.f2h__ruler_break--2 {
-  width: 640px;
-  z-index: 1;
+.f2h__responsive_input:focus {
+  outline: none;
 }
 
 .f2h__responsive__sandbox {
@@ -559,7 +550,7 @@ button:hover {
   display: inline-block;
 }
 .responsive_width_btn.active {
-  background-color: var(--colours-grey-3, #f0f);
+  background-color: var(--colours-main, #f0f);
   color: #fff;
 }
 
