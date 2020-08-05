@@ -38,7 +38,11 @@ function generateParagraphStyle(
     textAlignHorizontal,
     textAlignVertical,
     constraints,
+    strokeWeight,
+    strokeColour,
   } = node;
+
+  let styleText = "";
 
   // FIXME: HACK - HTML text widths are larger than text node in figma resulting
   // in wrapping text. Need a smarter way to calculate addition width based
@@ -49,6 +53,15 @@ function generateParagraphStyle(
   // Position center aligned
   const left = `${((x + width / 2) / frameWidth) * 100}%`;
   const top = `${((y + height / 2) / frameHeight) * 100}%`;
+
+  // Strokes
+  console.log("IN HERER", strokeColour, strokeWeight);
+  if (strokeWeight && strokeColour) {
+    console.log("IN HERER", strokeColour, strokeWeight);
+    styleText += `
+     -webkit-text-stroke-color:  ${strokeColour};
+    `;
+  }
 
   // TODO: Add sensible logic for vertical alignment in responsive view
   const alignVertical = "center";
@@ -78,6 +91,7 @@ function generateParagraphStyle(
   }
 
   return `
+        ${styleText}
         width: ${((width + BUFFER) / frameWidth) * 100}%;
         height: ${((height + BUFFER) / frameHeight) * 100}%;
         left: ${left};
@@ -123,13 +137,15 @@ function Text(props: TextProps) {
 
   return (
     <div
-      className="f2h__text"
+      className={`f2h__text ${node.strokeWeight ? "f2h__text--stroke" : ""}`}
       style={generateParagraphStyle(node, width, height)}
     >
       <p className="f2h__text_inner">
         {node.rangeStyles.map((style) => (
           <span
             key={style.chars}
+            data-text={node.strokeWeight ? style.chars : ""}
+            data-width={node.strokeWeight ? node.strokeWeight : ""}
             style={generateSpanStyles(style)}
             dangerouslySetInnerHTML={{
               __html: style.chars.replace(/\n/g, "<br />"),

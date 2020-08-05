@@ -77,12 +77,20 @@ body::-webkit-scrollbar {
 }
 
 /* Experiment stroking text */
-.stroked:after {
+.f2h__text--stroke span {
+  position: relative;
+}
+
+.f2h__text--stroke span:after {
   content: attr(data-text);
   color: inherit;
-  position: absolute;
   left: 0;
   font-size: 1em;
   z-index: -2;
-  -webkit-text-stroke: white 4px;
+  -webkit-text-stroke-width: 6px;
+  user-select: none;
+  color: transparent;
+  display: block;
+  transform: translateY(-100%);
+  position: relative;
 }

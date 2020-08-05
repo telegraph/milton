@@ -226,7 +226,26 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       textAlignHorizontal,
       textAlignVertical,
       constraints,
+      strokes,
+      strokeWeight,
     } = textNode;
+
+    console.log(strokes, strokeWeight);
+
+    let strokeDetails = {};
+
+    const strokeColour = strokes.find(
+      (paint) => paint.type === "SOLID"
+    ) as SolidPaint;
+
+    if (strokeColour) {
+      strokeDetails = {
+        strokeWeight: strokeWeight,
+        strokeColour: `rgb(${Object.values(strokeColour.color)
+          .map((val) => val * 255)
+          .join(",")})`,
+      };
+    }
 
     // NOTE: Figma node x, y are relative to first parent, we want them
     // relative to the root frame
@@ -247,6 +266,7 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       textAlignVertical,
       constraints,
       rangeStyles,
+      ...strokeDetails,
     });
   }
 
