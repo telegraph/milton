@@ -115,7 +115,7 @@ function generateSpanStyles(style: ITextStyle): string {
     style.font.family === "Austin News Deck" &&
     ["Bold", "Semibold"].includes(style.font.style)
   ) {
-    letterSpaceOffset = "0.018em";
+    letterSpaceOffset = "0.02em";
   }
 
   return `
