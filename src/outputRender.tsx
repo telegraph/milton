@@ -51,7 +51,8 @@ function generateParagraphStyle(
   console.log("alignment", textAlignHorizontal, textAlignVertical);
 
   // Position center aligned
-  const left = `${((x + width / 2) / frameWidth) * 100}%`;
+  const leftPos = (x + width / 2) / frameWidth;
+  const left = `${Math.ceil(leftPos * 100)}%`;
   const top = `${((y + height / 2) / frameHeight) * 100}%`;
 
   // Strokes
@@ -115,6 +116,9 @@ function generateSpanStyles(style: ITextStyle): string {
   }
   if (style.font.family === "Telesans Agate") {
     letterSpaceOffset = "0.013em";
+  }
+  if (style.font.family === "Austin News Deck") {
+    letterSpaceOffset = "0.014em";
   }
 
   return `
