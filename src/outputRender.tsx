@@ -44,15 +44,9 @@ function generateParagraphStyle(
 
   let styleText = "";
 
-  // FIXME: HACK - HTML text widths are larger than text node in figma resulting
-  // in wrapping text. Need a smarter way to calculate addition width based
-  // on font, letter-spacing and number of characters
-  const BUFFER = 4;
-  console.log("alignment", textAlignHorizontal, textAlignVertical);
-
   // Position center aligned
   const leftPos = (x + width / 2) / frameWidth;
-  const left = `${Math.ceil(leftPos * 100)}%`;
+  const left = `${leftPos * 100}%`;
   const top = `${((y + height / 2) / frameHeight) * 100}%`;
 
   // Strokes
@@ -93,8 +87,8 @@ function generateParagraphStyle(
 
   return `
         ${styleText}
-        width: ${((width + BUFFER) / frameWidth) * 100}%;
-        height: ${((height + BUFFER) / frameHeight) * 100}%;
+        width: ${(width / frameWidth) * 100}%;
+        height: ${(height / frameHeight) * 100}%;
         left: ${left};
         top: ${top};
         text-align: ${textAlignHorizontal.toLocaleLowerCase()};
@@ -112,13 +106,16 @@ function generateSpanStyles(style: ITextStyle): string {
   // HACK: Fix letter spacing font rendering by adding offset
   let letterSpaceOffset = "0px";
   if (style.font.family === "Telesans Text") {
-    letterSpaceOffset = "0.022em";
+    letterSpaceOffset = "0.026em";
   }
   if (style.font.family === "Telesans Agate") {
-    letterSpaceOffset = "0.013em";
+    // letterSpaceOffset = "0.004em";
   }
-  if (style.font.family === "Austin News Deck") {
-    letterSpaceOffset = "0.014em";
+  if (
+    style.font.family === "Austin News Deck" &&
+    ["Bold", "Semibold"].includes(style.font.style)
+  ) {
+    letterSpaceOffset = "0.016em";
   }
 
   return `
