@@ -81,7 +81,7 @@ body::-webkit-scrollbar {
   position: relative;
 }
 
-.f2h__text--stroke span:after {
+.f2h__text--stroke span:before {
   content: attr(data-text);
   color: inherit;
   left: 0;
@@ -91,6 +91,6 @@ body::-webkit-scrollbar {
   user-select: none;
   color: transparent;
   display: block;
-  transform: translateY(-100%);
-  position: relative;
+  position: fixed;
+  width: 100%;
 }
