@@ -211,7 +211,9 @@ function getTextRangeValues(textNode: TextNode): ITextStyle[] {
 }
 
 export function getTextNodesFromFrame(frame: FrameNode): textData[] {
-  const textNodes = frame.findAll(({ type }) => type === "TEXT") as TextNode[];
+  const textNodes = frame.findAll(
+    (node) => node.type === "TEXT" && node.characters.length > 0
+  ) as TextNode[];
   const { absoluteTransform } = frame;
   const rootX = absoluteTransform[0][2];
   const rootY = absoluteTransform[1][2];
