@@ -58,19 +58,21 @@ function generateParagraphStyle(
     `;
   }
 
+  console.log(textAlignVertical, constraints);
+
   // TODO: Add sensible logic for vertical alignment in responsive view
-  const alignVertical = "center";
-  // switch (constraints.vertical) {
-  //   case "MIN":
-  //     alignVertical = "flex-start";
-  //     break;
-  //   case "CENTER":
-  //     alignVertical = "center";
-  //     break;
-  //   case "MAX":
-  //     alignVertical = "flex-end";
-  //     break;
-  // }
+  let alignVertical = "center";
+  switch (textAlignVertical) {
+    case "TOP":
+      alignVertical = "flex-start";
+      break;
+    case "CENTER":
+      alignVertical = "center";
+      break;
+    case "BOTTOM":
+      alignVertical = "flex-end";
+      break;
+  }
 
   let alignHorizontal = "center";
   switch (constraints.horizontal) {
