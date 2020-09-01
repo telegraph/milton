@@ -100,8 +100,26 @@ function generateParagraphStyle(
 function generateSpanStyles(style: ITextStyle): string {
   const { r, g, b } = style.colour;
   const colour = `rgb(${r * 255}, ${g * 255}, ${b * 255})`;
-  const fontWeight =
-    style.font.style === "Bold" || style.font.style === "Semibold" ? 700 : 400;
+
+  // Font weights
+  let fontWeight = 400;
+  switch (style.font.style) {
+    case "Bold":
+      fontWeight = 700;
+      break;
+
+    case "Semibold":
+      fontWeight = 600;
+      break;
+
+    case "Medium":
+      fontWeight = 500;
+      break;
+
+    case "Roman":
+      fontWeight = 400;
+      break;
+  }
 
   // HACK: Fix letter spacing font rendering by adding offset
   let letterSpaceOffset = "0px";
@@ -118,6 +136,12 @@ function generateSpanStyles(style: ITextStyle): string {
     letterSpaceOffset = "0.02em";
   }
 
+  // Font style
+  let fontStyle = "normal";
+  if (RegExp("italic", "i").test(style.font.style)) {
+    fontStyle = "italic";
+  }
+
   return `
     letter-spacing: calc(${style.letterSpace} - ${letterSpaceOffset});
     line-height: ${style.lineHeight};
@@ -125,6 +149,7 @@ function generateSpanStyles(style: ITextStyle): string {
     color: ${colour};
     font-family: "${style.font.family}";
     font-weight: ${fontWeight};
+    font-style: ${fontStyle};
 `;
 }
 

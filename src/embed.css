@@ -2,6 +2,11 @@ html,
 body {
   margin: 0;
 
+  /* Remove font smoothing */
+  -moz-osx-font-smoothing: grayscale; /* Firefox */
+  -webkit-font-smoothing: antialiased; /* WebKit  */
+
+  /* Fix scrollbar visibility */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE 10+ */
 }
