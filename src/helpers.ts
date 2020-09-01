@@ -258,12 +258,17 @@ export function getRootFrames(): IFrameData {
     const { name, width, height, id } = frame;
     const textNodes = getTextNodesFromFrame(frame);
 
+    const fixedPositionNodes = frame.children
+      .slice(frame.children.length - frame.numberOfFixedChildren)
+      .map((node) => node.id);
+
     return {
       name,
       width,
       height,
       id,
       textNodes,
+      fixedPositionNodes,
     };
   });
 

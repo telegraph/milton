@@ -7,6 +7,7 @@ export interface FrameDataInterface {
   id: string;
   uid: string;
   textNodes: textData[];
+  fixedPositionNodes: string[];
 }
 
 export type MsgEventType =
@@ -86,6 +87,7 @@ type textNodeSelectedProps = Pick<
 
 export interface textData extends textNodeSelectedProps {
   rangeStyles: ITextStyle[];
+  id: string;
 }
 
 export interface setHeadlinesAndSourceProps {

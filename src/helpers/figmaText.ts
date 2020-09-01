@@ -230,6 +230,7 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       constraints,
       strokes,
       strokeWeight,
+      id,
     } = textNode;
 
     console.log(strokes, strokeWeight);
@@ -268,6 +269,7 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       textAlignVertical,
       constraints,
       rangeStyles,
+      id,
       ...strokeDetails,
     });
   }

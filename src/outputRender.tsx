@@ -28,7 +28,8 @@ export function generateIframeHtml(body: string): string {
 function generateParagraphStyle(
   node: textData,
   frameWidth: number,
-  frameHeight: number
+  frameHeight: number,
+  positionFixed: boolean
 ) {
   const {
     x,
@@ -89,13 +90,15 @@ function generateParagraphStyle(
 
   return `
         ${styleText}
-        width: ${(width / frameWidth) * 100}%;
-        height: ${(height / frameHeight) * 100}%;
-        left: ${left};
-        top: ${top};
+        width: ${positionFixed ? "auto" : `${(width / frameWidth) * 100}%`};
+        height: ${positionFixed ? "auto" : `${(height / frameHeight) * 100}%`};
+        left: ${positionFixed ? `${x}px` : left};
+        top: ${positionFixed ? `${y}px` : top};
         text-align: ${textAlignHorizontal.toLocaleLowerCase()};
         align-items: ${alignVertical};
-        justify-content: ${alignHorizontal}
+        justify-content: ${alignHorizontal};
+        position: ${positionFixed ? "fixed" : "absolute"};
+        ${positionFixed ? "transform: none;" : ""}
       `;
 }
 
@@ -159,14 +162,15 @@ type TextProps = {
   node: textData;
   width: number;
   height: number;
+  positionFixed: boolean;
 };
 function Text(props: TextProps) {
-  const { node, width, height } = props;
+  const { node, width, height, positionFixed } = props;
 
   return (
     <div
       className={`f2h__text ${node.strokeWeight ? "f2h__text--stroke" : ""}`}
-      style={generateParagraphStyle(node, width, height)}
+      style={generateParagraphStyle(node, width, height, positionFixed)}
     >
       <p className="f2h__text_inner">
         {node.rangeStyles.map((style) => (
@@ -206,6 +210,7 @@ export function renderInline(props: renderInlineProps): string {
             node={node}
             width={frame.width}
             height={frame.height}
+            positionFixed={frame.fixedPositionNodes.includes(node.id)}
           />
         ))}
       </div>
