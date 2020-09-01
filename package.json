@@ -11,27 +11,27 @@
   "author": "Andrew Mason",
   "license": "ISC",
   "dependencies": {
-    "@figma/plugin-typings": "^1.15.0",
-    "esbuild": "^0.6.14",
+    "@figma/plugin-typings": "^1.16.1",
+    "esbuild": "^0.6.28",
     "file-saver": "^2.0.2",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.20",
     "pako": "^1.0.11",
-    "pica": "^6.1.0",
-    "preact": "^10.4.6",
+    "pica": "^6.1.1",
+    "preact": "^10.4.8",
     "preact-render-to-string": "^5.1.10",
     "upng-js": "^2.1.0"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.1",
-    "@types/lodash": "^4.14.158",
+    "@types/lodash": "^4.14.161",
     "@types/pako": "^1.0.1",
     "@types/pica": "^5.1.1",
     "@types/upng-js": "^2.1.1",
-    "@typescript-eslint/eslint-plugin": "^3.7.1",
-    "@typescript-eslint/parser": "^3.7.1",
-    "eslint": "^7.6.0",
+    "@typescript-eslint/eslint-plugin": "^3.10.1",
+    "@typescript-eslint/parser": "^3.10.1",
+    "eslint": "^7.8.0",
     "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-react": "^7.20.5"
+    "eslint-plugin-react": "^7.20.6"
   },
   "sideEffects": false
 }
