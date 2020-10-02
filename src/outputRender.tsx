@@ -45,11 +45,6 @@ function generateParagraphStyle(
 
   let styleText = "";
 
-  // Position center aligned
-  const leftPos = (x + width / 2) / frameWidth;
-  const left = `${leftPos * 100}%`;
-  const top = `${((y + height / 2) / frameHeight) * 100}%`;
-
   // Strokes
   console.log("IN HERER", strokeColour, strokeWeight);
   if (strokeWeight && strokeColour) {
@@ -59,10 +54,15 @@ function generateParagraphStyle(
     `;
   }
 
-  console.log(textAlignVertical, constraints);
-
   // TODO: Add sensible logic for vertical alignment in responsive view
+
+  // Position center aligned
+  const leftPos = (x + width / 2) / frameWidth;
+  const left = `${leftPos * 100}%`;
+  const top = `${((y + height / 2) / frameHeight) * 100}%`;
+
   let alignVertical = "center";
+  let verticalPosition = "";
   switch (textAlignVertical) {
     case "TOP":
       alignVertical = "flex-start";
@@ -73,6 +73,19 @@ function generateParagraphStyle(
     case "BOTTOM":
       alignVertical = "flex-end";
       break;
+  }
+
+  console.log(node.characters, x, height);
+
+  switch (constraints.vertical) {
+    case "MIN":
+      verticalPosition = `top: ${top}`;
+      break;
+    case "MAX":
+      verticalPosition = `bottom: ${frameHeight - y - height - height / 2}px`;
+      break;
+    default:
+      verticalPosition = `top: ${top}`;
   }
 
   let alignHorizontal = "center";
@@ -93,7 +106,7 @@ function generateParagraphStyle(
         width: ${positionFixed ? "auto" : `${(width / frameWidth) * 100}%`};
         height: ${positionFixed ? "auto" : `${(height / frameHeight) * 100}%`};
         left: ${positionFixed ? `${x}px` : left};
-        top: ${positionFixed ? `${y}px` : top};
+        ${verticalPosition};
         text-align: ${textAlignHorizontal.toLocaleLowerCase()};
         align-items: ${alignVertical};
         justify-content: ${alignHorizontal};
@@ -257,6 +270,9 @@ export function renderInline(props: renderInlineProps): string {
   return html;
 }
 
+/**
+ * TODO: There's too much logic in  here. Breakout into separate functions
+ */
 function genreateMediaQueries(frames: FrameDataInterface[]) {
   // Sort frames by ascending height. Small > big
   const sortedFrames = Object.values(frames)
@@ -269,6 +285,7 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
   for (let i = 0; i < sortedFrames.length; i++) {
     const { uid, width, height } = sortedFrames[i];
 
+    // Styles for the first (smallest) breakpoint
     if (i === 0) {
       cssText += `
             .f2h__svg_container,
@@ -289,12 +306,10 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
               height: auto;
             }
           `;
-
-      continue;
-    }
-
-    const { uid: prevId } = sortedFrames[i - 1];
-    cssText += `
+    } else {
+      // Styles for the  remaining breakpoints
+      const { uid: prevId } = sortedFrames[i - 1];
+      cssText += `
       /* Hide until width is reached */
       @media (max-width: ${width}px) {
         .${uid} { display: none; }
@@ -321,6 +336,28 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
 
         }
       `;
+    }
+
+    // Style for last breakpoint
+    if (i === sortedFrames.length - 1) {
+
+      cssText += `
+        @media (min-aspect-ratio: ${(width/height)}) and (min-width: ${width}px) {
+          .f2h--responsive svg { 
+            max-height: 100vh;
+          }
+          .f2h--responsive .text-nodes {
+            /* max-width is aspect ratio */
+            max-width: ${(width/height) * 100}vh;
+            left: 50%;
+            transform: translateX(-50%);
+          }
+          .f2h--responsive .f2h__wrap {
+            max-height: 100vh;
+          }
+        }
+      `;
+    }
   }
 
   return cssText;
