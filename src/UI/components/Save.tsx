@@ -1,7 +1,7 @@
 import { h, Component, createRef } from "preact";
 import { saveAs } from "file-saver";
-import { OUTPUT_FORMATS } from "../constants";
-import { generateIframeHtml } from "../outputRender";
+import { OUTPUT_FORMATS, MSG_EVENTS } from "constants";
+import { postMan } from "utils/messages";
 
 interface SaveState {
   advancedOpen: boolean;
@@ -48,11 +48,14 @@ export class Save extends Component<{ svgMarkup: string }, SaveState> {
     setTimeout(() => this.setState({ showToast: false }), 2000);
   };
 
-  saveBinaryFile = (): void => {
+  saveBinaryFile = async (): Promise<void> => {
     const { svgMarkup } = this.props;
 
     const filename = "figma-to-html-test.html";
-    const raw = generateIframeHtml(svgMarkup);
+    const raw = await postMan.send({
+      workload: MSG_EVENTS.RENDER_IFRAME_HTML,
+      data: svgMarkup,
+    });
     const blob = new Blob([raw], { type: "text/html" });
 
     saveAs(blob, filename);

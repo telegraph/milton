@@ -2,17 +2,18 @@
   "name": "2020-05-06-figma2html",
   "version": "0.3.0",
   "description": "Export frames from Figma to HTML",
-  "main": "index.js",
+  "main": "index.tsx",
   "scripts": {
-    "dev": "watchexec --exts css,html,tsx,ts -w ./src ./build.sh",
-    "check": "tsc --noEmit",
-    "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx"
+    "dev": "watchexec --exts css,html,tsx,ts -w ./src 'npm run --silent build'",
+    "build": "node build.js",
+    "check": "tsc --noEmit"
   },
   "author": "Andrew Mason",
   "license": "ISC",
   "dependencies": {
     "esbuild": "^0.7.9",
     "file-saver": "^2.0.2",
+    "fs-extra": "^9.0.1",
     "pica": "^6.1.1",
     "preact": "^10.5.4",
     "preact-render-to-string": "^5.1.10",
@@ -24,5 +25,6 @@
     "@types/pica": "^5.1.1",
     "@types/upng-js": "^2.1.1"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "type": "module"
 }

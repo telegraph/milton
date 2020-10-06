@@ -1,4 +1,4 @@
-import { MSG_EVENTS, STAGES } from "./constants";
+import { MSG_EVENTS, STAGES } from "constants";
 
 export interface FrameDataInterface {
   name: string;

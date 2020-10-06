@@ -1,13 +1,12 @@
 import { h, Component } from "preact";
 
-import { renderInline } from "../outputRender";
-import { MSG_EVENTS, STAGES } from "../constants";
+import { MSG_EVENTS, STAGES } from "constants";
 import { SvgInformation, HeaderTitle } from "./Header";
 import { ResponsiveView } from "./ResponsiveView";
 import { FrameSelection } from "./FrameSelection";
 import { Save } from "./Save";
-import { decodeSvgToString } from "../utils/svg";
-import { postMan } from "../utils/messages";
+import { decodeSvgToString } from "utils/svg";
+import { postMan } from "utils/messages";
 import {
   AppState,
   AppPropsInterface,
@@ -104,13 +103,16 @@ export class App extends Component<AppPropsInterface, AppState> {
       selectedFrames.includes(f.id)
     );
 
-    const html = renderInline({
-      frames: selected,
-      svgText,
-      headline,
-      subhead,
-      source,
-      responsive,
+    const html = await postMan.send({
+      workload: MSG_EVENTS.RENDER_EMBED_HTML,
+      data: {
+        frames: selected,
+        svgText,
+        headline,
+        subhead,
+        source,
+        responsive,
+      },
     });
 
     this.setState({

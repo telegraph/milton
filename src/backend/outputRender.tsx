@@ -1,13 +1,10 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { h } from "preact";
 import render from "preact-render-to-string";
 import { textData, FrameDataInterface, ITextStyle } from "types";
 
 // Import CSS file as plain text via esbuild loader option
-// @ts-ignore
-import embedCss from "./embed.css";
-// @ts-expect-error
-import fontsCss from "./fonts.css";
+import embedCss from "backend/embed.css";
+import fontsCss from "backend/fonts.css";
 
 export function generateIframeHtml(body: string): string {
   return `
@@ -209,7 +206,7 @@ interface renderInlineProps {
   source?: string | undefined;
   responsive: boolean;
 }
-export function renderInline(props: renderInlineProps): string {
+export function generateEmbedHtml(props: renderInlineProps): string {
   const { frames, svgText, headline, subhead, source, responsive } = props;
   const mediaQuery = genreateMediaQueries(frames);
   const textNodes = [];
@@ -340,15 +337,16 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
 
     // Style for last breakpoint
     if (i === sortedFrames.length - 1) {
-
       cssText += `
-        @media (min-aspect-ratio: ${(width/height)}) and (min-width: ${width}px) {
+        @media (min-aspect-ratio: ${
+          width / height
+        }) and (min-width: ${width}px) {
           .f2h--responsive svg { 
             max-height: 100vh;
           }
           .f2h--responsive .text-nodes {
             /* max-width is aspect ratio */
-            max-width: ${(width/height) * 100}vh;
+            max-width: ${(width / height) * 100}vh;
             left: 50%;
             transform: translateX(-50%);
           }

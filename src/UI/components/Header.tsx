@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { STAGES, UI_TEXT, FRAME_WARNING_SIZE } from "../constants";
+import { STAGES, UI_TEXT, FRAME_WARNING_SIZE } from "constants";
 
 export function SvgInformation(props: { svgMarkup: string }): h.JSX.Element {
   const { svgMarkup } = props;

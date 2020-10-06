@@ -1,8 +1,8 @@
 import { setHeadlinesAndSourceProps, IFrameData } from "types";
-import { getNodeText, getTextNodesFromFrame } from "helpers/figmaText";
-import { HEADLINE_NODE_NAMES, MSG_EVENTS } from "./constants";
+import { getNodeText, getTextNodesFromFrame } from "utils/figmaText";
+import { HEADLINE_NODE_NAMES, MSG_EVENTS } from "constants";
 import { postMan } from "utils/messages";
-import { resizeAndOptimiseImage } from "./helpers/imageHelper";
+import { resizeAndOptimiseImage } from "utils/imageHelper";
 
 /**
  * Compress image using browser's native image decoding support
