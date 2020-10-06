@@ -1,7 +1,5 @@
 import { h, Component, createRef, RefObject } from "preact";
-import debounce from "lodash/debounce";
 import { AppState } from "types";
-import { takeWhile } from "lodash";
 
 interface ResponsiveViewProps extends Pick<AppState, "svgMarkup"> {
   frameWidths: number[];
@@ -27,9 +25,7 @@ export class ResponsiveView extends Component<
 
   componentDidMount(): void {
     if (this.iframeEl.current) {
-      this.iframeObserver = new MutationObserver(
-        debounce(this.handleResize, 50)
-      );
+      this.iframeObserver = new MutationObserver(this.handleResize);
 
       this.iframeObserver.observe(this.iframeEl.current, {
         attributes: true,

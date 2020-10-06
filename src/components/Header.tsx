@@ -1,5 +1,4 @@
 import { h } from "preact";
-import { deflate } from "pako";
 import { STAGES, UI_TEXT, FRAME_WARNING_SIZE } from "../constants";
 
 export function SvgInformation(props: { svgMarkup: string }): h.JSX.Element {
@@ -12,18 +11,11 @@ export function SvgInformation(props: { svgMarkup: string }): h.JSX.Element {
     fileSizeClassName += " f2h__file_size f2h__notice--error";
   }
 
-  const gzipSize = (deflate(svgMarkup).buffer.byteLength / 1024).toFixed(2);
-
   return (
     <p className="f2h__info">
       <span className="f2h__info_meta">
         Filesize
-        <span
-          className={fileSizeClassName}
-          title={`Uncompressed ${fileKbSize.toFixed(2)}KB`}
-        >
-          {gzipSize}KB
-        </span>
+        <span className={fileSizeClassName}>{fileKbSize.toFixed(1)}KB</span>
       </span>
     </p>
   );
