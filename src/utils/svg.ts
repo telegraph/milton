@@ -1,5 +1,3 @@
-import { crunchSvg } from "./crunchSvg";
-
 export async function decodeSvgToString(svg: Uint8Array, ids: string[][]) {
   let svgStr = new TextDecoder("utf-8").decode(svg);
   // Update HTTP links to HTTPS
@@ -17,8 +15,6 @@ export async function decodeSvgToString(svg: Uint8Array, ids: string[][]) {
   if (!svgEl) {
     throw new Error("SVG decode failed. Missing SVG element");
   }
-
-  crunchSvg(svgEl);
 
   // BUG: Remove empty clip paths
   [...(svgEl?.querySelectorAll("clipPath") || [])].forEach((clipPath) => {
