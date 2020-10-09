@@ -53,6 +53,9 @@ body::-webkit-scrollbar {
 .f2h__svg_container ellipse {
   vector-effect: non-scaling-stroke;
 }
+.f2h__svg_container svg {
+  image-rendering: optimizequality;
+}
 
 .f2h_headline {
   font-family: "Austin News Deck Semibold", Georgia, "Times New Roman", Times,

@@ -1,0 +1,96 @@
+import { resizeAndOptimiseImage } from "./imageHelper";
+import { imageNodeDimensions } from "types";
+
+// TODO: Is there a way to identify mapping of image to elements from
+// the @figma context? If so we don't need to look inside the SVG elements
+// NOTE: We only resize based on width. Could be improved using aspect ratio
+async function optimizeSvgImages(
+  svgEl: SVGElement,
+  nodeDimensions: imageNodeDimensions[]
+): Promise<void> {
+  const images = svgEl.querySelectorAll("image");
+
+  for (const img of images) {
+    const { id } = img;
+    const imgSrc = img.getAttribute("xlink:href");
+    if (!id || !imgSrc) return;
+
+    // Get patterns using image
+    const patterns = [...svgEl.querySelectorAll("pattern")].filter(
+      (pattern) =>
+        pattern.querySelector("use")?.getAttribute("xlink:href") === `#${id}`
+    );
+
+    // Create CSS selector from pattern IDs to find elements using the image
+    const patternIds = patterns.map(({ id }) => id);
+
+    // Find elements using the image
+    const figmaElementNames = nodeDimensions.map((el) => el.name);
+    const ids = figmaElementNames.filter((figEl) => {
+      const cssSelector = patternIds
+        .map(
+          (id) =>
+            `[id="${figEl}"] [fill="url(#${id})"], [id="${figEl}"][fill="url(#${id})"], [id="${figEl}"][stroke="url(#${id})"]`
+        )
+        .join(",");
+
+      return svgEl.querySelector(cssSelector);
+    });
+
+    // Find max width out of all the found elements
+    const dimensions = nodeDimensions.filter(({ name }) => ids.includes(name));
+
+    const imgDataUrl = await resizeAndOptimiseImage(imgSrc, dimensions);
+    img.setAttribute("xlink:href", imgDataUrl);
+  }
+}
+
+// Replace all HTTP urls with HTTPS
+function replaceHttpWithHttps(svgText: string): string {
+  return svgText.replace(/http:\/\//g, "https://");
+}
+
+// Replace figma IDs "00:00" with CSS valid IDs
+function replaceIdsWithClasses(svgEl: SVGElement, ids: string[][]): void {
+  for (const [id, uid] of ids) {
+    svgEl.querySelector(`[id="${id}"]`)?.setAttribute("class", uid);
+  }
+}
+
+function createSvgElement(svgText: string): SVGElement | null {
+  const emptyDiv = document.createElement("div");
+  emptyDiv.innerHTML = svgText;
+  return emptyDiv.querySelector("svg");
+}
+
+function cleanUpSvg(svgEl: SVGElement): void {
+  // BUG: Remove empty clip paths
+  svgEl.querySelectorAll("clipPath").forEach((clipPath) => {
+    if (clipPath.childElementCount === 0) {
+      clipPath.parentNode?.removeChild(clipPath);
+    }
+  });
+
+  // Remove text nodes
+  svgEl
+    .querySelectorAll("text")
+    .forEach((textNode) => textNode.parentNode?.removeChild(textNode));
+}
+
+export async function decodeSvgToString(
+  svgData: Uint8Array,
+  ids: string[][],
+  imageNodeDimensions: imageNodeDimensions[]
+): Promise<string | undefined> {
+  let svgStr = new TextDecoder("utf-8").decode(svgData);
+  svgStr = replaceHttpWithHttps(svgStr);
+
+  const svgEl = createSvgElement(svgStr);
+  if (!svgEl) return;
+
+  await optimizeSvgImages(svgEl, imageNodeDimensions);
+  cleanUpSvg(svgEl);
+  replaceIdsWithClasses(svgEl, ids);
+
+  return svgEl?.outerHTML;
+}

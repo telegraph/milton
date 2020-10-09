@@ -23,8 +23,12 @@ import esbuild from "esbuild";
       outfile: path.join(BUILD_FOLDER, "figma2html.js"),
       format: "iife",
       target: "es2017",
+      platform: "browser",
       loader: { [".css"]: "text" },
-      define: { "process.env.NODE_ENV": "development" },
+      define: {
+        "process.env.NODE_ENV": "development",
+        "process.browser": "true",
+      },
       bundle: true,
       minify: true,
     });
@@ -34,11 +38,15 @@ import esbuild from "esbuild";
     const tempFolder = await fs.mkdtemp(`${tmpDir}${path.sep}`);
 
     await esbuild.build({
-      entryPoints: [path.join("src", "UI", "ui.tsx")],
+      entryPoints: [path.join("src", "frontend", "ui.tsx")],
       outdir: tempFolder,
       format: "iife",
       target: "es2017",
-      define: { "process.env.NODE_ENV": "development" },
+      platform: "browser",
+      define: {
+        "process.env.NODE_ENV": "development",
+        "process.browser": "true",
+      },
       loader: { [".css"]: "css" },
       jsxFactory: "preact.h",
       jsxFragment: "preact.Fragment",

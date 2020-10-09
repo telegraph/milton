@@ -5,7 +5,7 @@ import { SvgInformation, HeaderTitle } from "./Header";
 import { ResponsiveView } from "./ResponsiveView";
 import { FrameSelection } from "./FrameSelection";
 import { Save } from "./Save";
-import { decodeSvgToString } from "utils/svg";
+import { decodeSvgToString } from "frontend/svgUtils";
 import { postMan } from "utils/messages";
 import {
   AppState,
@@ -14,6 +14,7 @@ import {
   FrameCollection,
   HeadlinesInterface,
   FrameDataInterface,
+  FrameRender,
 } from "types";
 
 export class App extends Component<AppPropsInterface, AppState> {
@@ -80,12 +81,14 @@ export class App extends Component<AppPropsInterface, AppState> {
     });
   };
 
-  handleRenderMessage = async (svgData: Uint8Array): Promise<void> => {
-    if (!svgData) {
+  handleRenderMessage = async (renderedFrame: FrameRender): Promise<void> => {
+    if (!renderedFrame) {
       this.setState({ error: "Failed to render" });
       console.error("Post message: failed to render");
       return;
     }
+
+    const { svgData, imageNodeDimensions } = renderedFrame;
 
     const {
       selectedFrames,
@@ -97,7 +100,8 @@ export class App extends Component<AppPropsInterface, AppState> {
     } = this.state;
 
     const ids = selectedFrames.map((id) => [id, frames[id].uid]);
-    const svgText = await decodeSvgToString(svgData, ids);
+    const svgText = await decodeSvgToString(svgData, ids, imageNodeDimensions);
+    // TODO: Store svg data as URL object
 
     const selected = Object.values(frames).filter((f) =>
       selectedFrames.includes(f.id)

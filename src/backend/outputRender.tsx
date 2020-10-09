@@ -3,8 +3,10 @@ import render from "preact-render-to-string";
 import { textData, FrameDataInterface, ITextStyle } from "types";
 
 // Import CSS file as plain text via esbuild loader option
+// @ts-expect-error
 import embedCss from "backend/embed.css";
-import fontsCss from "backend/fonts.css";
+// @ts-expect-error
+import fontsCss from "backend/telegraphFonts.css";
 
 export function generateIframeHtml(body: string): string {
   return `
@@ -43,9 +45,7 @@ function generateParagraphStyle(
   let styleText = "";
 
   // Strokes
-  console.log("IN HERER", strokeColour, strokeWeight);
   if (strokeWeight && strokeColour) {
-    console.log("IN HERER", strokeColour, strokeWeight);
     styleText += `
      -webkit-text-stroke-color:  ${strokeColour};
     `;
@@ -71,8 +71,6 @@ function generateParagraphStyle(
       alignVertical = "flex-end";
       break;
   }
-
-  console.log(node.characters, x, height);
 
   switch (constraints.vertical) {
     case "MIN":
@@ -234,8 +232,8 @@ export function generateEmbedHtml(props: renderInlineProps): string {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-       ${fontsCss as string}
-       ${embedCss as string}
+       ${fontsCss}
+       ${embedCss}
        ${mediaQuery}
       `,
         }}

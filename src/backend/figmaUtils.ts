@@ -1,44 +1,10 @@
-import { setHeadlinesAndSourceProps, IFrameData } from "types";
+import { setHeadlinesAndSourceProps, IFrameData, FrameRender } from "types";
 import { getNodeText, getTextNodesFromFrame } from "utils/figmaText";
-import { HEADLINE_NODE_NAMES, MSG_EVENTS } from "constants";
-import { postMan } from "utils/messages";
-import { resizeAndOptimiseImage } from "utils/imageHelper";
-
-/**
- * Compress image using browser's native image decoding support
- * @context Browser (UI)
- */
-export function compressImage(props: {
-  imgData: Uint8Array;
-  nodeDimensions: { width: number; height: number }[];
-}): Promise<Uint8Array> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const { imgData, nodeDimensions } = props;
-
-    img.addEventListener("load", () => {
-      resizeAndOptimiseImage({
-        img,
-        imgData,
-        nodeDimensions,
-        resolve,
-        reject,
-      }).catch((err) => reject(err));
-    });
-
-    img.addEventListener("error", (err) => {
-      console.error("Error loading compressed image");
-      reject(err);
-    });
-
-    const blob = new Blob([imgData], { type: "image/png" });
-    const imgUrl = URL.createObjectURL(blob);
-    img.src = imgUrl;
-  });
-}
+import { HEADLINE_NODE_NAMES } from "../constants";
 
 /**
  * Test if Figma node supports fill property type
+ * @context figma
  */
 function supportsFills(
   node: SceneNode
@@ -52,7 +18,7 @@ function supportsFills(
  *
  * @context figma
  */
-export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
+export async function renderFrames(frameIds: string[]): Promise<FrameRender> {
   const outputNode = figma.createFrame();
   outputNode.name = "output";
 
@@ -89,82 +55,26 @@ export async function renderFrames(frameIds: string[]): Promise<Uint8Array> {
         node.fills.some((fill) => fill.type === "IMAGE")
     );
 
-    // A single image can be used multiple times on different nodes in different
-    // frames. To ensure images are only optimised once a cache is created
-    // of unique images and used to replace original after the async processing
-    // is completed.
-    const imageCache: {
-      [id: string]: { width: number; height: number; id: string }[];
-    } = {};
-
-    for (const node of nodesWithImages) {
-      if (supportsFills(node) && node.fills !== figma.mixed) {
-        // The frontend UI which handles the image optimisation needs to know
-        // the sizes of each node that uses the image. The dimensions are stored
-        // with the image hash ID in the cache for later use.
-        const dimensions = {
-          width: node.width,
-          height: node.height,
-          id: node.id,
-        };
-        const imgPaint = [...node.fills].find((p) => p.type === "IMAGE");
-
-        if (imgPaint?.type === "IMAGE" && imgPaint.imageHash) {
-          // Add the image dimensions to the cache, or update and existing cache
-          // item with another nodes dimensions
-          if (imageCache[imgPaint.imageHash]) {
-            imageCache[imgPaint.imageHash].push(dimensions);
-          } else {
-            imageCache[imgPaint.imageHash] = [dimensions];
-          }
-        }
-      }
-    }
-
-    // Send each image from the imageCache to the frontend for optimisation.
-    // The operation is async and can take some time if the images are large.
-    for (const imageHash in imageCache) {
-      const bytes = await figma.getImageByHash(imageHash).getBytesAsync();
-      const compressedImage: Uint8Array = await postMan.send({
-        workload: MSG_EVENTS.COMPRESS_IMAGE,
-        data: {
-          imgData: bytes,
-          nodeDimensions: imageCache[imageHash],
-        },
-      });
-
-      // Store the new image in figma and get the new image hash
-      const newImageHash = figma.createImage(compressedImage).hash;
-
-      // Update nodes with new image paint fill
-      nodesWithImages.forEach((node) => {
-        if (supportsFills(node) && node.fills !== figma.mixed) {
-          const imgPaint = [...node.fills].find(
-            (p) => p.type === "IMAGE" && p.imageHash === imageHash
-          );
-
-          if (imgPaint) {
-            const newPaint = JSON.parse(JSON.stringify(imgPaint));
-            newPaint.imageHash = newImageHash;
-            node.fills = [newPaint];
-          }
-        }
-      });
-    }
-
-    // HACK! Figma takes some time to update the image fills. Waiting some
-    // amount is required otherwise the images appear blank.
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    const imageNodeDimensions = nodesWithImages.map(
+      ({ name, width, height }) => ({
+        name,
+        width,
+        height,
+      })
+    );
 
     // Render output container frames to SVG mark-up (in a uint8 byte array)
-    const svg = await outputNode.exportAsync({
+    const svgData = await outputNode.exportAsync({
       format: "SVG",
       svgSimplifyStroke: true,
       svgOutlineText: false,
       svgIdAttribute: true,
     });
 
-    return svg;
+    return {
+      svgData,
+      imageNodeDimensions,
+    };
   } catch (err) {
     throw new Error(err);
   } finally {
@@ -240,7 +150,11 @@ export function setHeadlinesAndSource(props: setHeadlinesAndSourceProps): void {
       });
   }
 }
-
+/**
+ * Find and return root frame nodes in current page
+ *
+ * @context figma
+ */
 export function getRootFrames(): IFrameData {
   const { currentPage } = figma;
 

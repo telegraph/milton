@@ -233,8 +233,6 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       id,
     } = textNode;
 
-    console.log(strokes, strokeWeight);
-
     let strokeDetails = {};
 
     const strokeColour = strokes.find(

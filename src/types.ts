@@ -83,11 +83,13 @@ type textNodeSelectedProps = Pick<
   | "textAlignHorizontal"
   | "textAlignVertical"
   | "constraints"
+  | "strokeWeight"
 >;
 
 export interface textData extends textNodeSelectedProps {
   rangeStyles: ITextStyle[];
   id: string;
+  strokeColour: string;
 }
 
 export interface setHeadlinesAndSourceProps {
@@ -110,11 +112,8 @@ export interface UiPostMessageEvent extends MessageEvent {
 }
 
 export interface IresizeImage {
-  img: HTMLImageElement;
   imgData: Uint8Array;
   nodeDimensions: { width: number; height: number }[];
-  resolve: (data: Uint8Array) => void;
-  reject: (e: Error) => void;
 }
 
 export interface ITextProp {
@@ -133,4 +132,14 @@ export interface ITextStyle {
   size: number;
   letterSpace: string;
   lineHeight: string;
+}
+
+export type imageNodeDimensions = {
+  name: string;
+  width: number;
+  height: number;
+};
+export interface FrameRender {
+  svgData: Uint8Array;
+  imageNodeDimensions: imageNodeDimensions[];
 }

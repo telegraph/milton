@@ -34,7 +34,7 @@ class Postman {
     const { data, workload, name, uid, returning, err } = msgBody || {};
 
     try {
-      // Do nothing id post message isn't for us
+      // Do nothing if post message isn't for us
       if (this.name !== name) return;
 
       if (returning && !this.callbackStore[uid]) {
@@ -61,6 +61,9 @@ class Postman {
     this.workers[eventType] = fn;
   };
 
+  public removeWorker = (eventType: MSG_EVENTS) =>
+    delete this.workers[eventType];
+
   private postBack = (props: { uid: string; data?: any; err?: string }) =>
     this.postMessage({
       name: this.name,
@@ -70,7 +73,7 @@ class Postman {
       err: props.err,
     });
 
-  private postMessage = (messageBody) =>
+  private postMessage = (messageBody: {}) =>
     this.inFigmaSandbox
       ? figma.ui.postMessage(messageBody)
       : parent.postMessage({ pluginMessage: messageBody }, "*");
