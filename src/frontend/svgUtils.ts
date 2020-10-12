@@ -1,5 +1,6 @@
 import { resizeAndOptimiseImage } from "./imageHelper";
 import { imageNodeDimensions } from "types";
+import { pointsOnPath } from "points-on-path";
 
 // TODO: Is there a way to identify mapping of image to elements from
 // the @figma context? If so we don't need to look inside the SVG elements
@@ -43,6 +44,19 @@ async function optimizeSvgImages(
     const imgDataUrl = await resizeAndOptimiseImage(imgSrc, dimensions);
     img.setAttribute("xlink:href", imgDataUrl);
   }
+}
+
+function optimizeSvgPaths(svgEl: SVGElement): void {
+  svgEl.querySelectorAll("path").forEach((path) => {
+    let d = path.getAttribute("d");
+    if (d) {
+      // Simplify paths
+      const points = pointsOnPath(d, 0.1, 0.4);
+      d = points.reduce((acc, point) => (acc += "M" + point.join(" ")), "");
+      // Reduce precision
+      path.setAttribute("d", d.replace(/(\.\d{2})\d+/g, "$1"));
+    }
+  });
 }
 
 // Replace all HTTP urls with HTTPS
@@ -91,6 +105,7 @@ export async function decodeSvgToString(
   await optimizeSvgImages(svgEl, imageNodeDimensions);
   cleanUpSvg(svgEl);
   replaceIdsWithClasses(svgEl, ids);
+  optimizeSvgPaths(svgEl);
 
   return svgEl?.outerHTML;
 }
