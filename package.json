@@ -11,7 +11,7 @@
   "author": "Andrew Mason",
   "license": "ISC",
   "dependencies": {
-    "esbuild": "^0.7.13",
+    "esbuild": "^0.7.14",
     "file-saver": "^2.0.2",
     "fs-extra": "^9.0.1",
     "pica": "^6.1.1",
