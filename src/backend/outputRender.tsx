@@ -207,6 +207,14 @@ interface renderInlineProps {
 export function generateEmbedHtml(props: renderInlineProps): string {
   const { frames, svgText, headline, subhead, source, responsive } = props;
   const mediaQuery = genreateMediaQueries(frames);
+
+  const fonts = frames.flatMap((frame) =>
+    frame.textNodes.flatMap((textNode) =>
+      textNode.rangeStyles.flatMap((range) => range.font)
+    )
+  );
+  console.log(fonts);
+
   const textNodes = [];
 
   for (const frame of frames) {
@@ -358,3 +366,10 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
 
   return cssText;
 }
+
+function test<T>(arg: T[]): T[] {
+  console.log(arg.length);
+  return arg;
+}
+
+console.log(test([3]));
