@@ -1,6 +1,6 @@
 import { h } from "preact";
 import render from "preact-render-to-string";
-import { textData, FrameDataInterface, ITextStyle } from "types";
+import { textData, FrameDataInterface, TextRange } from "types";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-expect-error
@@ -110,60 +110,35 @@ function generateParagraphStyle(
       `;
 }
 
-function generateSpanStyles(style: ITextStyle): string {
-  const { r, g, b } = style.colour;
-  const colour = `rgb(${r * 255}, ${g * 255}, ${b * 255})`;
+function generateSpanStyles(range: TextRange): string {
+  const {
+    weight,
+    colour,
+    family,
+    italic,
+    letterSpacing,
+    lineHeight,
+    size,
+  } = range;
 
   // Font weights
   let fontWeight = 400;
-  switch (style.font.style) {
-    case "Bold":
-      fontWeight = 700;
-      break;
-
-    case "Semibold":
-      fontWeight = 600;
-      break;
-
-    case "Medium":
-      fontWeight = 500;
-      break;
-
-    case "Roman":
-      fontWeight = 400;
-      break;
+  if (weight) {
+    if (/^bold$/i.test(weight)) fontWeight = 700;
+    if (/^semi-?\s?bold$/i.test(weight)) fontWeight = 600;
+    if (/^medium$/i.test(weight)) fontWeight = 500;
   }
 
-  // HACK: Fix letter spacing font rendering by adding offset
-  let letterSpaceOffset = "0px";
-  if (style.font.family === "Telesans Text") {
-    letterSpaceOffset = "0.026em";
-  }
-  if (style.font.family === "Telesans Agate") {
-    // letterSpaceOffset = "0.004em";
-  }
-  if (
-    style.font.family === "Austin News Deck" &&
-    ["Bold", "Semibold"].includes(style.font.style)
-  ) {
-    letterSpaceOffset = "0.02em";
-  }
+  let cssStyle = "";
+  if (letterSpacing) cssStyle += `letter-spacing: ${letterSpacing};`;
+  if (lineHeight) cssStyle += `line-height: ${lineHeight};`;
+  if (size) cssStyle += `font-size: ${size}px;`;
+  if (colour) cssStyle += `color: ${colour};`;
+  if (family) cssStyle += `font-family: ${family};`;
+  if (italic) cssStyle += `font-style: italic;`;
+  if (fontWeight) cssStyle += `font-weight: ${fontWeight};`;
 
-  // Font style
-  let fontStyle = "normal";
-  if (RegExp("italic", "i").test(style.font.style)) {
-    fontStyle = "italic";
-  }
-
-  return `
-    letter-spacing: calc(${style.letterSpace} - ${letterSpaceOffset});
-    line-height: ${style.lineHeight};
-    font-size: ${style.size}px;
-    color: ${colour};
-    font-family: "${style.font.family}";
-    font-weight: ${fontWeight};
-    font-style: ${fontStyle};
-`;
+  return cssStyle;
 }
 
 type TextProps = {
@@ -183,11 +158,11 @@ function Text(props: TextProps) {
       <p className="f2h__text_inner">
         {node.rangeStyles.map((style) => (
           <span
-            key={style.chars}
-            data-text={node.strokeWeight ? style.chars : ""}
+            key={style.text}
+            data-text={node.strokeWeight ? style.text : ""}
             style={generateSpanStyles(style)}
             dangerouslySetInnerHTML={{
-              __html: style.chars.replace(/\n/g, "<br />"),
+              __html: style.text.replace(/\n/g, "<br />"),
             }}
           ></span>
         ))}
@@ -210,6 +185,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
   const textNodes = [];
 
   for (const frame of frames) {
+    console.log(frame.textNodes);
     const tNode = (
       <div id={`textblock-${frame.id}`} className={frame.uid}>
         {frame.textNodes.map((node) => (

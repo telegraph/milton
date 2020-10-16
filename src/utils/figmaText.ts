@@ -1,4 +1,4 @@
-import { textData, ITextProp, ITextStyle } from "types";
+import { ITextStyle, textData, TextRange } from "types";
 
 export function getNodeText(
   rootNode: PageNode,
@@ -10,204 +10,71 @@ export function getNodeText(
     : undefined;
 }
 
-// function calculateLetterSpacing(
-//   fontFamily: string,
-//   letterSpacing: LetterSpacing
-// ) {
-//   const { unit: letterUnit, value: letterVal } = letterSpacing;
-//   let letterSpaceValue = "0";
+function getRangeStyles(textNode: TextNode): TextRange[] {
+  // Get text styles for each character
+  const allStyles = [];
+  let previousStyle: ITextStyle | undefined;
 
-//   switch (letterUnit) {
-//     case "PIXELS":
-//       // TODO: FIX ME
-//       if (fontFamily === "Telesans Text") {
-//         letterSpaceValue = `${letterVal - 0.33}px`;
-//       } else if (fontFamily === "Telesans Agate") {
-//         letterSpaceValue = `${letterVal - 0.19}px`;
-//       } else {
-//         letterSpaceValue = `${letterVal}px`;
-//       }
-//       break;
-//     case "PERCENT":
-//       letterSpaceValue = `${letterVal / 100}em`;
+  for (let i = 0; i < textNode.characters.length; i++) {
+    // Font family, weight and style
+    const fontName = textNode.getRangeFontName(i, i + 1);
+    const family = fontName === figma.mixed ? null : fontName.family;
+    const figmaStyle = fontName === figma.mixed ? null : fontName.style;
+    const weight = figmaStyle ? figmaStyle?.replace(/\s?italic\s?/i, "") : null;
+    const italic = figmaStyle ? /italic/i.test(figmaStyle) : false;
 
-//       if (fontFamily === "Telesans Text") {
-//         letterSpaceValue = `${letterVal / 100 - 0.022}em`;
-//       } else if (fontFamily === "Telesans Agate") {
-//         letterSpaceValue = `${letterVal / 100 - 0.015}em`;
-//       } else {
-//         letterSpaceValue = `${letterVal / 100}em`;
-//       }
-//       break;
-//     default:
-//       if (fontFamily === "Telesans Text") {
-//         letterSpaceValue = "-0.37px";
-//       } else if (fontFamily === "Telesans Agate") {
-//         letterSpaceValue = "-0.19px";
-//       } else {
-//         letterSpaceValue = `0`;
-//       }
-//       break;
-//   }
+    // Font size
+    const figmaSize = textNode.getRangeFontSize(i, i + 1);
+    const size = figmaSize !== figma.mixed ? figmaSize : null;
 
-//   return letterSpaceValue;
-// }
+    // Colour
+    const fill = textNode.getRangeFills(i, i + 1);
+    const paint = fill !== figma.mixed && fill[0].type === "SOLID" && fill[0];
+    const rgb = paint ? paint.color : { r: 0, g: 0, b: 0 };
+    const rgb255 = Object.values(rgb).flatMap((c) => Math.round(c * 255));
+    let colour = `rgb(${rgb255.join(",")})`;
 
-enum RANGE_TYPES {
-  LETTER_SPACING,
-  LINE_HEIGHT,
-  FONT_SIZE,
-  COLOUR,
-  FONT,
-}
+    // Line height
+    const lh = textNode.getRangeLineHeight(i, i + 1);
+    const lhUnit = lh !== figma.mixed && lh.unit;
+    const lhCssUnit = lhUnit === "PERCENT" ? "em" : "px";
+    let lhVal = lh !== figma.mixed && lh.unit !== "AUTO" && lh.value;
+    if (lhVal && lhUnit === "PERCENT") lhVal = lhVal / 100;
+    const lineHeight = lhVal ? `${lhVal}${lhCssUnit}` : "1";
 
-function getRangeVal(
-  textNode: TextNode,
-  rangeType: RANGE_TYPES,
-  start: number,
-  end: number
-) {
-  switch (rangeType) {
-    case RANGE_TYPES.LETTER_SPACING: {
-      const letterSpace = textNode.getRangeLetterSpacing(start, end);
-      if (letterSpace === figma.mixed) {
-        return letterSpace;
-      } else {
-        return letterSpace.unit === "PERCENT"
-          ? `${letterSpace.value / 100}rem`
-          : `${letterSpace.value}px`;
-      }
-    }
-
-    case RANGE_TYPES.LINE_HEIGHT: {
-      const lineHeight = textNode.getRangeLineHeight(start, end);
-      if (lineHeight === figma.mixed) {
-        return lineHeight;
-      } else if (lineHeight.unit === "AUTO") {
-        return "normal";
-      } else {
-        return lineHeight.unit === "PERCENT"
-          ? `${lineHeight.value / 100}rem`
-          : `${lineHeight.value}px`;
-      }
-    }
-
-    case RANGE_TYPES.FONT_SIZE:
-      return textNode.getRangeFontSize(start, end);
-
-    case RANGE_TYPES.COLOUR: {
-      const paint = textNode.getRangeFills(start, end);
-      if (paint === figma.mixed) {
-        return paint;
-      } else if (paint[0].type === "SOLID") {
-        return { ...paint[0].color };
-      } else {
-        return { r: 0, g: 0, b: 0 } as RGB;
-      }
-    }
-
-    case RANGE_TYPES.FONT:
-      return textNode.getRangeFontName(start, end);
-
-    default:
-      return undefined;
-  }
-}
-
-function getTypeValues(
-  textNode: TextNode,
-  rangeType: RANGE_TYPES
-): ITextProp[] {
-  const { characters } = textNode;
-
-  // If there's no mixed style then short circuit response
-  const fullRangeValue = getRangeVal(textNode, rangeType, 0, characters.length);
-  if (fullRangeValue !== figma.mixed) {
-    return [{ start: 0, end: characters.length, value: fullRangeValue }];
-  }
-
-  // There's mixed styles. Go through each char to extract style ranges
-  // Bootstrap range values with first character which is never mixed type
-  const values: ITextProp[] = [
-    { start: 0, end: 1, value: getRangeVal(textNode, rangeType, 0, 1) },
-  ];
-
-  // Loop through each character to find ranges.
-  // When a mixed range is found update the current end position and
-  // create a new range with the next style
-  for (let i = 1; i <= characters.length; i++) {
-    const prop = values[values.length - 1];
-
-    // Update end position of current style
-    prop.end = i;
-
-    const currentValue = getRangeVal(textNode, rangeType, prop.start, i);
-
-    if (currentValue === figma.mixed) {
-      // Set end of the current range
-      prop.end = i - 1;
-
-      // Create and store next range style
-      values.push({
-        start: i,
-        end: i + 1,
-        value: getRangeVal(textNode, rangeType, i - 1, i),
-      });
-    }
-  }
-
-  return values;
-}
-
-function findItemInRange(
-  items: ITextProp[],
-  start: number,
-  end: number
-): ITextProp | undefined {
-  return items.find((item) => start >= item.start && end <= item.end);
-}
-
-function getTextRangeValues(textNode: TextNode): ITextStyle[] {
-  const { characters } = textNode;
-
-  const ranges = {
-    letterSpace: getTypeValues(textNode, RANGE_TYPES.LETTER_SPACING),
-    lineHeight: getTypeValues(textNode, RANGE_TYPES.LINE_HEIGHT),
-    size: getTypeValues(textNode, RANGE_TYPES.FONT_SIZE),
-    colour: getTypeValues(textNode, RANGE_TYPES.COLOUR),
-    font: getTypeValues(textNode, RANGE_TYPES.FONT),
-  };
-
-  // Collect all end indexed, sort accending and remove duplicates
-  const ends = Object.values(ranges)
-    .flatMap((range) => range.map((item) => item.end))
-    .sort((a, b) => (a > b ? 1 : -1))
-    .filter((n, i, self) => self.indexOf(n) === i);
-
-  // TODO: Simplify end index logic
-  const styles = [];
-  let iStart = 0;
-  for (let iEnd of ends) {
-    if (iStart === iEnd) {
-      iEnd++;
-    }
+    // Letter spacing
+    const lp = textNode.getRangeLetterSpacing(i, i + 1);
+    const lpUnit = lp !== figma.mixed && lp.unit;
+    const lpCssUnit = lpUnit === "PERCENT" ? "em" : "px";
+    let lpVal = lp !== figma.mixed && lp.value;
+    // Convert percentage into character scale
+    if (lpVal && lpUnit === "PERCENT") lpVal = lpVal / 100;
+    const letterSpacing = lpVal ? `${lpVal}${lpCssUnit}` : null;
 
     const style: ITextStyle = {
-      start: iStart,
-      end: iEnd,
-      chars: characters.substring(iStart, iEnd),
-      font: findItemInRange(ranges.font, iStart + 1, iEnd)?.value,
-      colour: findItemInRange(ranges.colour, iStart + 1, iEnd)?.value,
-      size: findItemInRange(ranges.size, iStart + 1, iEnd)?.value,
-      letterSpace: findItemInRange(ranges.letterSpace, iStart + 1, iEnd)?.value,
-      lineHeight: findItemInRange(ranges.lineHeight, iStart + 1, iEnd)?.value,
+      family,
+      weight,
+      colour,
+      lineHeight,
+      letterSpacing,
+      size,
+      italic,
     };
 
-    styles.push(style);
-    iStart = iEnd;
+    const char = textNode.characters[i];
+
+    // Check if current style is the same as the previous and either
+    // append text character or start a new style
+    const same = JSON.stringify(previousStyle) === JSON.stringify(style);
+    if (same) {
+      allStyles[allStyles.length - 1].text += char;
+    } else {
+      previousStyle = style;
+      allStyles.push({ ...style, text: char });
+    }
   }
 
-  return styles;
+  return allStyles;
 }
 
 export function getTextNodesFromFrame(frame: FrameNode): textData[] {
@@ -224,7 +91,6 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       absoluteTransform,
       width,
       height,
-      characters,
       textAlignHorizontal,
       textAlignVertical,
       constraints,
@@ -255,18 +121,15 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
     const x = textX - rootX;
     const y = textY - rootY;
 
-    // Get font sizes ranges
-    const rangeStyles = getTextRangeValues(textNode);
     textCollection.push({
       x,
       y,
       width,
       height,
-      characters,
       textAlignHorizontal,
       textAlignVertical,
       constraints,
-      rangeStyles,
+      rangeStyles: getRangeStyles(textNode),
       id,
       ...strokeDetails,
     });
