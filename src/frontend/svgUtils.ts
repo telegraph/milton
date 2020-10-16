@@ -40,9 +40,10 @@ async function optimizeSvgImages(
 
     // Find max width out of all the found elements
     const dimensions = nodeDimensions.filter(({ name }) => ids.includes(name));
-
-    const imgDataUrl = await resizeAndOptimiseImage(imgSrc, dimensions);
-    img.setAttribute("xlink:href", imgDataUrl);
+    if (dimensions.length > 0) {
+      const imgDataUrl = await resizeAndOptimiseImage(imgSrc, dimensions);
+      img.setAttribute("xlink:href", imgDataUrl);
+    }
   }
 }
 
