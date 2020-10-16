@@ -119,7 +119,10 @@ export async function resizeAndOptimiseImage(
   paletteColours = 32
 ): Promise<string> {
   const img = await loadImage(dataUrl);
-  const { width, height } = img;
+
+  const { width, height } = img || {};
+  if (!width || !height) return dataUrl;
+
   const newSize = calcResizeDimensions(width, height, nodeDimensions);
   const imgCanvas = await resizeImage(img, newSize.width, newSize.height);
 

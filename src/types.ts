@@ -1,6 +1,6 @@
 import { MSG_EVENTS, STAGES } from "constants";
 
-export interface FrameDataInterface {
+export type FrameDataInterface = {
   name: string;
   width: number;
   height: number;
@@ -8,7 +8,7 @@ export interface FrameDataInterface {
   uid: string;
   textNodes: textData[];
   fixedPositionNodes: string[];
-}
+};
 
 export type MsgEventType =
   | MsgFramesType
@@ -17,49 +17,49 @@ export type MsgEventType =
   | MsgErrorType
   | MsgCompressImageType;
 
-export interface IFrameData {
+export type IFrameData = {
   frames: Omit<FrameDataInterface, "uid">[];
   headline: string | undefined;
   subhead: string | undefined;
   source: string | undefined;
-}
+};
 
-export interface MsgFramesType extends IFrameData {
+export type MsgFramesType = IFrameData & {
   type: MSG_EVENTS.FOUND_FRAMES;
-}
+};
 
-export interface MsgRenderType {
+export type MsgRenderType = {
   type: MSG_EVENTS.RENDER;
   svg: Uint8Array;
   frameId: string;
-}
+};
 
-export interface MsgNoFramesType {
+export type MsgNoFramesType = {
   type: MSG_EVENTS.NO_FRAMES;
-}
+};
 
-export interface MsgErrorType {
+export type MsgErrorType = {
   type: MSG_EVENTS.ERROR;
   errorText: string;
-}
+};
 
-export interface MsgCompressImageType {
+export type MsgCompressImageType = {
   type: MSG_EVENTS.COMPRESS_IMAGE;
   image: Uint8Array;
   width: number;
   height: number;
   uid: string;
-}
+};
 
 export interface FrameCollection {
   [id: string]: FrameDataInterface;
 }
 
-export interface AppPropsInterface {
+export type AppPropsInterface = {
   version: string;
-}
+};
 
-export interface AppState {
+export type AppState = {
   readonly error: string | undefined;
   readonly ready: boolean;
   readonly frames: FrameCollection;
@@ -71,7 +71,7 @@ export interface AppState {
   readonly selectedFrames: string[];
   readonly svgMarkup: string;
   readonly loading: boolean;
-}
+};
 
 type textNodeSelectedProps = Pick<
   TextNode,
@@ -79,31 +79,30 @@ type textNodeSelectedProps = Pick<
   | "y"
   | "width"
   | "height"
-  | "characters"
   | "textAlignHorizontal"
   | "textAlignVertical"
   | "constraints"
   | "strokeWeight"
 >;
 
-export interface textData extends textNodeSelectedProps {
-  rangeStyles: ITextStyle[];
+export type textData = textNodeSelectedProps & {
+  rangeStyles: TextRange[];
   id: string;
   strokeColour: string;
-}
+};
 
-export interface setHeadlinesAndSourceProps {
+export type setHeadlinesAndSourceProps = {
   pageNode: PageNode;
   headline: string | undefined;
   subhead: string | undefined;
   source: string | undefined;
-}
+};
 
-export interface HeadlinesInterface {
+export type HeadlinesInterface = {
   headline: string | undefined;
   subhead: string | undefined;
   source: string | undefined;
-}
+};
 
 export interface UiPostMessageEvent extends MessageEvent {
   data: {
@@ -111,35 +110,29 @@ export interface UiPostMessageEvent extends MessageEvent {
   };
 }
 
-export interface IresizeImage {
+export type IresizeImage = {
   imgData: Uint8Array;
   nodeDimensions: { width: number; height: number }[];
-}
+};
 
-export interface ITextProp {
-  start: number;
-  end: number;
+export type ITextStyle = {
+  family: string | null;
+  weight: string | null;
+  colour: string;
+  lineHeight: string | null;
+  letterSpacing: string | null;
+  size: number | null;
+  italic: boolean;
+};
 
-  value: PluginAPI["mixed"] | string | number | FontName | RGB | undefined;
-}
-
-export interface ITextStyle {
-  start: number;
-  end: number;
-  chars: string;
-  font: FontName;
-  colour: RGB;
-  size: number;
-  letterSpace: string;
-  lineHeight: string;
-}
+export type TextRange = ITextStyle & { text: string };
 
 export type imageNodeDimensions = {
   name: string;
   width: number;
   height: number;
 };
-export interface FrameRender {
+export type FrameRender = {
   svgData: Uint8Array;
   imageNodeDimensions: imageNodeDimensions[];
-}
+};
