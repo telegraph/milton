@@ -25,6 +25,14 @@ export function generateIframeHtml(body: string): string {
   `;
 }
 
+// Remove line-breaks and multiple whitespace
+function minimiseText(str: string): string {
+  return str
+    .replace(/\s{2,}/g, " ")
+    .replace(/\n|\r/g, "")
+    .trim();
+}
+
 function generateParagraphStyle(
   node: textData,
   frameWidth: number,
@@ -171,7 +179,10 @@ function TextContainer(props: FrameProps) {
   return (
     <div className="text-nodes">
       {frames.map((frame) => (
-        <div id={`textblock-${frame.id}`} className={frame.uid}>
+        <div
+          id={`textblock-${frame.id}`}
+          className={`f2h__frame_text ${frame.uid}`}
+        >
           {frame.textNodes.map((node) => (
             <Text
               node={node}
@@ -223,17 +234,11 @@ export function generateEmbedHtml(props: renderInlineProps): string {
   const mediaQuery = genreateMediaQueries(frames);
   const fontFaces = generateFontFaces(frames);
 
+  const css = minimiseText(fontFaces + embedCss + mediaQuery);
+
   const html = render(
     <div className={`f2h__embed ${responsive ? "f2h--responsive" : ""}`}>
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-       ${fontFaces}
-       ${embedCss}
-       ${mediaQuery}
-      `,
-        }}
-      ></style>
+      <style dangerouslySetInnerHTML={{ __html: css }}></style>
 
       {(headline || subhead) && (
         <header className="f2h_header">
@@ -273,83 +278,82 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
   const largestWidth = Math.max(...sortedFrames.map(({ width }) => width));
 
   let cssText = "";
+
   for (let i = 0; i < sortedFrames.length; i++) {
     const { uid, width, height } = sortedFrames[i];
 
     // Styles for the first (smallest) breakpoint
     if (i === 0) {
+      // Wrapper widths
       cssText += `
-            .f2h__svg_container,
-            .f2h__wrap {
-              width: ${width}px;
-              height: ${height}px;
-            }
+        .f2h__embed.f2h--responsive {
+          width: ${(width / height) * 100}vh;
+        }
+        .f2h__svg_container,
+        .f2h__wrap {
+            width: ${width}px;
+            height: ${height}px;
+          }`;
 
-            .f2h--responsive .f2h__svg_container,
-            .f2h--responsive .f2h__wrap
-            {
-              width: 100%;
-              height: ${(height / width) * 100}vw;
-            }
+      cssText += `.f2h--responsive svg {
+            width: ${(largestWidth / width) * 100}%;
+        }`;
 
-            .f2h--responsive svg {
-              width: ${(largestWidth / width) * 100}%;
-              height: auto;
-            }
-          `;
+      cssText += `.f2h__frame.${uid},
+        .f2h__frame_text.${uid} {
+          display: block;
+        }`;
+
+      cssText += `     
+        .f2h--responsive .f2h__wrap  {
+          padding-top: ${(height / width) * 100}%;
+        }`;
     } else {
       // Styles for the  remaining breakpoints
       const { uid: prevId } = sortedFrames[i - 1];
-      cssText += `
-      /* Hide until width is reached */
-      @media (max-width: ${width}px) {
-        .${uid} { display: none; }
-      }
 
       /* Hide previous and show current frame */
+      cssText += `
       @media (min-width: ${width}px) {
+        .f2h__embed.f2h--responsive {
+          width: ${(width / height) * 100}vh;
+        }
+
+        .f2h__svg_container,
+        .f2h__wrap {
+            width: ${width}px;
+            height: ${height}px;
+        }
         .f2h--responsive svg {
           width: ${(largestWidth / width) * 100}%;
         }
-
-        .${prevId} { display: none; }
-        .${uid} { display: block; }
-        .f2h__svg_container,
-        .f2h__wrap {
-          width: ${width}px;
-          height: ${height}px;
+        .f2h--responsive .f2h__wrap  {
+          padding-top: ${(height / width) * 100}%;
         }
-
-        .f2h--responsive .f2h__svg_container,
-        .f2h--responsive .f2h__wrap {
-          height: ${(height / width) * 100}vw;
-         }
-
-        }
+        .${prevId} { display: none !important; }
+        .${uid} { display: block !important; }
+      }
       `;
     }
 
     // Style for last breakpoint
-    if (i === sortedFrames.length - 1) {
-      cssText += `
-        @media (min-aspect-ratio: ${
-          width / height
-        }) and (min-width: ${width}px) {
-          .f2h--responsive svg { 
-            max-height: 100vh;
-          }
-          .f2h--responsive .text-nodes {
-            /* max-width is aspect ratio */
-            max-width: ${(width / height) * 100}vh;
-            left: 50%;
-            transform: translateX(-50%);
-          }
-          .f2h--responsive .f2h__wrap {
-            max-height: 100vh;
-          }
-        }
-      `;
-    }
+    // if (i === sortedFrames.length - 1) {
+    //   cssText += `
+    //     @media (min-aspect-ratio: ${
+    //       width / height
+    //     }) and (min-width: ${width}px) {
+    //       .f2h--responsive svg {
+    //         max-height: 100vh;
+    //       }
+    //       .f2h--responsive .text-nodes {
+    //         /* max-width is aspect ratio */
+    //         max-width: ${(width / height) * 100}vh;
+
+    //       }
+
+    //     }
+    //   `;
+    // }
   }
 
   return cssText;

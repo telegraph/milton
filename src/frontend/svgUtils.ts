@@ -68,7 +68,9 @@ function replaceHttpWithHttps(svgText: string): string {
 // Replace figma IDs "00:00" with CSS valid IDs
 function replaceIdsWithClasses(svgEl: SVGElement, ids: string[][]): void {
   for (const [id, uid] of ids) {
-    svgEl.querySelector(`[id="${id}"]`)?.setAttribute("class", uid);
+    svgEl
+      .querySelector(`[id="${id}"]`)
+      ?.setAttribute("class", `f2h__frame ${uid}`);
   }
 }
 
@@ -102,6 +104,8 @@ export async function decodeSvgToString(
 
   const svgEl = createSvgElement(svgStr);
   if (!svgEl) return;
+
+  svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
 
   await optimizeSvgImages(svgEl, imageNodeDimensions);
   cleanUpSvg(svgEl);
