@@ -1,3 +1,5 @@
+import { FontStyle } from "types";
+
 type FontsType = {
   [id: string]: {
     normal: { [weight: number]: string };
@@ -46,28 +48,34 @@ const fonts: FontsType = {
   },
 };
 
-function getFontCss(
-  styles: { name: string; weight?: number; style?: "normal" | "italic" }[]
-): string {
+// Generate the CSS for a given font family, weight and styles
+export function buildFontFaceCss(styles: FontStyle[]): string {
   const URL_ROOT = "https://cf.eip.telegraph.co.uk/assets/_fonts/";
-  let fontCss = "";
+  let fontFaces = "";
 
   for (const item of styles) {
-    const { name, style = "normal", weight = 400 } = item;
+    const { family, italic, weight } = item;
 
-    const file = fonts[name][style]?.[weight];
+    // Skip any fonts with missing family names
+    if (!family) continue;
+
+    const style = italic ? "italic" : "normal";
+    const file = fonts?.[family]?.[style]?.[weight];
+
     if (file) {
       const woff = `${URL_ROOT}${file}.woff`;
       const woff2 = `${URL_ROOT}${file}.woff2`;
 
-      fontCss += `@font-face {
-        font-family: "${name}";
+      fontFaces += `@font-face {
+        font-family: "${family}";
         src: url("${woff2}") format("woff2"),
-        src: url("${woff}") format("woff");
+             url("${woff}") format("woff");
         font-weight: ${weight};
-      }`;
+      } `;
+    } else {
+      console.warn(`F2H: Missing family ${JSON.stringify(item)}`);
     }
   }
 
-  return fontCss;
+  return fontFaces;
 }

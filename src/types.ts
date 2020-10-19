@@ -115,9 +115,11 @@ export type IresizeImage = {
   nodeDimensions: { width: number; height: number }[];
 };
 
+export type FontStyle = Pick<TextRange, "weight" | "family" | "italic">;
+
 export type ITextStyle = {
   family: string | null;
-  weight: string | null;
+  weight: number;
   colour: string;
   lineHeight: string | null;
   letterSpacing: string | null;

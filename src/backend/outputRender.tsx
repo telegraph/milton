@@ -1,12 +1,13 @@
 import { h } from "preact";
 import render from "preact-render-to-string";
-import { textData, FrameDataInterface, TextRange } from "types";
+import { textData, FrameDataInterface, TextRange, FontStyle } from "types";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-expect-error
 import embedCss from "backend/embed.css";
 // @ts-expect-error
 import fontsCss from "backend/telegraphFonts.css";
+import { buildFontFaceCss } from "./fonts";
 
 export function generateIframeHtml(body: string): string {
   return `
@@ -110,25 +111,15 @@ function generateParagraphStyle(
       `;
 }
 
-function generateSpanStyles(range: TextRange): string {
-  const {
-    weight,
-    colour,
-    family,
-    italic,
-    letterSpacing,
-    lineHeight,
-    size,
-  } = range;
-
-  // Font weights
-  let fontWeight = 400;
-  if (weight) {
-    if (/^bold$/i.test(weight)) fontWeight = 700;
-    if (/^semi-?\s?bold$/i.test(weight)) fontWeight = 600;
-    if (/^medium$/i.test(weight)) fontWeight = 500;
-  }
-
+function generateSpanStyles({
+  weight,
+  colour,
+  family,
+  italic,
+  letterSpacing,
+  lineHeight,
+  size,
+}: TextRange): string {
   let cssStyle = "";
   if (letterSpacing) cssStyle += `letter-spacing: ${letterSpacing};`;
   if (lineHeight) cssStyle += `line-height: ${lineHeight};`;
@@ -136,7 +127,7 @@ function generateSpanStyles(range: TextRange): string {
   if (colour) cssStyle += `color: ${colour};`;
   if (family) cssStyle += `font-family: ${family};`;
   if (italic) cssStyle += `font-style: italic;`;
-  if (fontWeight) cssStyle += `font-weight: ${fontWeight};`;
+  if (weight) cssStyle += `font-weight: ${weight};`;
 
   return cssStyle;
 }
@@ -171,52 +162,73 @@ function Text(props: TextProps) {
   );
 }
 
-interface renderInlineProps {
+type FrameProps = {
+  frames: FrameDataInterface[];
+};
+function TextContainer(props: FrameProps) {
+  const { frames } = props;
+
+  return (
+    <div className="text-nodes">
+      {frames.map((frame) => (
+        <div id={`textblock-${frame.id}`} className={frame.uid}>
+          {frame.textNodes.map((node) => (
+            <Text
+              node={node}
+              width={frame.width}
+              height={frame.height}
+              positionFixed={frame.fixedPositionNodes.includes(node.id)}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Extract unique font styles from range styles nested deep in frame info
+// frames[] -> textNodes[] -> rangeStyles[] -> { style }
+function generateFontFaces(frames: FrameDataInterface[]): string {
+  // @TODO: Extracting font styles is messy. Could we collect this info
+  // from the backend when building up the text style ranges?
+  const fontStyles = frames
+    .flatMap(({ textNodes }) => textNodes)
+    .flatMap(({ rangeStyles }) => rangeStyles)
+    .flatMap(({ family, italic, weight }) => ({ family, italic, weight }))
+    .reduce((acc, style): FontStyle[] => {
+      // De-dupe styles by searching for a match in the accumulator
+      return acc.some(
+        ({ family, weight, italic }) =>
+          family === style.family &&
+          italic === style.italic &&
+          weight === style.weight
+      )
+        ? acc
+        : [...acc, style];
+    }, [] as FontStyle[]);
+
+  return buildFontFaceCss(fontStyles);
+}
+
+type renderInlineProps = {
   frames: FrameDataInterface[];
   svgText: string;
   headline?: string | undefined;
   subhead?: string | undefined;
   source?: string | undefined;
   responsive: boolean;
-}
+};
 export function generateEmbedHtml(props: renderInlineProps): string {
   const { frames, svgText, headline, subhead, source, responsive } = props;
   const mediaQuery = genreateMediaQueries(frames);
-
-  const fonts = frames.flatMap((frame) =>
-    frame.textNodes.flatMap((textNode) =>
-      textNode.rangeStyles.flatMap((range) => range.font)
-    )
-  );
-  console.log(fonts);
-
-  const textNodes = [];
-
-  for (const frame of frames) {
-    console.log(frame.textNodes);
-    const tNode = (
-      <div id={`textblock-${frame.id}`} className={frame.uid}>
-        {frame.textNodes.map((node) => (
-          <Text
-            key={node.characters}
-            node={node}
-            width={frame.width}
-            height={frame.height}
-            positionFixed={frame.fixedPositionNodes.includes(node.id)}
-          />
-        ))}
-      </div>
-    );
-
-    textNodes.push(tNode);
-  }
+  const fontFaces = generateFontFaces(frames);
 
   const html = render(
     <div className={`f2h__embed ${responsive ? "f2h--responsive" : ""}`}>
       <style
         dangerouslySetInnerHTML={{
           __html: `
-       ${fontsCss}
+       ${fontFaces}
        ${embedCss}
        ${mediaQuery}
       `,
@@ -235,7 +247,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
           className="f2h__svg_container"
           dangerouslySetInnerHTML={{ __html: svgText }}
         />
-        <div className="text-nodes">{textNodes}</div>
+        <TextContainer frames={frames} />
       </div>
 
       {source && (
