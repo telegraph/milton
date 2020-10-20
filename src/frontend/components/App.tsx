@@ -228,7 +228,7 @@ export class App extends Component<AppPropsInterface, AppState> {
     console.log(this.state);
     const frameWidths = this.getSelectedFrames()
       .map((f) => f.width)
-      .sort();
+      .sort((a, b) => (a > b ? 1 : -1));
 
     return (
       <div className="f2h">

@@ -20,8 +20,15 @@ function getRangeStyles(textNode: TextNode): TextRange[] {
     const fontName = textNode.getRangeFontName(i, i + 1);
     const family = fontName === figma.mixed ? null : fontName.family;
     const figmaStyle = fontName === figma.mixed ? null : fontName.style;
-    const weight = figmaStyle ? figmaStyle?.replace(/\s?italic\s?/i, "") : null;
     const italic = figmaStyle ? /italic/i.test(figmaStyle) : false;
+
+    // Font weight
+    let weight = 400;
+    if (figmaStyle) {
+      if (/^bold$/i.test(figmaStyle)) weight = 700;
+      if (/^semi-?\s?bold$/i.test(figmaStyle)) weight = 600;
+      if (/^medium$/i.test(figmaStyle)) weight = 500;
+    }
 
     // Font size
     const figmaSize = textNode.getRangeFontSize(i, i + 1);

@@ -1,12 +1,15 @@
 import { h } from "preact";
 import render from "preact-render-to-string";
-import { textData, FrameDataInterface, TextRange } from "types";
+import { textData, FrameDataInterface, TextRange, FontStyle } from "types";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-expect-error
 import embedCss from "backend/embed.css";
 // @ts-expect-error
 import fontsCss from "backend/telegraphFonts.css";
+import { buildFontFaceCss } from "./fonts";
+
+const PRECISION = 4;
 
 export function generateIframeHtml(body: string): string {
   return `
@@ -22,6 +25,14 @@ export function generateIframeHtml(body: string): string {
       </body>
     </html>
   `;
+}
+
+// Remove line-breaks and multiple whitespace
+function minimiseText(str: string): string {
+  return str
+    .replace(/\s{2,}/g, " ")
+    .replace(/\n|\r/g, "")
+    .trim();
 }
 
 function generateParagraphStyle(
@@ -54,9 +65,14 @@ function generateParagraphStyle(
   // TODO: Add sensible logic for vertical alignment in responsive view
 
   // Position center aligned
-  const leftPos = (x + width / 2) / frameWidth;
-  const left = `${leftPos * 100}%`;
-  const top = `${((y + height / 2) / frameHeight) * 100}%`;
+  const leftPos = ((x + width / 2) / frameWidth) * 100;
+  const left = `${leftPos.toPrecision(PRECISION)}%`;
+
+  const topVal = ((y + height / 2) / frameHeight) * 100;
+  const top = `${topVal.toPrecision(PRECISION)}%`;
+
+  const bottomVal = frameHeight - y - height - height / 2;
+  const bottom = `${bottomVal.toPrecision(4)}px`;
 
   let alignVertical = "center";
   let verticalPosition = "";
@@ -77,7 +93,7 @@ function generateParagraphStyle(
       verticalPosition = `top: ${top}`;
       break;
     case "MAX":
-      verticalPosition = `bottom: ${frameHeight - y - height - height / 2}px`;
+      verticalPosition = `bottom: ${bottom}`;
       break;
     default:
       verticalPosition = `top: ${top}`;
@@ -96,10 +112,13 @@ function generateParagraphStyle(
       break;
   }
 
+  const relWidth = ((width / frameWidth) * 100).toPrecision(PRECISION);
+  const relHeight = ((height / frameHeight) * 100).toPrecision(PRECISION);
+
   return `
         ${styleText}
-        width: ${positionFixed ? "auto" : `${(width / frameWidth) * 100}%`};
-        height: ${positionFixed ? "auto" : `${(height / frameHeight) * 100}%`};
+        width: ${positionFixed ? "auto" : `${relWidth}%`};
+        height: ${positionFixed ? "auto" : `${relHeight}%`};
         left: ${positionFixed ? `${x}px` : left};
         ${verticalPosition};
         text-align: ${textAlignHorizontal.toLocaleLowerCase()};
@@ -110,25 +129,15 @@ function generateParagraphStyle(
       `;
 }
 
-function generateSpanStyles(range: TextRange): string {
-  const {
-    weight,
-    colour,
-    family,
-    italic,
-    letterSpacing,
-    lineHeight,
-    size,
-  } = range;
-
-  // Font weights
-  let fontWeight = 400;
-  if (weight) {
-    if (/^bold$/i.test(weight)) fontWeight = 700;
-    if (/^semi-?\s?bold$/i.test(weight)) fontWeight = 600;
-    if (/^medium$/i.test(weight)) fontWeight = 500;
-  }
-
+function generateSpanStyles({
+  weight,
+  colour,
+  family,
+  italic,
+  letterSpacing,
+  lineHeight,
+  size,
+}: TextRange): string {
   let cssStyle = "";
   if (letterSpacing) cssStyle += `letter-spacing: ${letterSpacing};`;
   if (lineHeight) cssStyle += `line-height: ${lineHeight};`;
@@ -136,7 +145,7 @@ function generateSpanStyles(range: TextRange): string {
   if (colour) cssStyle += `color: ${colour};`;
   if (family) cssStyle += `font-family: ${family};`;
   if (italic) cssStyle += `font-style: italic;`;
-  if (fontWeight) cssStyle += `font-weight: ${fontWeight};`;
+  if (weight) cssStyle += `font-weight: ${weight};`;
 
   return cssStyle;
 }
@@ -171,49 +180,75 @@ function Text(props: TextProps) {
   );
 }
 
-interface renderInlineProps {
+type FrameProps = {
+  frames: FrameDataInterface[];
+};
+function TextContainer(props: FrameProps) {
+  const { frames } = props;
+
+  return (
+    <div className="text-nodes">
+      {frames.map((frame) => (
+        <div
+          id={`textblock-${frame.id}`}
+          className={`f2h__frame_text ${frame.uid}`}
+        >
+          {frame.textNodes.map((node) => (
+            <Text
+              node={node}
+              width={frame.width}
+              height={frame.height}
+              positionFixed={frame.fixedPositionNodes.includes(node.id)}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Extract unique font styles from range styles nested deep in frame info
+// frames[] -> textNodes[] -> rangeStyles[] -> { style }
+function generateFontFaces(frames: FrameDataInterface[]): string {
+  // @TODO: Extracting font styles is messy. Could we collect this info
+  // from the backend when building up the text style ranges?
+  const fontStyles = frames
+    .flatMap(({ textNodes }) => textNodes)
+    .flatMap(({ rangeStyles }) => rangeStyles)
+    .flatMap(({ family, italic, weight }) => ({ family, italic, weight }))
+    .reduce((acc, style): FontStyle[] => {
+      // De-dupe styles by searching for a match in the accumulator
+      return acc.some(
+        ({ family, weight, italic }) =>
+          family === style.family &&
+          italic === style.italic &&
+          weight === style.weight
+      )
+        ? acc
+        : [...acc, style];
+    }, [] as FontStyle[]);
+
+  return buildFontFaceCss(fontStyles);
+}
+
+type renderInlineProps = {
   frames: FrameDataInterface[];
   svgText: string;
   headline?: string | undefined;
   subhead?: string | undefined;
   source?: string | undefined;
   responsive: boolean;
-}
+};
 export function generateEmbedHtml(props: renderInlineProps): string {
   const { frames, svgText, headline, subhead, source, responsive } = props;
   const mediaQuery = genreateMediaQueries(frames);
-  const textNodes = [];
+  const fontFaces = generateFontFaces(frames);
 
-  for (const frame of frames) {
-    console.log(frame.textNodes);
-    const tNode = (
-      <div id={`textblock-${frame.id}`} className={frame.uid}>
-        {frame.textNodes.map((node) => (
-          <Text
-            key={node.characters}
-            node={node}
-            width={frame.width}
-            height={frame.height}
-            positionFixed={frame.fixedPositionNodes.includes(node.id)}
-          />
-        ))}
-      </div>
-    );
-
-    textNodes.push(tNode);
-  }
+  const css = fontFaces + embedCss + mediaQuery;
 
   const html = render(
     <div className={`f2h__embed ${responsive ? "f2h--responsive" : ""}`}>
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-       ${fontsCss}
-       ${embedCss}
-       ${mediaQuery}
-      `,
-        }}
-      ></style>
+      <style dangerouslySetInnerHTML={{ __html: css }}></style>
 
       {(headline || subhead) && (
         <header className="f2h_header">
@@ -227,7 +262,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
           className="f2h__svg_container"
           dangerouslySetInnerHTML={{ __html: svgText }}
         />
-        <div className="text-nodes">{textNodes}</div>
+        <TextContainer frames={frames} />
       </div>
 
       {source && (
@@ -235,10 +270,12 @@ export function generateEmbedHtml(props: renderInlineProps): string {
           <p className="f2h_source">{source}</p>
         </footer>
       )}
-    </div>
+    </div>,
+    null,
+    { pretty: false }
   );
 
-  return html;
+  return minimiseText(html);
 }
 
 /**
@@ -253,84 +290,75 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
   const largestWidth = Math.max(...sortedFrames.map(({ width }) => width));
 
   let cssText = "";
+
   for (let i = 0; i < sortedFrames.length; i++) {
     const { uid, width, height } = sortedFrames[i];
 
+    const relContainerWidth = ((width / height) * 100).toPrecision(PRECISION);
+    const relSvgWidth = ((largestWidth / width) * 100).toPrecision(PRECISION);
+    const paddingHeight = ((height / width) * 100).toPrecision(PRECISION);
+
     // Styles for the first (smallest) breakpoint
     if (i === 0) {
+      // Wrapper widths
       cssText += `
-            .f2h__svg_container,
-            .f2h__wrap {
-              width: ${width}px;
-              height: ${height}px;
-            }
+        .f2h__embed.f2h--responsive {
+          width: min(${relContainerWidth}vh, 100%);
+        }
+        .f2h__svg_container,
+        .f2h__wrap {
+            width: ${width}px;
+            height: ${height}px;
+          }`;
 
-            .f2h--responsive .f2h__svg_container,
-            .f2h--responsive .f2h__wrap
-            {
-              width: 100%;
-              height: ${(height / width) * 100}vw;
-            }
+      cssText += `.f2h--responsive svg {
+            width: ${relSvgWidth}%;
+        }`;
 
-            .f2h--responsive svg {
-              width: ${(largestWidth / width) * 100}%;
-              height: auto;
-            }
-          `;
+      cssText += `.f2h__frame.${uid},
+        .f2h__frame_text.${uid} {
+          display: block;
+        }`;
+
+      cssText += `     
+        .f2h--responsive .f2h__wrap  {
+          padding-top: ${paddingHeight}%;
+        }`;
     } else {
       // Styles for the  remaining breakpoints
       const { uid: prevId } = sortedFrames[i - 1];
-      cssText += `
-      /* Hide until width is reached */
-      @media (max-width: ${width}px) {
-        .${uid} { display: none; }
-      }
 
       /* Hide previous and show current frame */
+      cssText += `
       @media (min-width: ${width}px) {
-        .f2h--responsive svg {
-          width: ${(largestWidth / width) * 100}%;
+        .f2h__embed.f2h--responsive {
+          width: min(${relContainerWidth}vh, 100%);
         }
 
-        .${prevId} { display: none; }
-        .${uid} { display: block; }
         .f2h__svg_container,
         .f2h__wrap {
-          width: ${width}px;
-          height: ${height}px;
+            width: ${width}px;
+            height: ${height}px;
         }
-
-        .f2h--responsive .f2h__svg_container,
-        .f2h--responsive .f2h__wrap {
-          height: ${(height / width) * 100}vw;
-         }
-
+        .f2h--responsive svg {
+          width: ${relSvgWidth}%;
         }
-      `;
-    }
-
-    // Style for last breakpoint
-    if (i === sortedFrames.length - 1) {
-      cssText += `
-        @media (min-aspect-ratio: ${
-          width / height
-        }) and (min-width: ${width}px) {
-          .f2h--responsive svg { 
-            max-height: 100vh;
-          }
-          .f2h--responsive .text-nodes {
-            /* max-width is aspect ratio */
-            max-width: ${(width / height) * 100}vh;
-            left: 50%;
-            transform: translateX(-50%);
-          }
-          .f2h--responsive .f2h__wrap {
-            max-height: 100vh;
-          }
+        .f2h--responsive .f2h__wrap  {
+          padding-top: ${paddingHeight}%;
         }
+        .${prevId} { display: none !important; }
+        .${uid} { display: block !important; }
+      }
       `;
     }
   }
 
   return cssText;
 }
+
+function test<T>(arg: T[]): T[] {
+  console.log(arg.length);
+  return arg;
+}
+
+console.log(test([3]));
