@@ -9,6 +9,8 @@ import embedCss from "backend/embed.css";
 import fontsCss from "backend/telegraphFonts.css";
 import { buildFontFaceCss } from "./fonts";
 
+const PRECISION = 4;
+
 export function generateIframeHtml(body: string): string {
   return `
     <!doctype html>
@@ -63,9 +65,14 @@ function generateParagraphStyle(
   // TODO: Add sensible logic for vertical alignment in responsive view
 
   // Position center aligned
-  const leftPos = (x + width / 2) / frameWidth;
-  const left = `${leftPos * 100}%`;
-  const top = `${((y + height / 2) / frameHeight) * 100}%`;
+  const leftPos = ((x + width / 2) / frameWidth) * 100;
+  const left = `${leftPos.toPrecision(PRECISION)}%`;
+
+  const topVal = ((y + height / 2) / frameHeight) * 100;
+  const top = `${topVal.toPrecision(PRECISION)}%`;
+
+  const bottomVal = frameHeight - y - height - height / 2;
+  const bottom = `${bottomVal.toPrecision(4)}px`;
 
   let alignVertical = "center";
   let verticalPosition = "";
@@ -86,7 +93,7 @@ function generateParagraphStyle(
       verticalPosition = `top: ${top}`;
       break;
     case "MAX":
-      verticalPosition = `bottom: ${frameHeight - y - height - height / 2}px`;
+      verticalPosition = `bottom: ${bottom}`;
       break;
     default:
       verticalPosition = `top: ${top}`;
@@ -105,10 +112,13 @@ function generateParagraphStyle(
       break;
   }
 
+  const relWidth = ((width / frameWidth) * 100).toPrecision(PRECISION);
+  const relHeight = ((height / frameHeight) * 100).toPrecision(PRECISION);
+
   return `
         ${styleText}
-        width: ${positionFixed ? "auto" : `${(width / frameWidth) * 100}%`};
-        height: ${positionFixed ? "auto" : `${(height / frameHeight) * 100}%`};
+        width: ${positionFixed ? "auto" : `${relWidth}%`};
+        height: ${positionFixed ? "auto" : `${relHeight}%`};
         left: ${positionFixed ? `${x}px` : left};
         ${verticalPosition};
         text-align: ${textAlignHorizontal.toLocaleLowerCase()};
@@ -234,7 +244,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
   const mediaQuery = genreateMediaQueries(frames);
   const fontFaces = generateFontFaces(frames);
 
-  const css = minimiseText(fontFaces + embedCss + mediaQuery);
+  const css = fontFaces + embedCss + mediaQuery;
 
   const html = render(
     <div className={`f2h__embed ${responsive ? "f2h--responsive" : ""}`}>
@@ -260,10 +270,12 @@ export function generateEmbedHtml(props: renderInlineProps): string {
           <p className="f2h_source">{source}</p>
         </footer>
       )}
-    </div>
+    </div>,
+    null,
+    { pretty: false }
   );
 
-  return html;
+  return minimiseText(html);
 }
 
 /**
@@ -282,12 +294,16 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
   for (let i = 0; i < sortedFrames.length; i++) {
     const { uid, width, height } = sortedFrames[i];
 
+    const relContainerWidth = ((width / height) * 100).toPrecision(PRECISION);
+    const relSvgWidth = ((largestWidth / width) * 100).toPrecision(PRECISION);
+    const paddingHeight = ((height / width) * 100).toPrecision(PRECISION);
+
     // Styles for the first (smallest) breakpoint
     if (i === 0) {
       // Wrapper widths
       cssText += `
         .f2h__embed.f2h--responsive {
-          width: ${(width / height) * 100}vh;
+          width: min(${relContainerWidth}vh, 100%);
         }
         .f2h__svg_container,
         .f2h__wrap {
@@ -296,7 +312,7 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
           }`;
 
       cssText += `.f2h--responsive svg {
-            width: ${(largestWidth / width) * 100}%;
+            width: ${relSvgWidth}%;
         }`;
 
       cssText += `.f2h__frame.${uid},
@@ -306,7 +322,7 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
 
       cssText += `     
         .f2h--responsive .f2h__wrap  {
-          padding-top: ${(height / width) * 100}%;
+          padding-top: ${paddingHeight}%;
         }`;
     } else {
       // Styles for the  remaining breakpoints
@@ -316,7 +332,7 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
       cssText += `
       @media (min-width: ${width}px) {
         .f2h__embed.f2h--responsive {
-          width: ${(width / height) * 100}vh;
+          width: min(${relContainerWidth}vh, 100%);
         }
 
         .f2h__svg_container,
@@ -325,35 +341,16 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
             height: ${height}px;
         }
         .f2h--responsive svg {
-          width: ${(largestWidth / width) * 100}%;
+          width: ${relSvgWidth}%;
         }
         .f2h--responsive .f2h__wrap  {
-          padding-top: ${(height / width) * 100}%;
+          padding-top: ${paddingHeight}%;
         }
         .${prevId} { display: none !important; }
         .${uid} { display: block !important; }
       }
       `;
     }
-
-    // Style for last breakpoint
-    // if (i === sortedFrames.length - 1) {
-    //   cssText += `
-    //     @media (min-aspect-ratio: ${
-    //       width / height
-    //     }) and (min-width: ${width}px) {
-    //       .f2h--responsive svg {
-    //         max-height: 100vh;
-    //       }
-    //       .f2h--responsive .text-nodes {
-    //         /* max-width is aspect ratio */
-    //         max-width: ${(width / height) * 100}vh;
-
-    //       }
-
-    //     }
-    //   `;
-    // }
   }
 
   return cssText;
