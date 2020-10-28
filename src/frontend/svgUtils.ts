@@ -94,6 +94,25 @@ function cleanUpSvg(svgEl: SVGElement): void {
     .forEach((textNode) => textNode.parentNode?.removeChild(textNode));
 }
 
+function addLinks(svgEl: SVGElement): void {
+  // @ref: https://ihateregex.io/expr/url/
+  const urlPattern = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/;
+  const elWithIds = svgEl.querySelectorAll("[id]");
+
+  for (const el of elWithIds) {
+    const { id } = el;
+    const [match] = urlPattern.exec(id) || [];
+    // console.log(match, el);
+
+    if (match) {
+      const a = window.document.createElement("a");
+      a.setAttribute("href", match);
+      el.parentNode?.insertBefore(a, el);
+      a.appendChild(el);
+    }
+  }
+}
+
 export async function decodeSvgToString(
   svgData: Uint8Array,
   ids: string[][],
@@ -111,6 +130,7 @@ export async function decodeSvgToString(
   cleanUpSvg(svgEl);
   replaceIdsWithClasses(svgEl, ids);
   optimizeSvgPaths(svgEl);
+  addLinks(svgEl);
 
   return svgEl?.outerHTML;
 }

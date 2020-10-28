@@ -43,6 +43,7 @@ body::-webkit-scrollbar {
   z-index: 1;
   left: 50%;
   transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .f2h__svg_container {
