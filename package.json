@@ -1,10 +1,10 @@
 {
   "name": "2020-05-06-figma2html",
-  "version": "0.4.1",
+  "version": "0.5.1",
   "description": "Export frames from Figma to HTML",
   "main": "index.tsx",
   "scripts": {
-    "dev": "watchexec --exts css,html,tsx,ts -w ./src 'npm run --silent build'",
+    "dev": "watchexec --exts css,scss,html,tsx,ts,json --clear -w ./src node ./build.js",
     "build": "node build.js",
     "check": "tsc --noEmit"
   },
