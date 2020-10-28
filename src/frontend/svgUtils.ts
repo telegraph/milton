@@ -107,6 +107,7 @@ function addLinks(svgEl: SVGElement): void {
     if (match) {
       const a = window.document.createElement("a");
       a.setAttribute("href", match);
+      a.setAttribute("target", "_parent");
       el.parentNode?.insertBefore(a, el);
       a.appendChild(el);
     }

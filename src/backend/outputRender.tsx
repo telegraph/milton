@@ -16,6 +16,7 @@ export function generateIframeHtml(body: string): string {
     <!doctype html>
     <html>
       <head>
+        <base target="_parent">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style> html, body { margin: 0; } </style>
