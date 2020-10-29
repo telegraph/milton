@@ -4,7 +4,7 @@
   "description": "Export frames from Figma to HTML",
   "main": "index.tsx",
   "scripts": {
-    "dev": "watchexec --exts css,scss,html,tsx,ts,json --clear -w ./src node ./build.js",
+    "start": "watchexec --exts css,scss,html,tsx,ts,json --clear -w ./src node ./build.js",
     "build": "node build.js",
     "check": "tsc --noEmit"
   },
