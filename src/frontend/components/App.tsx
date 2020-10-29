@@ -6,6 +6,7 @@ import { decodeSvgToString } from "frontend/svgUtils";
 import { postMan } from "utils/messages";
 import { FrameCollection } from "types";
 import { generateEmbedHtml } from "./outputRender";
+import { version } from "../../../package.json";
 
 const enum STATUS {
   LOADING,
@@ -13,7 +14,7 @@ const enum STATUS {
   ERROR,
 }
 
-export const App = function ({ version }: { version: number }) {
+export const App = function () {
   const clipboardEl = useRef<HTMLTextAreaElement>(null);
 
   // Setup state
@@ -26,6 +27,8 @@ export const App = function ({ version }: { version: number }) {
   const [html, setHtml] = useState("");
   const [frames, setFrames] = useState<FrameCollection>({});
   const [needsRender, setNeedsRender] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [breakpoint, setBreakpoint] = useState(320);
 
   const toggleSelected = (id: string): void =>
     setSelectedFrames(
@@ -43,6 +46,7 @@ export const App = function ({ version }: { version: number }) {
         setHeadline(headline);
         setSubHead(subhead);
         setSource(source);
+        setSelectedFrames(Object.keys(frames));
         setStatus(STATUS.READY);
       })
       .catch((err) => console.error("error requesting frames", err));
@@ -65,6 +69,18 @@ export const App = function ({ version }: { version: number }) {
     });
   }, [headline, subhead, source]);
 
+  const copyToClipboard = () => {
+    clipboardEl.current?.select();
+    document.execCommand("copy");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 600);
+  };
+
+  const downloadHtml = () =>
+    saveAs(
+      new Blob([html], { type: "text/html" }),
+      `figma2html-${Date.now()}.html`
+    );
   const generateSvgHtml = async () => {
     const { svgData, imageNodeDimensions } = await postMan.send({
       workload: MSG_EVENTS.RENDER,
@@ -93,6 +109,13 @@ export const App = function ({ version }: { version: number }) {
     return <p>Loading...</p>;
   }
 
+  const sizeSortedFrames = Object.values(frames).sort((a, b) =>
+    a.width > b.width ? 1 : -1
+  );
+  const breakPoints = sizeSortedFrames
+    .filter(({ id }) => selectedFrames.includes(id))
+    .map(({ width }) => width);
+
   return (
     <div class="app">
       <header class="header">
@@ -120,23 +143,15 @@ export const App = function ({ version }: { version: number }) {
         <button
           class="btn btn__copy"
           disabled={needsRender}
-          onClick={() => {
-            clipboardEl.current?.select();
-            document.execCommand("copy");
-          }}
+          onClick={copyToClipboard}
         >
-          Copy to clipboard
+          {copied ? "Copied!" : "Copy to clipboard"}
         </button>
 
         <button
           class="btn btn__download"
           disabled={needsRender}
-          onClick={() =>
-            saveAs(
-              new Blob([html], { type: "text/html" }),
-              `figma2html-${Date.now()}.html`
-            )
-          }
+          onClick={downloadHtml}
         >
           Download
         </button>
@@ -172,32 +187,54 @@ export const App = function ({ version }: { version: number }) {
       </div>
 
       <section class="selection">
-        {Object.values(frames)
-          .sort((a, b) => (a.width > b.width ? 1 : -1))
-          .map(({ name, id, width, height }) => (
-            <p key={id} class="selection__item">
-              <label class="selection__label">
-                <input
-                  class="selection__input"
-                  type="checkbox"
-                  checked={selectedFrames.includes(id)}
-                  onInput={() => toggleSelected(id)}
-                />
+        {sizeSortedFrames.map(({ name, id, width, height }) => (
+          <p key={id} class="selection__item">
+            <label class="selection__label">
+              <input
+                class="selection__input"
+                type="checkbox"
+                checked={selectedFrames.includes(id)}
+                onInput={() => toggleSelected(id)}
+              />
 
-                {name}
+              {name}
 
-                <span class="selection__width">
-                  {width} x {height}
-                </span>
-              </label>
-            </p>
-          ))}
+              <span class="selection__width">
+                {width} x {height}
+              </span>
+            </label>
+          </p>
+        ))}
       </section>
 
       <section class="ouput">
-        <iframe class="ouput__iframe" srcDoc={html} />
+        <select
+          class="breakpoints"
+          onInput={({ currentTarget: { selectedIndex } }) =>
+            setBreakpoint(selectedIndex)
+          }
+        >
+          {breakPoints.map((width, i) => (
+            <option
+              key={width}
+              class="breakpoints__option"
+              selected={breakpoint === i}
+            >
+              {width}px
+            </option>
+          ))}
+        </select>
+
+        <iframe
+          class="ouput__iframe"
+          srcDoc={html}
+          style={`width: ${breakPoints[breakpoint]}px`}
+        />
+
         <textarea class="output__clipboard" ref={clipboardEl} value={html} />
       </section>
+
+      <footer class="footer">Version {version}</footer>
     </div>
   );
 };

@@ -3,7 +3,6 @@ import { App } from "frontend/components/App";
 import { MSG_EVENTS } from "constants";
 import { postMan } from "utils/messages";
 import { resizeAndOptimiseImage } from "frontend/imageHelper";
-import { version } from "../../package.json";
 
 // Load CSS via esbuild CSS loader
 import "./ui.css";
@@ -12,4 +11,4 @@ import "./ui.css";
 postMan.registerWorker(MSG_EVENTS.COMPRESS_IMAGE, resizeAndOptimiseImage);
 
 // Render app
-render(<App version={version} />, document.body);
+render(<App />, document.body);
