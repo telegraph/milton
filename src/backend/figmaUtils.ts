@@ -93,67 +93,14 @@ export async function renderFrames(frameIds: string[]): Promise<FrameRender> {
  *
  * @context figma
  */
-export function setHeadlinesAndSource(props: setHeadlinesAndSourceProps): void {
-  const pageNode = figma.currentPage;
-  const mostLeftPos = Math.min(...pageNode.children.map((node) => node.x));
-  const mostTopPos = Math.min(...pageNode.children.map((node) => node.y));
-
-  // Loop through each headline node names
-  for (const name of Object.values(HEADLINE_NODE_NAMES)) {
-    let node =
-      (pageNode.findChild(
-        (node) => node.name === name && node.type === "TEXT"
-      ) as TextNode) || null;
-    const textContent = props[name];
-
-    // Remove node if there's no text content
-    if (node && !textContent) {
-      node.remove();
-      return;
-    }
-
-    // Do nothing is there's no text content
-    if (!textContent) {
-      return;
-    }
-
-    // Create node if it doesn't already exist
-    if (!node) {
-      node = figma.createText();
-      node.name = name;
-
-      // Position new text node top-left of the first frame in the page
-      let y = mostTopPos - 60;
-      if (name === HEADLINE_NODE_NAMES.HEADLINE) {
-        y -= 60;
-      } else if (name === HEADLINE_NODE_NAMES.SUBHEAD) {
-        y -= 30;
-      }
-
-      node.relativeTransform = [
-        [1, 0, mostLeftPos],
-        [0, 1, y],
-      ];
-    }
-
-    // Ensure text node is locked
-    node.locked = true;
-
-    // Load font
-    const fontName =
-      node.fontName !== figma.mixed ? node.fontName.family : "Roboto";
-    const fontStyle =
-      node.fontName !== figma.mixed ? node.fontName.style : "Regular";
-    figma
-      .loadFontAsync({ family: fontName, style: fontStyle })
-      .then(() => {
-        // Set text node content
-        node.characters = props[name] || "";
-      })
-      .catch((err) => {
-        console.error("Failed to load font", err);
-      });
-  }
+export function setHeadlinesAndSource({
+  headline,
+  subhead,
+  source,
+}: setHeadlinesAndSourceProps): void {
+  figma.currentPage.setPluginData("headline", headline);
+  figma.currentPage.setPluginData("subhead", subhead);
+  figma.currentPage.setPluginData("source", source);
 }
 
 export function createFrameData(node: FrameNode): FrameDataInterface {
@@ -200,8 +147,8 @@ export function getRootFrames(): IFrameData {
 
   return {
     frames: framesData,
-    headline: getNodeText(currentPage, HEADLINE_NODE_NAMES.HEADLINE),
-    subhead: getNodeText(currentPage, HEADLINE_NODE_NAMES.HEADLINE),
-    source: getNodeText(currentPage, HEADLINE_NODE_NAMES.HEADLINE),
+    headline: currentPage.getPluginData("headline"),
+    subhead: currentPage.getPluginData("subhead"),
+    source: currentPage.getPluginData("source"),
   };
 }

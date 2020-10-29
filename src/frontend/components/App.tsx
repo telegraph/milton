@@ -57,6 +57,14 @@ export const App = function ({ version }: { version: number }) {
     selectedFrames.join(),
   ]);
 
+  // Update Figma page data with new headings
+  useEffect(() => {
+    postMan.send({
+      workload: MSG_EVENTS.UPDATE_HEADLINES,
+      data: { headline, subhead, source },
+    });
+  }, [headline, subhead, source]);
+
   const generateSvgHtml = async () => {
     const { svgData, imageNodeDimensions } = await postMan.send({
       workload: MSG_EVENTS.RENDER,

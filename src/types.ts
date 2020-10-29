@@ -91,10 +91,9 @@ export type textData = textNodeSelectedProps & {
 };
 
 export type setHeadlinesAndSourceProps = {
-  pageNode: PageNode;
-  headline: string | undefined;
-  subhead: string | undefined;
-  source: string | undefined;
+  headline: string;
+  subhead: string;
+  source: string;
 };
 
 export type HeadlinesInterface = {
