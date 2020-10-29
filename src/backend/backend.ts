@@ -1,6 +1,6 @@
 import { MSG_EVENTS } from "constants";
 import { postMan } from "utils/messages";
-import { generateEmbedHtml, generateIframeHtml } from "backend/outputRender";
+
 import {
   getRootFrames,
   renderFrames,
@@ -11,8 +11,6 @@ import {
 postMan.registerWorker(MSG_EVENTS.GET_ROOT_FRAMES, getRootFrames);
 postMan.registerWorker(MSG_EVENTS.RENDER, renderFrames);
 postMan.registerWorker(MSG_EVENTS.UPDATE_HEADLINES, setHeadlinesAndSource);
-postMan.registerWorker(MSG_EVENTS.RENDER_EMBED_HTML, generateEmbedHtml);
-postMan.registerWorker(MSG_EVENTS.RENDER_IFRAME_HTML, generateIframeHtml);
 
 // Render the DOM
 const { ui_html } = __uiFiles__;

@@ -65,14 +65,14 @@ function replaceHttpWithHttps(svgText: string): string {
   return svgText.replace(/http:\/\//g, "https://");
 }
 
-// Replace figma IDs "00:00" with CSS valid IDs
-function replaceIdsWithClasses(svgEl: SVGElement, ids: string[][]): void {
-  for (const [id, uid] of ids) {
-    svgEl
-      .querySelector(`[id="${id}"]`)
-      ?.setAttribute("class", `f2h__frame ${uid}`);
-  }
-}
+// // Replace figma IDs "00:00" with CSS valid IDs
+// function replaceIdsWithClasses(svgEl: SVGElement, ids: string[]): void {
+//   for (const id of ids) {
+//     svgEl
+//       .querySelector(`[id="${id}"]`)
+//       ?.setAttribute("class", `f2h__frame f2h__${id}`);
+//   }
+// }
 
 function createSvgElement(svgText: string): SVGElement | null {
   const emptyDiv = document.createElement("div");
@@ -116,20 +116,19 @@ function addLinks(svgEl: SVGElement): void {
 
 export async function decodeSvgToString(
   svgData: Uint8Array,
-  ids: string[][],
   imageNodeDimensions: imageNodeDimensions[]
-): Promise<string | undefined> {
+): Promise<string> {
   let svgStr = new TextDecoder("utf-8").decode(svgData);
   svgStr = replaceHttpWithHttps(svgStr);
 
   const svgEl = createSvgElement(svgStr);
-  if (!svgEl) return;
+  if (!svgEl) throw new Error("Failed to create SVG element");
 
   svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
 
   await optimizeSvgImages(svgEl, imageNodeDimensions);
   cleanUpSvg(svgEl);
-  replaceIdsWithClasses(svgEl, ids);
+  // replaceIdsWithClasses(svgEl, ids);
   optimizeSvgPaths(svgEl);
   addLinks(svgEl);
 

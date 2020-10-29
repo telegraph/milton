@@ -1,10 +1,10 @@
-export enum STAGES {
+export const enum STAGES {
   CHOOSE_FRAMES,
   RESPONSIVE_PREVIEW,
   SAVE_OUTPUT,
 }
 
-export enum MSG_EVENTS {
+export const enum MSG_EVENTS {
   FOUND_FRAMES,
   NO_FRAMES,
   RENDER,
@@ -17,7 +17,7 @@ export enum MSG_EVENTS {
   RENDER_IFRAME_HTML,
 }
 
-export enum OUTPUT_FORMATS {
+export const enum OUTPUT_FORMATS {
   INLINE,
   IFRAME,
 }
@@ -39,7 +39,7 @@ export const UI_TEXT = {
 
 export const FRAME_WARNING_SIZE = 300;
 
-export enum HEADLINE_NODE_NAMES {
+export const enum HEADLINE_NODE_NAMES {
   HEADLINE = "headline",
   SUBHEAD = "subhead",
   SOURCE = "source",

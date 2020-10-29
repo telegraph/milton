@@ -1,4 +1,9 @@
-import { setHeadlinesAndSourceProps, IFrameData, FrameRender } from "types";
+import {
+  setHeadlinesAndSourceProps,
+  IFrameData,
+  FrameRender,
+  FrameDataInterface,
+} from "types";
 import { getNodeText, getTextNodesFromFrame } from "utils/figmaText";
 import { HEADLINE_NODE_NAMES } from "../constants";
 
@@ -150,6 +155,25 @@ export function setHeadlinesAndSource(props: setHeadlinesAndSourceProps): void {
       });
   }
 }
+
+export function createFrameData(node: FrameNode): FrameDataInterface {
+  const { name, width, height, id } = node;
+  const textNodes = getTextNodesFromFrame(node);
+
+  const fixedPositionNodes = node.children
+    .slice(node.children.length - node.numberOfFixedChildren)
+    .map((node) => node.id);
+
+  return {
+    id,
+    name,
+    width,
+    height,
+    textNodes,
+    fixedPositionNodes,
+  };
+}
+
 /**
  * Find and return root frame nodes in current page
  *
@@ -168,23 +192,11 @@ export function getRootFrames(): IFrameData {
     ) as FrameNode[];
   }
 
-  const framesData = selectedFrames.map((frame) => {
-    const { name, width, height, id } = frame;
-    const textNodes = getTextNodesFromFrame(frame);
-
-    const fixedPositionNodes = frame.children
-      .slice(frame.children.length - frame.numberOfFixedChildren)
-      .map((node) => node.id);
-
-    return {
-      name,
-      width,
-      height,
-      id,
-      textNodes,
-      fixedPositionNodes,
-    };
-  });
+  const framesData = {};
+  for (const frame of selectedFrames) {
+    const { id } = frame;
+    framesData[id] = createFrameData(frame);
+  }
 
   return {
     frames: framesData,

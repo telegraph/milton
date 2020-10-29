@@ -7,7 +7,8 @@ import { textData, FrameDataInterface, TextRange, FontStyle } from "types";
 import embedCss from "backend/embed.css";
 // @ts-expect-error
 import fontsCss from "backend/telegraphFonts.css";
-import { buildFontFaceCss } from "./fonts";
+import { buildFontFaceCss } from "../../backend/fonts";
+import { createFrameData } from "../../backend/figmaUtils";
 
 const PRECISION = 4;
 
@@ -235,13 +236,14 @@ function generateFontFaces(frames: FrameDataInterface[]): string {
 type renderInlineProps = {
   frames: FrameDataInterface[];
   svgText: string;
-  headline?: string | undefined;
-  subhead?: string | undefined;
-  source?: string | undefined;
+  headline?: string;
+  subhead?: string;
+  source?: string;
   responsive: boolean;
 };
 export function generateEmbedHtml(props: renderInlineProps): string {
   const { frames, svgText, headline, subhead, source, responsive } = props;
+
   const mediaQuery = genreateMediaQueries(frames);
   const fontFaces = generateFontFaces(frames);
 
@@ -285,7 +287,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
 function genreateMediaQueries(frames: FrameDataInterface[]) {
   // Sort frames by ascending height. Small > big
   const sortedFrames = Object.values(frames)
-    .map(({ width, height, uid }) => ({ width, height, uid }))
+    .map(({ width, height, id: uid }) => ({ width, height, uid }))
     .sort((a, b) => (a.width < b.width ? -1 : 1));
 
   const largestWidth = Math.max(...sortedFrames.map(({ width }) => width));
@@ -356,10 +358,3 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
 
   return cssText;
 }
-
-function test<T>(arg: T[]): T[] {
-  console.log(arg.length);
-  return arg;
-}
-
-console.log(test([3]));
