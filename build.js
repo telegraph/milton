@@ -47,7 +47,7 @@ import esbuild from "esbuild";
         "process.env.NODE_ENV": "development",
         "process.browser": "true",
       },
-      loader: { [".css"]: "css" },
+      loader: { [".css"]: "text" },
       jsxFactory: "preact.h",
       jsxFragment: "preact.Fragment",
       bundle: true,
@@ -56,13 +56,11 @@ import esbuild from "esbuild";
 
     // Create Figma UI HTML
     const uiJs = await fs.readFile(path.join(tempFolder, "ui.js"));
-    const uiCss = await fs.readFile(path.join(tempFolder, "ui.css"));
 
     // Combine JS and CSS into a single HTML block
     const uiHtml = `
       <div id="app"></div>
       <script>${uiJs}</script>
-      <style>${uiCss}</style>
     `;
 
     // Save HTML

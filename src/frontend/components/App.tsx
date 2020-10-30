@@ -11,6 +11,7 @@ import { version } from "../../../package.json";
 const enum STATUS {
   LOADING,
   READY,
+  RENDER,
   ERROR,
 }
 
@@ -26,10 +27,11 @@ export const App = function () {
   const [subhead, setSubHead] = useState("");
   const [source, setSource] = useState("");
   const [html, setHtml] = useState("");
+  const [svgText, setSvgText] = useState("Placeholder");
   const [frames, setFrames] = useState<FrameCollection>({});
   const [needsRender, setNeedsRender] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [breakpoint, setBreakpoint] = useState(320);
+  const [breakpoint, setBreakpoint] = useState(0);
   const [zoomEnabled, setZoomEnabled] = useState(true);
   const [zoomScale, setZoomScale] = useState(1);
 
@@ -56,29 +58,45 @@ export const App = function () {
       .catch((err) => console.error("error requesting frames", err));
   }, []);
 
-  // Flag need for a re-render when values change
-  useEffect(() => setNeedsRender(true), [
-    headline,
-    subhead,
-    source,
-    responsive,
-    selectedFrames.join(),
-  ]);
+  // Flag need for a re-render when SVG or frames change
+  useEffect(() => setNeedsRender(true), [responsive, selectedFrames.join()]);
 
-  // Update Figma page data with new headings
+  // Flag need for a re-render when SVG or frames change
   useEffect(() => {
-    postMan.send({
-      workload: MSG_EVENTS.UPDATE_HEADLINES,
-      data: { headline, subhead, source },
-    });
-  }, [headline, subhead, source]);
+    const framesOut = Object.values(frames).filter(({ id }) =>
+      selectedFrames.includes(id)
+    );
 
-  const copyToClipboard = () => {
-    clipboardEl.current?.select();
-    document.execCommand("copy");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 600);
-  };
+    const html = generateEmbedHtml({
+      frames: framesOut,
+      svgText,
+      headline,
+      subhead,
+      source,
+      responsive,
+    });
+
+    setHtml(html);
+    setStatus(STATUS.READY);
+  }, [headline, subhead, source, svgText]);
+
+  // Get render
+  useEffect(() => {
+    if (status === STATUS.RENDER) {
+      const getAndStoreSvgHtml = async () => {
+        const { svgData, imageNodeDimensions } = await postMan.send({
+          workload: MSG_EVENTS.RENDER,
+          data: selectedFrames,
+        });
+
+        const svgText = await decodeSvgToString(svgData, imageNodeDimensions);
+        setSvgText(svgText);
+        setNeedsRender(false);
+      };
+
+      getAndStoreSvgHtml();
+    }
+  }, [status]);
 
   // Set zoom scale
   useEffect(() => {
@@ -99,6 +117,13 @@ export const App = function () {
     setZoomEnabled(zoomEnabled);
   }, [selectedFrames.join()]);
 
+  const copyToClipboard = () => {
+    clipboardEl.current?.select();
+    document.execCommand("copy");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 600);
+  };
+
   // Trigger download SVG HTML as a file
   const downloadHtml = () =>
     saveAs(
@@ -106,42 +131,15 @@ export const App = function () {
       `figma2html-${Date.now()}.html`
     );
 
-  // Convert frame data into HTML with SVG
-  const generateSvgHtml = async () => {
-    const { svgData, imageNodeDimensions } = await postMan.send({
-      workload: MSG_EVENTS.RENDER,
-      data: selectedFrames,
-    });
-
-    const svgText = await decodeSvgToString(svgData, imageNodeDimensions);
-    const framesOut = Object.values(frames).filter(({ id }) =>
-      selectedFrames.includes(id)
-    );
-
-    const html = generateEmbedHtml({
-      frames: framesOut,
-      svgText,
-      headline,
-      subhead,
-      source,
-      responsive,
-    });
-
-    setHtml(html);
-    setNeedsRender(false);
-  };
-
-  if (status === STATUS.LOADING) {
-    return <p>Loading...</p>;
-  }
-
   const sizeSortedFrames = Object.values(frames).sort((a, b) =>
     a.width > b.width ? 1 : -1
   );
 
   const breakPoints = sizeSortedFrames
     .filter(({ id }) => selectedFrames.includes(id))
-    .map(({ width }) => width);
+    .map(({ width, height }) => ({ width, height }));
+
+  const { width = 320, height = 240 } = breakPoints[breakpoint] ?? {};
 
   return (
     <div class="app">
@@ -153,7 +151,7 @@ export const App = function () {
               setBreakpoint(selectedIndex)
             }
           >
-            {breakPoints.map((width, i) => (
+            {breakPoints.map(({ width }, i) => (
               <option
                 key={width}
                 class="breakpoints__option"
@@ -186,13 +184,8 @@ export const App = function () {
         <div class="preview__container" ref={previewEl}>
           <iframe
             class="preview__iframe"
-            srcDoc={
-              html +
-              (zoomEnabled
-                ? `<style>body { transform: scale(${zoomScale});}</style>`
-                : "")
-            }
-            style={`width: ${breakPoints[breakpoint]}px`}
+            srcDoc={html}
+            style={`width: ${width}px; height: ${height}px; transform: scale(${zoomScale});`}
           />
         </div>
       </section>
@@ -224,7 +217,7 @@ export const App = function () {
           <input
             type="text"
             value={headline}
-            onInput={({ currentTarget: { value } }) => setHeadline(value)}
+            onBlur={({ currentTarget: { value } }) => setHeadline(value)}
           />
         </label>
 
@@ -233,7 +226,7 @@ export const App = function () {
           <input
             type="text"
             value={subhead}
-            onInput={({ currentTarget: { value } }) => setSubHead(value)}
+            onBlur={({ currentTarget: { value } }) => setSubHead(value)}
           />
         </label>
 
@@ -242,7 +235,7 @@ export const App = function () {
           <input
             type="text"
             value={source}
-            onInput={({ currentTarget: { value } }) => setSource(value)}
+            onBlur={({ currentTarget: { value } }) => setSource(value)}
           />
         </label>
 
@@ -250,7 +243,7 @@ export const App = function () {
 
         <button
           class="btn btn__preview"
-          onClick={generateSvgHtml}
+          onClick={() => setStatus(STATUS.RENDER)}
           disabled={!needsRender || selectedFrames.length === 0}
         >
           Generate
@@ -276,6 +269,9 @@ export const App = function () {
       </section>
 
       <footer class="footer">Version {version}</footer>
+
+      {status === STATUS.LOADING ||
+        (status === STATUS.RENDER && <div class="loading">Loading...</div>)}
     </div>
   );
 };

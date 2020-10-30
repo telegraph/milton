@@ -65,15 +65,6 @@ function replaceHttpWithHttps(svgText: string): string {
   return svgText.replace(/http:\/\//g, "https://");
 }
 
-// // Replace figma IDs "00:00" with CSS valid IDs
-// function replaceIdsWithClasses(svgEl: SVGElement, ids: string[]): void {
-//   for (const id of ids) {
-//     svgEl
-//       .querySelector(`[id="${id}"]`)
-//       ?.setAttribute("class", `f2h__frame f2h__${id}`);
-//   }
-// }
-
 function createSvgElement(svgText: string): SVGElement | null {
   const emptyDiv = document.createElement("div");
   emptyDiv.innerHTML = svgText;

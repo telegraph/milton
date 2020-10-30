@@ -5,7 +5,10 @@ import { postMan } from "utils/messages";
 import { resizeAndOptimiseImage } from "frontend/imageHelper";
 
 // Load CSS via esbuild CSS loader
-import "./ui.css";
+import uiCss from "./ui.css";
+const styleEl = window.document.createElement("style");
+styleEl.appendChild(window.document.createTextNode(uiCss));
+window.document.head.appendChild(styleEl);
 
 // Register messenger event functions
 postMan.registerWorker(MSG_EVENTS.COMPRESS_IMAGE, resizeAndOptimiseImage);

@@ -3,12 +3,10 @@ import render from "preact-render-to-string";
 import { textData, FrameDataInterface, TextRange, FontStyle } from "types";
 
 // Import CSS file as plain text via esbuild loader option
-// @ts-expect-error
+
 import embedCss from "backend/embed.css";
-// @ts-expect-error
-import fontsCss from "backend/telegraphFonts.css";
+// import fontsCss from "backend/telegraphFonts.css";
 import { buildFontFaceCss } from "../../backend/fonts";
-import { createFrameData } from "../../backend/figmaUtils";
 
 const PRECISION = 4;
 
@@ -189,12 +187,9 @@ function TextContainer(props: FrameProps) {
   const { frames } = props;
 
   return (
-    <div className="text-nodes">
+    <div class="f2h__text_container">
       {frames.map((frame) => (
-        <div
-          id={`textblock-${frame.id}`}
-          className={`f2h__frame_text ${frame.uid}`}
-        >
+        <div id={`textblock-${frame.id}`} className="f2h__text">
           {frame.textNodes.map((node) => (
             <Text
               node={node}
@@ -246,7 +241,6 @@ export function generateEmbedHtml(props: renderInlineProps): string {
 
   const mediaQuery = genreateMediaQueries(frames);
   const fontFaces = generateFontFaces(frames);
-
   const css = fontFaces + embedCss + mediaQuery;
 
   const html = render(
@@ -256,7 +250,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
       {(headline || subhead) && (
         <header className="f2h_header">
           {headline && <h1 className="f2h_headline">{headline}</h1>}
-          {subhead && <p className="f2h_subbhead">subhead</p>}
+          {subhead && <p className="f2h_subbhead">{subhead}</p>}
         </header>
       )}
 
@@ -287,7 +281,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
 function genreateMediaQueries(frames: FrameDataInterface[]) {
   // Sort frames by ascending height. Small > big
   const sortedFrames = Object.values(frames)
-    .map(({ width, height, id: uid }) => ({ width, height, uid }))
+    .map(({ width, height, id }) => ({ width, height, id }))
     .sort((a, b) => (a.width < b.width ? -1 : 1));
 
   const largestWidth = Math.max(...sortedFrames.map(({ width }) => width));
@@ -295,7 +289,7 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
   let cssText = "";
 
   for (let i = 0; i < sortedFrames.length; i++) {
-    const { uid, width, height } = sortedFrames[i];
+    const { id, width, height } = sortedFrames[i];
 
     const relContainerWidth = ((width / height) * 100).toPrecision(PRECISION);
     const relSvgWidth = ((largestWidth / width) * 100).toPrecision(PRECISION);
@@ -305,34 +299,21 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
     if (i === 0) {
       // Wrapper widths
       cssText += `
-        .f2h__embed.f2h--responsive {
-          width: min(${relContainerWidth}vh, 100%);
-        }
-        .f2h__svg_container,
-        .f2h__wrap {
-            width: ${width}px;
-            height: ${height}px;
-          }`;
+        .f2h__embed.f2h--responsive { width: min(${relContainerWidth}vh, 100%); }
+        .f2h__svg_container, .f2h__wrap { width: ${width}px; height: ${height}px; }`;
 
-      cssText += `.f2h--responsive svg {
-            width: ${relSvgWidth}%;
-        }`;
-
-      cssText += `.f2h__frame.${uid},
-        .f2h__frame_text.${uid} {
-          display: block;
-        }`;
-
-      cssText += `     
-        .f2h--responsive .f2h__wrap  {
-          padding-top: ${paddingHeight}%;
-        }`;
+      cssText += `.f2h--responsive svg { width: ${relSvgWidth}%; }`;
+      cssText += `[id="${id}"], [id="textblock-${id}"] { display: block; }`;
+      cssText += `.f2h--responsive .f2h__wrap  { padding-top: ${paddingHeight}%; }`;
     } else {
       // Styles for the  remaining breakpoints
-      const { uid: prevId } = sortedFrames[i - 1];
+      const { id: prevId } = sortedFrames[i - 1];
+
+      cssText += `[id="${id}"], [id="textblock-${id}"] { display: none; }`;
 
       /* Hide previous and show current frame */
       cssText += `
+      
       @media (min-width: ${width}px) {
         .f2h__embed.f2h--responsive {
           width: min(${relContainerWidth}vh, 100%);
@@ -349,8 +330,8 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
         .f2h--responsive .f2h__wrap  {
           padding-top: ${paddingHeight}%;
         }
-        .${prevId} { display: none !important; }
-        .${uid} { display: block !important; }
+        [id="${prevId}"], [id="textblock-${prevId}"] { display: none !important; }
+        [id="${id}"], [id="textblock-${id}"] { display: block !important; }
       }
       `;
     }
