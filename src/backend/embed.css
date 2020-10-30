@@ -5,15 +5,6 @@ body {
   /* Remove font smoothing */
   -moz-osx-font-smoothing: grayscale; /* Firefox */
   -webkit-font-smoothing: antialiased; /* WebKit  */
-
-  /* Fix scrollbar visibility */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE 10+ */
-}
-
-body::-webkit-scrollbar {
-  width: 0px;
-  background: transparent; /* Chrome/Safari/Webkit */
 }
 
 .f2h__embed.f2h--responsive {

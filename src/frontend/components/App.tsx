@@ -109,7 +109,7 @@ export const App = function () {
   // Set zoom scale
   useEffect(() => {
     if (!previewEl.current) return;
-    const PREVIEW_MARGIN = 40;
+    const PREVIEW_MARGIN = 200;
     const { width } = previewEl.current.getBoundingClientRect();
     const previewWidth = width - PREVIEW_MARGIN;
 
@@ -193,7 +193,9 @@ export const App = function () {
           <iframe
             class="preview__iframe"
             srcDoc={html}
-            style={`width: ${width}px; height: ${height}px; transform: scale(${zoomScale});`}
+            style={`width: ${width}px; ${
+              zoomEnabled ? `transform: scale(${zoomScale});` : ""
+            }`}
           />
         </div>
       </section>

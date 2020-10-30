@@ -122,11 +122,17 @@ button:hover {
 }
 .preview__iframe {
   resize: both;
-  min-width: 20px;
+  min-width: 120px;
   min-height: 120px;
   border: 1px solid var(--colours-grey-2, #f0f);
   overflow: auto;
   max-height: calc(100% - 3rem);
+  position: absolute;
+  height: 60%;
+}
+.preview__iframe::before {
+  content: attr(style);
+  display: block;
 }
 
 /* [ Loading ]

@@ -299,7 +299,6 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
     if (i === 0) {
       // Wrapper widths
       cssText += `
-        .f2h__embed.f2h--responsive { width: min(${relContainerWidth}vh, 100%); }
         .f2h__svg_container, .f2h__wrap { width: ${width}px; height: ${height}px; }`;
 
       cssText += `.f2h--responsive svg { width: ${relSvgWidth}%; }`;
@@ -315,9 +314,7 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
       cssText += `
       
       @media (min-width: ${width}px) {
-        .f2h__embed.f2h--responsive {
-          width: min(${relContainerWidth}vh, 100%);
-        }
+        
 
         .f2h__svg_container,
         .f2h__wrap {
