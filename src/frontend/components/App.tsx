@@ -53,13 +53,21 @@ export const App = function () {
         setSubHead(subhead);
         setSource(source);
         setSelectedFrames(Object.keys(frames));
-        setStatus(STATUS.READY);
+        setStatus(STATUS.RENDER);
       })
       .catch((err) => console.error("error requesting frames", err));
   }, []);
 
   // Flag need for a re-render when SVG or frames change
-  useEffect(() => setNeedsRender(true), [responsive, selectedFrames.join()]);
+  useEffect(() => setNeedsRender(true), [selectedFrames.join()]);
+
+  // Store headings on Figma doc
+  useEffect(() => {
+    postMan.send({
+      workload: MSG_EVENTS.UPDATE_HEADLINES,
+      data: { headline, subhead, source },
+    });
+  }, [headline, subhead, source]);
 
   // Flag need for a re-render when SVG or frames change
   useEffect(() => {
@@ -78,7 +86,7 @@ export const App = function () {
 
     setHtml(html);
     setStatus(STATUS.READY);
-  }, [headline, subhead, source, svgText]);
+  }, [headline, subhead, source, svgText, responsive]);
 
   // Get render
   useEffect(() => {
