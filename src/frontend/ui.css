@@ -1,6 +1,6 @@
-@import url("https://rsms.me/inter/inter.css");
-
-body {
+/* [ Style variables ]
+----------------------------------------------------------------- */
+:root {
   --padding-small: 6px;
   --padding-medium: 12px;
   --padding-large: 24px;
@@ -14,30 +14,24 @@ body {
   --colours-grey-1: rgb(74, 74, 74);
   --colours-grey-2: rgb(133, 133, 133);
   --colours-grey-3: rgb(179, 179, 179);
-  --colours-grey-4: rgb(227, 227, 227);
   --colours-grey-5: rgb(245, 245, 245);
+
   --colours-main: rgb(72, 202, 126);
   --colours-main-light: rgb(208, 242, 222);
   --colours-main-dark: rgb(44, 75, 57);
   --colours-warning: rgb(255, 242, 175);
 
-  --font-family-sans-serif: Arial, Helvetica, sans-serif;
-  --font-famailt-serif: Georgia, "Times New Roman", Times, serif;
-
-  --font-size--small: 11px;
-  --font-size--medium: 14px;
-  --font-size--large: 18px;
+  --font-size--small: 0.8rem;
+  --font-size--medium: 1rem;
+  --font-size--large: 1.7rem;
 }
 
+/* [ Root ]
+----------------------------------------------------------------- */
 html {
-  font-family: "Inter", sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   box-sizing: border-box;
   font-size: 16px;
-}
-@supports (font-variation-settings: normal) {
-  html {
-    font-family: "Inter var", sans-serif;
-  }
 }
 
 html,
@@ -46,6 +40,41 @@ body {
   font-size: 14px;
 }
 
+/* [ App ]
+----------------------------------------------------------------- */
+.app {
+  display: flex;
+  flex-direction: row;
+  background: pink;
+  height: 100%;
+}
+
+/* [ Sidebar ]
+----------------------------------------------------------------- */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background: paleturquoise;
+  max-width: 30ch;
+}
+
+/* [ Clipboard ]  Hidden. Only used to copy output to clipboard.
+-----------------------------------------------------------------  */
+.clipboard {
+  /* NOTE: Element NEEDS DOM flow to enable selection copy */
+  height: 2px;
+  opacity: 0;
+}
+
+/* [ Preview ]
+----------------------------------------------------------------- */
+.preview {
+  background: palegoldenrod;
+  flex: 1;
+}
+
+/* [ Components ]
+----------------------------------------------------------------- */
 .btn {
   border: 1px solid transparent;
   background: #fff;
@@ -74,12 +103,39 @@ button:hover {
   outline: none;
 }
 
-/* [ Output ]
+/* [ Preview ]
 ----------------------------------------------------------------- */
-.ouput__iframe {
+.preview {
+  display: flex;
+  flex-direction: column;
+  background-color: aqua;
+}
+.preview__settings {
+  flex: min-content;
+}
+.preview__container {
+  display: flex;
+  background: palevioletred;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+.preview__iframe {
   resize: both;
   min-width: 20px;
   min-height: 120px;
   border: 1px solid var(--colours-grey-2, #f0f);
   overflow: auto;
+  max-width: calc(100% - 3rem);
+  max-height: calc(100% - 3rem);
+}
+
+/* [ Footer ]
+----------------------------------------------------------------- */
+.footer {
+  position: absolute;
+  bottom: var(--padding-medium, 0);
+  right: var(--padding-medium, 0);
+  font-size: var(--font-size--small);
+  pointer-events: none;
 }

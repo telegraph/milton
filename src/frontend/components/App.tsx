@@ -16,6 +16,7 @@ const enum STATUS {
 
 export const App = function () {
   const clipboardEl = useRef<HTMLTextAreaElement>(null);
+  const previewEl = useRef<HTMLDivElement>(null);
 
   // Setup state
   const [status, setStatus] = useState(STATUS.LOADING);
@@ -29,7 +30,10 @@ export const App = function () {
   const [needsRender, setNeedsRender] = useState(false);
   const [copied, setCopied] = useState(false);
   const [breakpoint, setBreakpoint] = useState(320);
+  const [zoomEnabled, setZoomEnabled] = useState(true);
+  const [zoomScale, setZoomScale] = useState(1);
 
+  // Toggle frames between selected states
   const toggleSelected = (id: string): void =>
     setSelectedFrames(
       selectedFrames.includes(id)
@@ -76,11 +80,33 @@ export const App = function () {
     setTimeout(() => setCopied(false), 600);
   };
 
+  // Set zoom scale
+  useEffect(() => {
+    if (!previewEl.current) return;
+    const PREVIEW_MARGIN = 40;
+    const { width } = previewEl.current.getBoundingClientRect();
+    const previewWidth = width - PREVIEW_MARGIN;
+
+    const maxWidth = Object.values(frames).reduce(
+      (acc, { width }) => (acc > width ? acc : width),
+      1
+    );
+
+    const zoomScale = previewWidth / maxWidth;
+    const zoomEnabled = zoomScale < 1;
+
+    setZoomScale(zoomEnabled ? zoomScale : 1);
+    setZoomEnabled(zoomEnabled);
+  }, [selectedFrames.join()]);
+
+  // Trigger download SVG HTML as a file
   const downloadHtml = () =>
     saveAs(
       new Blob([html], { type: "text/html" }),
       `figma2html-${Date.now()}.html`
     );
+
+  // Convert frame data into HTML with SVG
   const generateSvgHtml = async () => {
     const { svgData, imageNodeDimensions } = await postMan.send({
       workload: MSG_EVENTS.RENDER,
@@ -112,52 +138,87 @@ export const App = function () {
   const sizeSortedFrames = Object.values(frames).sort((a, b) =>
     a.width > b.width ? 1 : -1
   );
+
   const breakPoints = sizeSortedFrames
     .filter(({ id }) => selectedFrames.includes(id))
     .map(({ width }) => width);
 
   return (
     <div class="app">
-      <header class="header">
-        <p class="filesize">File-size: {Math.round(html.length / 1024)}kB</p>
+      <section class="preview">
+        <div class="preview__settings">
+          <select
+            class="breakpoints"
+            onInput={({ currentTarget: { selectedIndex } }) =>
+              setBreakpoint(selectedIndex)
+            }
+          >
+            {breakPoints.map((width, i) => (
+              <option
+                key={width}
+                class="breakpoints__option"
+                selected={breakpoint === i}
+              >
+                {width}px
+              </option>
+            ))}
+          </select>
 
-        <label className="responsive__label" for="responsive">
-          Responsive
-          <input
-            className="responsive__input"
-            type="checkbox"
-            checked={responsive}
-            onInput={() => setResponsive(!responsive)}
-            id="responsive"
+          <label className="checkbox preview__responsive">
+            Responsive
+            <input
+              type="checkbox"
+              checked={responsive}
+              onInput={() => setResponsive(!responsive)}
+            />
+          </label>
+
+          <label className="checkbox preview__zoom">
+            Scale preview to fit ({(zoomScale * 100).toFixed(0)}%)
+            <input
+              type="checkbox"
+              checked={zoomEnabled}
+              onInput={() => setZoomEnabled(!zoomEnabled)}
+            />
+          </label>
+        </div>
+
+        <div class="preview__container" ref={previewEl}>
+          <iframe
+            class="preview__iframe"
+            srcDoc={
+              html +
+              (zoomEnabled
+                ? `<style>body { transform: scale(${zoomScale});}</style>`
+                : "")
+            }
+            style={`width: ${breakPoints[breakpoint]}px`}
           />
-        </label>
+        </div>
+      </section>
 
-        <button
-          class="btn btn__preview"
-          onClick={generateSvgHtml}
-          disabled={!needsRender || selectedFrames.length === 0}
-        >
-          Generate
-        </button>
+      <section class="sidebar">
+        <div class="selection">
+          {sizeSortedFrames.map(({ name, id, width, height }) => (
+            <p key={id} class="selection__item">
+              <label class="selection__label">
+                <input
+                  class="selection__input"
+                  type="checkbox"
+                  checked={selectedFrames.includes(id)}
+                  onInput={() => toggleSelected(id)}
+                />
 
-        <button
-          class="btn btn__copy"
-          disabled={needsRender}
-          onClick={copyToClipboard}
-        >
-          {copied ? "Copied!" : "Copy to clipboard"}
-        </button>
+                {name}
 
-        <button
-          class="btn btn__download"
-          disabled={needsRender}
-          onClick={downloadHtml}
-        >
-          Download
-        </button>
-      </header>
+                <span class="selection__width">
+                  {width} x {height}
+                </span>
+              </label>
+            </p>
+          ))}
+        </div>
 
-      <div class="headings">
         <label>
           Headline
           <input
@@ -184,54 +245,34 @@ export const App = function () {
             onInput={({ currentTarget: { value } }) => setSource(value)}
           />
         </label>
-      </div>
 
-      <section class="selection">
-        {sizeSortedFrames.map(({ name, id, width, height }) => (
-          <p key={id} class="selection__item">
-            <label class="selection__label">
-              <input
-                class="selection__input"
-                type="checkbox"
-                checked={selectedFrames.includes(id)}
-                onInput={() => toggleSelected(id)}
-              />
+        <p class="filesize">File-size: {Math.round(html.length / 1024)}kB</p>
 
-              {name}
-
-              <span class="selection__width">
-                {width} x {height}
-              </span>
-            </label>
-          </p>
-        ))}
-      </section>
-
-      <section class="ouput">
-        <select
-          class="breakpoints"
-          onInput={({ currentTarget: { selectedIndex } }) =>
-            setBreakpoint(selectedIndex)
-          }
+        <button
+          class="btn btn__preview"
+          onClick={generateSvgHtml}
+          disabled={!needsRender || selectedFrames.length === 0}
         >
-          {breakPoints.map((width, i) => (
-            <option
-              key={width}
-              class="breakpoints__option"
-              selected={breakpoint === i}
-            >
-              {width}px
-            </option>
-          ))}
-        </select>
+          Generate
+        </button>
 
-        <iframe
-          class="ouput__iframe"
-          srcDoc={html}
-          style={`width: ${breakPoints[breakpoint]}px`}
-        />
+        <button
+          class="btn btn__copy"
+          disabled={needsRender}
+          onClick={copyToClipboard}
+        >
+          {copied ? "Copied!" : "Copy to clipboard"}
+        </button>
 
-        <textarea class="output__clipboard" ref={clipboardEl} value={html} />
+        <button
+          class="btn btn__download"
+          disabled={needsRender}
+          onClick={downloadHtml}
+        >
+          Download
+        </button>
+
+        <textarea class="clipboard" ref={clipboardEl} value={html} />
       </section>
 
       <footer class="footer">Version {version}</footer>
