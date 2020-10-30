@@ -56,9 +56,9 @@ to automatically rebuild allowing you to reload the plugin in Figma.
 
 ## UI
 
-![UI drawing](docs/ux-figma-to-html-UI.png)
+![UI drawing](docs/ui-design_v2.svg)
 
-https://excalidraw.com/#json=5639235562373120,iIxcqDef2XZB51CTcfitwA
+https://excalidraw.com/#json=6452971692883968,uIBpW44w4O60J-5kTxzu3g
 
 ## Notes
 
