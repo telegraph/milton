@@ -52,7 +52,7 @@ function optimizeSvgPaths(svgEl: SVGElement): void {
     let d = path.getAttribute("d");
     if (d) {
       // Simplify paths
-      const points = pointsOnPath(d, 0.1, 0.4);
+      const points = pointsOnPath(d, 0.1, 0.2);
       d = points.reduce((acc, point) => (acc += "M" + point.join(" ")), "");
       // Reduce precision
       path.setAttribute("d", d.replace(/(\.\d{2})\d+/g, "$1"));
