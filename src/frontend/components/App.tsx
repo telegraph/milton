@@ -220,13 +220,12 @@ export const App = function () {
       </section>
 
       <section class="sidebar">
-        <div class="selection">
-          {selectedFrames.length === 0 && (
-            <p class="selection__warning">Need to select at least one frame</p>
-          )}
-          {sizeSortedFrames.map(({ name, id, width, height }) => (
-            <p key={id} class="selection__item">
-              <label class="selection__label">
+        <fieldset class="selection">
+          <legend>Frames</legend>
+
+          <div class="selection_inner">
+            {sizeSortedFrames.map(({ name, id, width, height }) => (
+              <label key={id} class="selection__item">
                 <input
                   class="selection__input"
                   type="checkbox"
@@ -234,70 +233,84 @@ export const App = function () {
                   onInput={() => toggleSelected(id)}
                 />
 
-                {name}
+                <span class="selection__name">{name}</span>
 
                 <span class="selection__width">
-                  {width} x {height}
+                  {Math.round(width)}x{Math.round(height)}
                 </span>
               </label>
-            </p>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <label>
-          Headline
-          <input
-            type="text"
-            value={headline}
-            onBlur={({ currentTarget: { value } }) => setHeadline(value)}
-          />
-        </label>
+          {selectedFrames.length === 0 && (
+            <p class="selection__warning">Need to select at least one frame</p>
+          )}
+        </fieldset>
 
-        <label>
-          Sub headline
-          <input
-            type="text"
-            value={subhead}
-            onBlur={({ currentTarget: { value } }) => setSubHead(value)}
-          />
-        </label>
+        <fieldset class="headlines">
+          <legend>Headlines</legend>
+          <label>
+            Headline
+            <input
+              type="text"
+              value={headline}
+              onBlur={({ currentTarget: { value } }) => setHeadline(value)}
+            />
+          </label>
 
-        <label>
-          Source
-          <input
-            type="text"
-            value={source}
-            onBlur={({ currentTarget: { value } }) => setSource(value)}
-          />
-        </label>
+          <label>
+            Sub headline
+            <input
+              type="text"
+              value={subhead}
+              onBlur={({ currentTarget: { value } }) => setSubHead(value)}
+            />
+          </label>
 
-        <p class="filesize">File-size: {Math.round(html.length / 1024)}kB</p>
+          <label>
+            Source
+            <input
+              type="text"
+              value={source}
+              onBlur={({ currentTarget: { value } }) => setSource(value)}
+            />
+          </label>
+        </fieldset>
 
-        <button
-          class="btn btn__preview"
-          onClick={() => setStatus(STATUS.RENDER)}
-          disabled={!needsRender || selectedFrames.length === 0}
-        >
-          Generate
-        </button>
+        <fieldset class="export">
+          <legend>
+            Export{" "}
+            <span class="export__filesize">
+              {Math.ceil(svgText.length / 1024)}Kb
+            </span>
+          </legend>
 
-        <button
-          class="btn btn__copy"
-          disabled={needsRender}
-          onClick={copyToClipboard}
-        >
-          {copied ? "Copied!" : "Copy to clipboard"}
-        </button>
+          <button
+            class="btn export__generate"
+            onClick={() => setStatus(STATUS.RENDER)}
+            disabled={!needsRender || selectedFrames.length === 0}
+          >
+            Generate
+          </button>
 
-        <button
-          class="btn btn__download"
-          disabled={needsRender}
-          onClick={downloadHtml}
-        >
-          Download
-        </button>
+          <button
+            class="btn export__copy"
+            disabled={needsRender}
+            onClick={copyToClipboard}
+          >
+            {copied ? "Copied!" : "Copy to clipboard"}
+          </button>
 
-        <textarea class="clipboard" ref={clipboardEl} value={html} />
+          <button
+            class="btn export__download"
+            disabled={needsRender}
+            onClick={downloadHtml}
+          >
+            Download
+          </button>
+
+          <textarea class="clipboard" ref={clipboardEl} value={html} />
+        </fieldset>
       </section>
 
       <footer class="footer">Version {version}</footer>
