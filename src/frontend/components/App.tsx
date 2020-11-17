@@ -242,8 +242,12 @@ export const App = function () {
           <iframe
             class="preview__iframe"
             srcDoc={html}
-            style={`width: ${width}px; ${
-              zoomEnabled ? `transform: scale(${zoomScale});` : ""
+            style={`width: ${width}px; height: ${height}px; ${
+              zoomEnabled
+                ? `transform: scale(${zoomScale}); max-width: ${
+                    breakPoints[breakPoints.length - 1]?.width
+                  }px; position: absolute;`
+                : ""
             }`}
           />
         </div>
