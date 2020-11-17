@@ -170,7 +170,6 @@ export const App = function () {
       <section class="preview">
         <div class="preview__settings">
           <label class="preview__breakpoints">
-            Breakpoints
             <select
               class="breakpoints"
               onInput={({ currentTarget: { selectedIndex } }) =>
@@ -187,24 +186,25 @@ export const App = function () {
                 </option>
               ))}
             </select>
+            Breakpoints
           </label>
 
           <label class="checkbox preview__responsive">
-            Responsive
             <input
               type="checkbox"
               checked={responsive}
               onInput={() => setResponsive(!responsive)}
             />
+            Responsive
           </label>
 
           <label className="checkbox preview__zoom">
-            Scale preview to fit ({(zoomScale * 100).toFixed(0)}%)
             <input
               type="checkbox"
               checked={zoomEnabled}
               onInput={() => setZoomEnabled(!zoomEnabled)}
             />
+            Scale preview to fit ({(zoomScale * 100).toFixed(0)}%)
           </label>
         </div>
 
