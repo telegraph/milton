@@ -189,7 +189,7 @@ function TextContainer(props: FrameProps) {
   return (
     <div class="f2h__text_container">
       {frames.map((frame) => (
-        <div id={`textblock-${frame.id}`} className="f2h__text">
+        <div id={`textblock-${frame.id}`}>
           {frame.textNodes.map((node) => (
             <Text
               node={node}
