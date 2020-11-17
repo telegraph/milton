@@ -42,8 +42,21 @@ export const App = function () {
     postMan
       .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
       .then(({ frames, headline, subhead, source }) => {
+        // Check for missing frames
         if (!frames || Object.keys(frames).length === 0) {
           setError(ERRORS.MISSING_FRAMES);
+          setStatus(STATUS.ERROR);
+          return;
+        }
+
+        // Check for multiple frames with the same size
+        const hasSameWidthFrames = Object.values(frames)
+          .map(({ width }) => width)
+          .some(
+            (width, _i, arr) => arr.filter((val) => val === width).length > 1
+          );
+        if (hasSameWidthFrames) {
+          setError(ERRORS.MULTIPLE_SAME_WIDTH);
           setStatus(STATUS.ERROR);
           return;
         }
@@ -129,14 +142,15 @@ export const App = function () {
 
   // Toggle frames between selected states
   const toggleSelected = (id: string): void => {
-    let frames: string[] = selectedFrames.includes(id)
+    let frameIds: string[] = selectedFrames.includes(id)
       ? selectedFrames.filter((val) => val !== id)
       : [...selectedFrames, id];
 
-    frames = frames.sort();
+    frameIds = frameIds.sort();
+    setSelectedFrames(frameIds);
 
-    setSelectedFrames(frames);
-    setNeedsRender(frames.join() !== renderedFrames.join());
+    const diffreentFrames = frameIds.join() !== renderedFrames.join();
+    setNeedsRender(diffreentFrames);
   };
 
   // Output HTML to clipboard
@@ -164,7 +178,6 @@ export const App = function () {
 
   const { width = 320, height = 240 } = breakPoints[breakpoint] ?? {};
 
-  console.log(status);
   return (
     <div class="app">
       <section class="preview">
@@ -204,7 +217,7 @@ export const App = function () {
               checked={zoomEnabled}
               onInput={() => setZoomEnabled(!zoomEnabled)}
             />
-            Scale preview to fit ({(zoomScale * 100).toFixed(0)}%)
+            Zoom preview ({(zoomScale * 100).toFixed(0)}%)
           </label>
         </div>
 
@@ -244,6 +257,10 @@ export const App = function () {
 
           {selectedFrames.length === 0 && (
             <p class="selection__warning">Need to select at least one frame</p>
+          )}
+
+          {selectedFrames.length > 0 && needsRender && (
+            <p class="selection__warning">Need to re-generate</p>
           )}
         </fieldset>
 
@@ -322,9 +339,12 @@ export const App = function () {
         </div>
       )}
 
-      {(status === STATUS.LOADING || status === STATUS.RENDER) && (
-        <div class="loading">Loading...</div>
-      )}
+      <div
+        class="loading"
+        data-active={status === STATUS.LOADING || status === STATUS.RENDER}
+      >
+        Loading...
+      </div>
     </div>
   );
 };

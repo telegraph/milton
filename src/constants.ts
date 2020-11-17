@@ -24,13 +24,14 @@ export const enum OUTPUT_FORMATS {
 
 export const enum ERRORS {
   MISSING_FRAMES,
+  MULTIPLE_SAME_WIDTH,
   UNKNOWN,
 }
 
 export const UI_TEXT = {
   ERROR_UNEXPECTED: "Unexpected error",
-  ERROR_MISSING_FRAMES: "No frames found. Please add some frames to the page.",
-  WARN_NO_TARGETS: "Standard frames not found. Please select target frames.",
+  ERROR_MISSING_FRAMES: "No frames found. Please add some frames to the page",
+  WARN_NO_TARGETS: "Standard frames not found. Please select target frames",
   WARN_TOO_MANY_TARGETS: "Please select three target frames",
   INFO_PREVIEW: "Preview each frame output",
   TITLE_CHOOSE_FRAME: "Choose which frames to export",
@@ -42,7 +43,9 @@ export const UI_TEXT = {
   BUTTON_PREVIOUS: "Back",
   ERRORS: {
     [ERRORS.MISSING_FRAMES]:
-      "No frames found. Please add a frame and try again.",
+      "No frames found. Please add a frame and try again",
+    [ERRORS.MULTIPLE_SAME_WIDTH]:
+      "Some frames have the same width. All frame widths need to be different",
     [ERRORS.UNKNOWN]: "Unknown error",
   },
 };
