@@ -27,12 +27,9 @@ async function optimizeSvgImages(
 
     // Find elements using the image
     const figmaElementNames = nodeDimensions.map((el) => el.name);
-    const ids = figmaElementNames.filter((figEl) => {
+    const ids = figmaElementNames.filter(() => {
       const cssSelector = patternIds
-        .map(
-          (id) =>
-            `[id="${figEl}"] [fill="url(#${id})"], [id="${figEl}"][fill="url(#${id})"], [id="${figEl}"][stroke="url(#${id})"]`
-        )
+        .map((id) => `[fill="url(#${id})"],[stroke="url(#${id})"]`)
         .join(",");
 
       return svgEl.querySelector(cssSelector);
@@ -52,7 +49,7 @@ function optimizeSvgPaths(svgEl: SVGElement): void {
     let d = path.getAttribute("d");
     if (d) {
       // Simplify paths
-      const points = pointsOnPath(d, 0.1, 0.4);
+      const points = pointsOnPath(d, 0.1, 0.2);
       d = points.reduce((acc, point) => (acc += "M" + point.join(" ")), "");
       // Reduce precision
       path.setAttribute("d", d.replace(/(\.\d{2})\d+/g, "$1"));
@@ -117,11 +114,12 @@ export async function decodeSvgToString(
 
   svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
 
-  await optimizeSvgImages(svgEl, imageNodeDimensions);
   cleanUpSvg(svgEl);
   // replaceIdsWithClasses(svgEl, ids);
   optimizeSvgPaths(svgEl);
   addLinks(svgEl);
+  optimizeSvgPaths(svgEl);
+  await optimizeSvgImages(svgEl, imageNodeDimensions);
 
   return svgEl?.outerHTML;
 }

@@ -22,6 +22,11 @@ export const enum OUTPUT_FORMATS {
   IFRAME,
 }
 
+export const enum ERRORS {
+  MISSING_FRAMES,
+  UNKNOWN,
+}
+
 export const UI_TEXT = {
   ERROR_UNEXPECTED: "Unexpected error",
   ERROR_MISSING_FRAMES: "No frames found. Please add some frames to the page.",
@@ -35,6 +40,11 @@ export const UI_TEXT = {
   BUTTON_NEXT: "Next",
   BUTTON_DOWNLOAD: "Download",
   BUTTON_PREVIOUS: "Back",
+  ERRORS: {
+    [ERRORS.MISSING_FRAMES]:
+      "No frames found. Please add a frame and try again.",
+    [ERRORS.UNKNOWN]: "Unknown error",
+  },
 };
 
 export const FRAME_WARNING_SIZE = 300;

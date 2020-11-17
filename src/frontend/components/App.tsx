@@ -1,7 +1,7 @@
 import { h } from "preact";
 import { useState, useEffect, useRef } from "preact/hooks";
 import { saveAs } from "file-saver";
-import { MSG_EVENTS } from "constants";
+import { MSG_EVENTS, ERRORS, UI_TEXT } from "constants";
 import { decodeSvgToString } from "frontend/svgUtils";
 import { postMan } from "utils/messages";
 import { FrameCollection } from "types";
@@ -22,6 +22,7 @@ export const App = function () {
   // Setup state
   const [status, setStatus] = useState(STATUS.LOADING);
   const [selectedFrames, setSelectedFrames] = useState<string[]>([]);
+  const [renderedFrames, setRenderedFrames] = useState<string[]>([]);
   const [responsive, setResponsive] = useState(true);
   const [headline, setHeadline] = useState("");
   const [subhead, setSubHead] = useState("");
@@ -34,34 +35,34 @@ export const App = function () {
   const [breakpoint, setBreakpoint] = useState(0);
   const [zoomEnabled, setZoomEnabled] = useState(true);
   const [zoomScale, setZoomScale] = useState(1);
-
-  // Toggle frames between selected states
-  const toggleSelected = (id: string): void =>
-    setSelectedFrames(
-      selectedFrames.includes(id)
-        ? selectedFrames.filter((val) => val !== id)
-        : [...selectedFrames, id]
-    );
+  const [error, setError] = useState<ERRORS | null>(null);
 
   // Load frame data from backend
   useEffect(() => {
     postMan
       .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
       .then(({ frames, headline, subhead, source }) => {
+        if (!frames || Object.keys(frames).length === 0) {
+          setError(ERRORS.MISSING_FRAMES);
+          setStatus(STATUS.ERROR);
+          return;
+        }
+
         setFrames(frames);
         setHeadline(headline);
         setSubHead(subhead);
         setSource(source);
-        setSelectedFrames(Object.keys(frames));
+        setSelectedFrames(Object.keys(frames).sort());
         setStatus(STATUS.RENDER);
       })
-      .catch((err) => console.error("error requesting frames", err));
+      .catch((err) => {
+        console.error(err);
+        setError(ERRORS.UNKNOWN);
+        setStatus(STATUS.ERROR);
+      });
   }, []);
 
-  // Flag need for a re-render when SVG or frames change
-  useEffect(() => setNeedsRender(true), [selectedFrames.join()]);
-
-  // Store headings on Figma doc
+  // Store headings on Figma page when headings change
   useEffect(() => {
     postMan.send({
       workload: MSG_EVENTS.UPDATE_HEADLINES,
@@ -69,10 +70,10 @@ export const App = function () {
     });
   }, [headline, subhead, source]);
 
-  // Flag need for a re-render when SVG or frames change
+  // Generate HTML when headings, SVG or responsive flag changes
   useEffect(() => {
     const framesOut = Object.values(frames).filter(({ id }) =>
-      selectedFrames.includes(id)
+      renderedFrames.includes(id)
     );
 
     const html = generateEmbedHtml({
@@ -88,7 +89,7 @@ export const App = function () {
     setStatus(STATUS.READY);
   }, [headline, subhead, source, svgText, responsive]);
 
-  // Get render
+  // Render SVG and store output when Status changes to Render
   useEffect(() => {
     if (status === STATUS.RENDER) {
       const getAndStoreSvgHtml = async () => {
@@ -99,6 +100,7 @@ export const App = function () {
 
         const svgText = await decodeSvgToString(svgData, imageNodeDimensions);
         setSvgText(svgText);
+        setRenderedFrames(selectedFrames);
         setNeedsRender(false);
       };
 
@@ -125,6 +127,19 @@ export const App = function () {
     setZoomEnabled(zoomEnabled);
   }, [selectedFrames.join()]);
 
+  // Toggle frames between selected states
+  const toggleSelected = (id: string): void => {
+    let frames: string[] = selectedFrames.includes(id)
+      ? selectedFrames.filter((val) => val !== id)
+      : [...selectedFrames, id];
+
+    frames = frames.sort();
+
+    setSelectedFrames(frames);
+    setNeedsRender(frames.join() !== renderedFrames.join());
+  };
+
+  // Output HTML to clipboard
   const copyToClipboard = () => {
     clipboardEl.current?.select();
     document.execCommand("copy");
@@ -144,33 +159,37 @@ export const App = function () {
   );
 
   const breakPoints = sizeSortedFrames
-    .filter(({ id }) => selectedFrames.includes(id))
+    .filter(({ id }) => renderedFrames.includes(id))
     .map(({ width, height }) => ({ width, height }));
 
   const { width = 320, height = 240 } = breakPoints[breakpoint] ?? {};
 
+  console.log(status);
   return (
     <div class="app">
       <section class="preview">
         <div class="preview__settings">
-          <select
-            class="breakpoints"
-            onInput={({ currentTarget: { selectedIndex } }) =>
-              setBreakpoint(selectedIndex)
-            }
-          >
-            {breakPoints.map(({ width }, i) => (
-              <option
-                key={width}
-                class="breakpoints__option"
-                selected={breakpoint === i}
-              >
-                {width}px
-              </option>
-            ))}
-          </select>
+          <label class="preview__breakpoints">
+            Breakpoints
+            <select
+              class="breakpoints"
+              onInput={({ currentTarget: { selectedIndex } }) =>
+                setBreakpoint(selectedIndex)
+              }
+            >
+              {breakPoints.map(({ width }, i) => (
+                <option
+                  key={width}
+                  class="breakpoints__option"
+                  selected={breakpoint === i}
+                >
+                  {width}px
+                </option>
+              ))}
+            </select>
+          </label>
 
-          <label className="checkbox preview__responsive">
+          <label class="checkbox preview__responsive">
             Responsive
             <input
               type="checkbox"
@@ -202,6 +221,9 @@ export const App = function () {
 
       <section class="sidebar">
         <div class="selection">
+          {selectedFrames.length === 0 && (
+            <p class="selection__warning">Need to select at least one frame</p>
+          )}
           {sizeSortedFrames.map(({ name, id, width, height }) => (
             <p key={id} class="selection__item">
               <label class="selection__label">
@@ -280,8 +302,16 @@ export const App = function () {
 
       <footer class="footer">Version {version}</footer>
 
-      {status === STATUS.LOADING ||
-        (status === STATUS.RENDER && <div class="loading">Loading...</div>)}
+      {status === STATUS.ERROR && (
+        <div class="error">
+          <h2>Error</h2>
+          <p>{UI_TEXT.ERRORS[error ?? ERRORS.UNKNOWN]}</p>
+        </div>
+      )}
+
+      {(status === STATUS.LOADING || status === STATUS.RENDER) && (
+        <div class="loading">Loading...</div>
+      )}
     </div>
   );
 };

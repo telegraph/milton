@@ -30,6 +30,9 @@ export async function renderFrames(frameIds: string[]): Promise<FrameRender> {
   try {
     // Clone each selected frame adding them to the temporary container frame
     const frames = figma.currentPage.findAll(({ id }) => frameIds.includes(id));
+    if (frames.length < 1) {
+      throw new Error(`No frames found to render ${frameIds.join(" ,")}`);
+    }
 
     // Calculate the max dimensions for output container frame
     const maxWidth = Math.max(...frames.map((f) => f.width));
@@ -139,14 +142,14 @@ export function getRootFrames(): IFrameData {
     ) as FrameNode[];
   }
 
-  const framesData = {};
+  const frames = {};
   for (const frame of selectedFrames) {
     const { id } = frame;
-    framesData[id] = createFrameData(frame);
+    frames[id] = createFrameData(frame);
   }
 
   return {
-    frames: framesData,
+    frames,
     headline: currentPage.getPluginData("headline"),
     subhead: currentPage.getPluginData("subhead"),
     source: currentPage.getPluginData("source"),

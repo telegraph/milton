@@ -20,6 +20,7 @@ async function optimizePng(
   if (!ctx) return canvas.toDataURL();
 
   const imageData = ctx.getImageData(0, 0, width, height);
+  console.log(width, height);
 
   // Quantize palette
   const pngData = UPNG.encode([imageData?.data], width, height, colours);
@@ -100,8 +101,8 @@ function calcResizeDimensions(
   }
 
   return {
-    width,
-    height,
+    width: width * 2,
+    height: height * 2,
   };
 }
 
@@ -129,6 +130,8 @@ export async function resizeAndOptimiseImage(
   let newDataUrl = "";
 
   const imgFormat = getImageFormatFromDataUrl(dataUrl);
+
+  console.log(nodeDimensions, newSize, imgFormat);
   switch (imgFormat) {
     case "jpg":
       newDataUrl = imgCanvas.toDataURL("image/jpeg", jpegQuality);
