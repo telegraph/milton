@@ -115,10 +115,29 @@ button:hover {
 }
 .preview__container {
   display: flex;
-  background: palevioletred;
   align-items: center;
   justify-content: center;
   flex: 1;
+  height: 1;
+  background-color: #eee;
+  background-image: linear-gradient(
+      45deg,
+      #dbdbdb 25%,
+      transparent 25%,
+      transparent 75%,
+      #dbdbdb 75%,
+      #dbdbdb
+    ),
+    linear-gradient(
+      45deg,
+      #dbdbdb 25%,
+      transparent 25%,
+      transparent 75%,
+      #dbdbdb 75%,
+      #dbdbdb
+    );
+  background-size: 20px 20px;
+  background-position: 0 0, 30px 30px;
 }
 .preview__iframe {
   resize: both;
@@ -126,8 +145,8 @@ button:hover {
   min-height: 120px;
   border: 1px solid var(--colours-grey-2, #f0f);
   overflow: auto;
-  max-height: calc(100% - 3rem);
-  position: absolute;
+  max-height: calc(100% - 2rem);
+  max-width: calc(100% - 2rem);
   height: 60%;
 }
 .preview__iframe::before {
