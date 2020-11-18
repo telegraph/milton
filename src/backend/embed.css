@@ -1,6 +1,7 @@
 html,
 body {
   margin: 0;
+  overflow: hidden;
 
   /* Remove font smoothing */
   -moz-osx-font-smoothing: grayscale; /* Firefox */

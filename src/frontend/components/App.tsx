@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { h, RefObject } from "preact";
 import { useState, useEffect, useRef } from "preact/hooks";
 import { saveAs } from "file-saver";
 import { MSG_EVENTS, ERRORS, UI_TEXT } from "constants";
@@ -18,6 +18,7 @@ const enum STATUS {
 export const App = function () {
   const clipboardEl = useRef<HTMLTextAreaElement>(null);
   const previewEl = useRef<HTMLDivElement>(null);
+  const iframeEl = useRef<HTMLIFrameElement>(null);
 
   // Setup state
   const [status, setStatus] = useState(STATUS.LOADING);
@@ -33,9 +34,9 @@ export const App = function () {
   const [needsRender, setNeedsRender] = useState(false);
   const [copied, setCopied] = useState(false);
   const [breakpoint, setBreakpoint] = useState(0);
-  const [zoomEnabled, setZoomEnabled] = useState(true);
   const [zoomScale, setZoomScale] = useState(1);
   const [error, setError] = useState<ERRORS | null>(null);
+  const [previewSize, setPreviewSize] = useState<[number, number]>([0, 0]);
 
   // Load frame data from backend
   useEffect(() => {
@@ -75,6 +76,79 @@ export const App = function () {
       });
   }, []);
 
+  // Listen to preview events
+  const [dragEnabled, setDragEnabled] = useState(false);
+  const [dragOrigin, setDragOrigin] = useState<[number, number]>([0, 0]);
+  const [translation, setTrasnlation] = useState<[number, number]>([0, 0]);
+  const [prevTrans, setPrevTrans] = useState<[number, number]>([0, 0]);
+
+  useEffect(() => {
+    if (dragEnabled) {
+      previewEl.current?.addEventListener("mousemove", handleMouseMove);
+    }
+    window.addEventListener("mousedown", handleMouseClick);
+    window.addEventListener("mouseup", handleMouseClick);
+    window.addEventListener("wheel", handleZoom);
+    window.addEventListener("keydown", handleZoom);
+    return () => {
+      previewEl.current?.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mousedown", handleMouseClick);
+      window.removeEventListener("mouseup", handleMouseClick);
+      window.removeEventListener("wheel", handleZoom);
+      window.removeEventListener("keydown", handleZoom);
+    };
+  }, [zoomScale, dragEnabled, dragOrigin, translation, prevTrans]);
+
+  const handleMouseClick = (e: MouseEvent) => {
+    const { button, type, x, y } = e;
+    if (button !== 1) return;
+
+    setDragEnabled(type === "mousedown");
+    setDragOrigin([x, y]);
+
+    if (type === "mouseup") {
+      setPrevTrans([...translation]);
+    }
+  };
+
+  const handleZoom = (e: WheelEvent | KeyboardEvent) => {
+    const ZOOM_INCREMENT = 0.1;
+    const { type, ctrlKey } = e;
+
+    if (ctrlKey === false) return;
+
+    let direction = 1;
+
+    if (type === "wheel") {
+      const { deltaY } = e;
+      direction = deltaY > 0 ? 1 - ZOOM_INCREMENT : 1 + ZOOM_INCREMENT;
+    }
+
+    if (type === "keydown") {
+      switch (e.key) {
+        case "=":
+          direction = 1 + ZOOM_INCREMENT;
+          break;
+        case "-":
+          direction = 1 - ZOOM_INCREMENT;
+          break;
+        default:
+          direction = 1;
+      }
+    }
+
+    setZoomScale(zoomScale * direction);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (dragEnabled === false) return;
+
+    const { x, y } = e;
+    const translateX = prevTrans[0] + (x - dragOrigin[0]) / zoomScale;
+    const translateY = prevTrans[1] + (y - dragOrigin[1]) / zoomScale;
+    setTrasnlation([translateX, translateY]);
+  };
+
   // Store headings on Figma page when headings change
   useEffect(() => {
     postMan.send({
@@ -102,6 +176,54 @@ export const App = function () {
     setStatus(STATUS.READY);
   }, [headline, subhead, source, svgText, responsive]);
 
+  // Update preview iframe based on new HTML content
+  useEffect(() => {
+    if (!html) return;
+
+    const { width = 320, height = 240 } = breakPoints[breakpoint] ?? {};
+    const scrollHeight =
+      iframeEl?.current?.contentWindow?.document?.body?.scrollHeight || 0;
+
+    console.log(scrollHeight, height);
+
+    if (height && width) {
+      setPreviewSize([width, scrollHeight]);
+    }
+
+    iframeEl.current?.contentWindow?.addEventListener(
+      "resize",
+      handleIframeResize
+    );
+
+    iframeEl.current?.contentWindow?.document.addEventListener(
+      "readystatechange",
+      handleIframeResize
+    );
+
+    return () => {
+      iframeEl.current?.contentWindow?.document.removeEventListener(
+        "readystatechange",
+        handleIframeResize
+      );
+      iframeEl.current?.contentWindow?.removeEventListener(
+        "resize",
+        handleIframeResize
+      );
+    };
+  }, [html, breakpoint]);
+
+  const handleIframeResize = (e) => {
+    console.log("readystatechange / resize", e);
+    const { readyState, body } =
+      iframeEl?.current?.contentWindow?.document || {};
+
+    if (readyState === "complete" && body) {
+      const { scrollHeight, offsetWidth } = body;
+      // const { width = 320 } = breakPoints[breakpoint] ?? {};
+      setPreviewSize([offsetWidth, scrollHeight]);
+    }
+  };
+
   // Render SVG and store output when Status changes to Render
   useEffect(() => {
     if (status === STATUS.RENDER) {
@@ -121,24 +243,20 @@ export const App = function () {
     }
   }, [status]);
 
-  // Set zoom scale
+  // Reset zoom and translation on breakpoint and rendered frame changes
   useEffect(() => {
-    if (!previewEl.current) return;
-    const PREVIEW_MARGIN = 200;
     const { width } = previewEl.current.getBoundingClientRect();
-    const previewWidth = width - PREVIEW_MARGIN;
 
-    const maxWidth = Object.values(frames).reduce(
-      (acc, { width }) => (acc > width ? acc : width),
-      1
-    );
+    const maxWidth = Object.values(frames)
+      .filter(({ id }) => renderedFrames.includes(id))
+      .reduce((acc, { width }) => (acc > width ? acc : width), 1);
 
-    const zoomScale = previewWidth / maxWidth;
-    const zoomEnabled = zoomScale < 1;
+    const zoomScale = width / maxWidth;
 
-    setZoomScale(zoomEnabled ? zoomScale : 1);
-    setZoomEnabled(zoomEnabled);
-  }, [selectedFrames.join()]);
+    setZoomScale(zoomScale > 1 ? 1 : zoomScale);
+    setTrasnlation([0, 0]);
+    setPrevTrans([0, 0]);
+  }, [breakpoint, renderedFrames]);
 
   // Toggle frames between selected states
   const toggleSelected = (id: string): void => {
@@ -193,12 +311,19 @@ export const App = function () {
     .filter(({ id }) => renderedFrames.includes(id))
     .map(({ width, height }) => ({ width, height }));
 
-  const { width = 320, height = 240 } = breakPoints[breakpoint] ?? {};
-
   return (
     <div class="app">
       <section class="preview">
         <div class="preview__settings">
+          <label class="checkbox preview__responsive">
+            <input
+              type="checkbox"
+              checked={responsive}
+              onInput={() => setResponsive(!responsive)}
+            />
+            Responsive
+          </label>
+
           <label class="preview__breakpoints">
             <select
               class="breakpoints"
@@ -219,38 +344,67 @@ export const App = function () {
             Breakpoints
           </label>
 
-          <label class="checkbox preview__responsive">
+          <label class="preview__width">
+            Width
             <input
-              type="checkbox"
-              checked={responsive}
-              onInput={() => setResponsive(!responsive)}
+              type="number"
+              min="0"
+              value={previewSize[0]}
+              onInput={(e) => {
+                const { value } = e.currentTarget;
+
+                const width = parseInt(value);
+                if (width && !isNaN(width)) {
+                  setPreviewSize([width, previewSize[1]]);
+                }
+              }}
             />
-            Responsive
+            px
           </label>
 
-          <label className="checkbox preview__zoom">
+          <label class="preview__zoom">
+            Zoom
             <input
-              type="checkbox"
-              checked={zoomEnabled}
-              onInput={() => setZoomEnabled(!zoomEnabled)}
+              type="number"
+              min="0"
+              value={(zoomScale * 100).toFixed(0)}
+              onInput={(e) => {
+                const { value } = e.currentTarget;
+
+                const zoom = parseInt(value);
+                if (zoom && !isNaN(zoom)) {
+                  setZoomScale(zoom / 100);
+                }
+              }}
             />
-            Zoom preview ({(zoomScale * 100).toFixed(0)}%)
+            %
           </label>
         </div>
 
         <div class="preview__container" ref={previewEl}>
-          <iframe
-            class="preview__iframe"
-            srcDoc={html}
-            style={`width: ${width}px; height: ${height}px; ${
-              zoomEnabled
-                ? `transform: scale(${zoomScale}); max-width: ${
-                    breakPoints[breakPoints.length - 1]?.width
-                  }px; position: absolute;`
-                : ""
-            }`}
-          />
+          <div
+            class="preview__wrapper"
+            style={`
+              width: ${previewSize[0]}px;
+              height: ${previewSize[1]}px;
+              transform: scale(${zoomScale}) translate(${translation[0]}px,  ${translation[1]}px);
+              position: absolute;
+            `}
+          >
+            <iframe ref={iframeEl} class="preview__iframe" srcDoc={html} />
+          </div>
+
+          <div class="preview__help">
+            <p>
+              <span>Zoom</span> Ctrl mousewheel or Ctrl + / -{" "}
+            </p>
+            <p>
+              <span>Pan</span> Mousewheel &amp; button drag
+            </p>
+          </div>
         </div>
+
+        <p class="footer">Version {version}</p>
       </section>
 
       <section class="sidebar">
@@ -319,7 +473,7 @@ export const App = function () {
           <legend>
             Export{" "}
             <span class="export__filesize">
-              {Math.ceil(svgText.length / 1024)}Kb
+              {Math.ceil(svgText.length / 1024)}k
             </span>
           </legend>
 
@@ -350,8 +504,6 @@ export const App = function () {
           <textarea class="clipboard" ref={clipboardEl} value={html} />
         </fieldset>
       </section>
-
-      <footer class="footer">Version {version}</footer>
 
       {status === STATUS.ERROR && (
         <div class="error">

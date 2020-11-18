@@ -49,7 +49,7 @@ function optimizeSvgPaths(svgEl: SVGElement): void {
     let d = path.getAttribute("d");
     if (d) {
       // Simplify paths
-      const points = pointsOnPath(d, 0.1, 0.2);
+      const points = pointsOnPath(d, 0.9, 0.5);
       d = points.reduce((acc, point) => (acc += "M" + point.join(" ")), "");
       // Reduce precision
       path.setAttribute("d", d.replace(/(\.\d{2})\d+/g, "$1"));
@@ -115,7 +115,6 @@ export async function decodeSvgToString(
   svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
 
   cleanUpSvg(svgEl);
-  // replaceIdsWithClasses(svgEl, ids);
   optimizeSvgPaths(svgEl);
   addLinks(svgEl);
   optimizeSvgPaths(svgEl);
