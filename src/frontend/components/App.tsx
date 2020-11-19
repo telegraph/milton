@@ -29,7 +29,7 @@ export const App = function () {
   const [subhead, setSubHead] = useState("");
   const [source, setSource] = useState("");
   const [html, setHtml] = useState("");
-  const [svgText, setSvgText] = useState("Placeholder");
+  const [svgText, setSvgText] = useState("");
   const [frames, setFrames] = useState<FrameCollection>({});
   const [needsRender, setNeedsRender] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -192,6 +192,8 @@ export const App = function () {
 
   // Generate HTML when headings, SVG or responsive flag changes
   useEffect(() => {
+    if (!svgText) return;
+
     const framesOut = Object.values(frames).filter(({ id }) =>
       renderedFrames.includes(id)
     );
