@@ -30,7 +30,7 @@ import esbuild from "esbuild";
         "process.browser": "true",
       },
       bundle: true,
-      minify: true,
+      minify: false,
     });
 
     // Build UI JS
@@ -51,7 +51,8 @@ import esbuild from "esbuild";
       jsxFactory: "preact.h",
       jsxFragment: "preact.Fragment",
       bundle: true,
-      minify: true,
+      sourcemap: "inline",
+      minify: false,
     });
 
     // Create Figma UI HTML

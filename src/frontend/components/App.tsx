@@ -1,10 +1,11 @@
-import { h, RefObject } from "preact";
+import { h } from "preact";
 import { useState, useEffect, useRef } from "preact/hooks";
 import { saveAs } from "file-saver";
 import { MSG_EVENTS, ERRORS, UI_TEXT } from "constants";
 import { decodeSvgToString } from "frontend/svgUtils";
 import { postMan } from "utils/messages";
 import { FrameCollection } from "types";
+import { Preview } from "./Preview";
 import { generateEmbedHtml } from "./outputRender";
 import { version } from "../../../package.json";
 
@@ -17,8 +18,7 @@ const enum STATUS {
 
 export const App = function () {
   const clipboardEl = useRef<HTMLTextAreaElement>(null);
-  const previewEl = useRef<HTMLDivElement>(null);
-  const iframeEl = useRef<HTMLIFrameElement>(null);
+  const headlineEl = useRef<HTMLInputElement>(null);
 
   // Setup state
   const [status, setStatus] = useState(STATUS.LOADING);
@@ -30,13 +30,10 @@ export const App = function () {
   const [source, setSource] = useState("");
   const [html, setHtml] = useState("");
   const [svgText, setSvgText] = useState("");
-  const [frames, setFrames] = useState<FrameCollection>({});
+  const [figmaFrames, setFigmaFrames] = useState<FrameCollection>({});
   const [needsRender, setNeedsRender] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [breakpoint, setBreakpoint] = useState(0);
-  const [zoomScale, setZoomScale] = useState(1);
   const [error, setError] = useState<ERRORS | null>(null);
-  const [previewSize, setPreviewSize] = useState<[number, number]>([0, 0]);
 
   // Load frame data from backend
   useEffect(() => {
@@ -62,12 +59,14 @@ export const App = function () {
           return;
         }
 
-        setFrames(frames);
+        setFigmaFrames(frames);
         setHeadline(headline);
         setSubHead(subhead);
         setSource(source);
         setSelectedFrames(Object.keys(frames).sort());
         setStatus(STATUS.RENDER);
+
+        headlineEl.current?.focus();
       })
       .catch((err) => {
         console.error(err);
@@ -75,112 +74,6 @@ export const App = function () {
         setStatus(STATUS.ERROR);
       });
   }, []);
-
-  // Listen to preview events
-  const [dragEnabled, setDragEnabled] = useState(false);
-  const [spacePressed, setSpacePressed] = useState(false);
-  const [dragOrigin, setDragOrigin] = useState<[number, number]>([0, 0]);
-  const [translation, setTrasnlation] = useState<[number, number]>([0, 0]);
-  const [prevTrans, setPrevTrans] = useState<[number, number]>([0, 0]);
-
-  useEffect(() => {
-    if (dragEnabled) {
-      previewEl.current?.addEventListener("mousemove", handleMouseMove);
-    }
-    window.addEventListener("mousedown", handleMouseClick);
-    window.addEventListener("mouseup", handleMouseClick);
-    window.addEventListener("wheel", handleZoom);
-    window.addEventListener("keydown", handleZoom);
-    window.addEventListener("keydown", handlePanStart);
-    window.addEventListener("keyup", handlePanEnd);
-    return () => {
-      previewEl.current?.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mousedown", handleMouseClick);
-      window.removeEventListener("mouseup", handleMouseClick);
-      window.removeEventListener("wheel", handleZoom);
-      window.removeEventListener("keydown", handleZoom);
-      window.removeEventListener("keydown", handlePanStart);
-      window.removeEventListener("keyup", handlePanEnd);
-    };
-  }, [
-    zoomScale,
-    dragEnabled,
-    dragOrigin,
-    translation,
-    prevTrans,
-    spacePressed,
-  ]);
-
-  const handleMouseClick = (e: MouseEvent) => {
-    const { button, type, x, y } = e;
-
-    // Only allow main and middle mouse buttons to control panning
-    if (button > 1) return;
-
-    if (spacePressed && type === "mousedown") {
-      setDragEnabled(true);
-      // Set new drag origin
-      setDragOrigin([x, y]);
-    }
-
-    if (dragEnabled && type === "mouseup") {
-      setDragEnabled(false);
-      setPrevTrans([...translation]);
-    }
-  };
-
-  const handleZoom = (e: WheelEvent | KeyboardEvent) => {
-    const ZOOM_INCREMENT = 0.1;
-    const { type, ctrlKey, metaKey } = e;
-
-    if (ctrlKey || metaKey) {
-      let direction = 1;
-
-      if (type === "wheel") {
-        const { deltaY } = e;
-        direction = deltaY > 0 ? 1 - ZOOM_INCREMENT : 1 + ZOOM_INCREMENT;
-      }
-
-      if (type === "keydown") {
-        switch (e.key) {
-          case "=":
-            direction = 1 + ZOOM_INCREMENT;
-            break;
-          case "-":
-            direction = 1 - ZOOM_INCREMENT;
-            break;
-          default:
-            direction = 1;
-        }
-      }
-
-      setZoomScale(zoomScale * direction);
-    }
-  };
-
-  const handlePanStart = (e: KeyboardEvent) =>
-    e.code === "Space" &&
-    e.target?.nodeName !== "INPUT" &&
-    setSpacePressed(true);
-
-  const handlePanEnd = (e: KeyboardEvent) => {
-    if (e.code === "Space" && e.target?.nodeName !== "INPUT") {
-      // Store translation info
-      setPrevTrans([...translation]);
-      // Stop panning
-      setSpacePressed(false);
-      setDragEnabled(false);
-    }
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (dragEnabled === false) return;
-
-    const { x, y } = e;
-    const translateX = prevTrans[0] + (x - dragOrigin[0]) / zoomScale;
-    const translateY = prevTrans[1] + (y - dragOrigin[1]) / zoomScale;
-    setTrasnlation([translateX, translateY]);
-  };
 
   // Store headings on Figma page when headings change
   useEffect(() => {
@@ -194,7 +87,7 @@ export const App = function () {
   useEffect(() => {
     if (!svgText) return;
 
-    const framesOut = Object.values(frames).filter(({ id }) =>
+    const framesOut = Object.values(figmaFrames).filter(({ id }) =>
       renderedFrames.includes(id)
     );
 
@@ -210,52 +103,6 @@ export const App = function () {
     setHtml(html);
     setStatus(STATUS.READY);
   }, [headline, subhead, source, svgText, responsive]);
-
-  // Update preview iframe based on new HTML content
-  useEffect(() => {
-    if (!html) return;
-
-    const { width = 320, height = 240 } = breakPoints[breakpoint] ?? {};
-    const scrollHeight =
-      iframeEl?.current?.contentWindow?.document?.body?.scrollHeight || 0;
-
-    if (height && width) {
-      setPreviewSize([width, scrollHeight]);
-    }
-
-    iframeEl.current?.contentWindow?.addEventListener(
-      "resize",
-      handleIframeResize
-    );
-
-    iframeEl.current?.contentWindow?.document.addEventListener(
-      "readystatechange",
-      handleIframeResize
-    );
-
-    return () => {
-      iframeEl.current?.contentWindow?.document.removeEventListener(
-        "readystatechange",
-        handleIframeResize
-      );
-      iframeEl.current?.contentWindow?.removeEventListener(
-        "resize",
-        handleIframeResize
-      );
-    };
-  }, [html, breakpoint]);
-
-  const handleIframeResize = (e) => {
-    // console.log("readystatechange / resize", e);
-    const { readyState, body } =
-      iframeEl?.current?.contentWindow?.document || {};
-
-    if (readyState === "complete" && body) {
-      const { scrollHeight, offsetWidth } = body;
-      // const { width = 320 } = breakPoints[breakpoint] ?? {};
-      setPreviewSize([offsetWidth, scrollHeight]);
-    }
-  };
 
   // Render SVG and store output when Status changes to Render
   useEffect(() => {
@@ -275,21 +122,6 @@ export const App = function () {
       getAndStoreSvgHtml();
     }
   }, [status]);
-
-  // Reset zoom and translation on breakpoint and rendered frame changes
-  useEffect(() => {
-    const { width } = previewEl.current.getBoundingClientRect();
-
-    const maxWidth = Object.values(frames)
-      .filter(({ id }) => renderedFrames.includes(id))
-      .reduce((acc, { width }) => (acc > width ? acc : width), 1);
-
-    const zoomScale = width / maxWidth;
-
-    setZoomScale(zoomScale > 1 ? 1 : zoomScale);
-    setTrasnlation([0, 0]);
-    setPrevTrans([0, 0]);
-  }, [breakpoint, renderedFrames]);
 
   // Toggle frames between selected states
   const toggleSelected = (id: string): void => {
@@ -336,7 +168,7 @@ export const App = function () {
     saveAs(new Blob([fileText], { type: "text/html" }), fileName);
   };
 
-  const sizeSortedFrames = Object.values(frames).sort((a, b) =>
+  const sizeSortedFrames = Object.values(figmaFrames).sort((a, b) =>
     a.width > b.width ? 1 : -1
   );
 
@@ -346,111 +178,13 @@ export const App = function () {
 
   return (
     <div class="app">
-      <section class="preview">
-        <div class="preview__settings">
-          <label class="checkbox preview__responsive">
-            <input
-              type="checkbox"
-              checked={responsive}
-              onInput={() => setResponsive(!responsive)}
-            />
-            Responsive
-          </label>
-
-          <label class="preview__breakpoints">
-            <select
-              class="breakpoints"
-              onInput={({ currentTarget: { selectedIndex } }) =>
-                setBreakpoint(selectedIndex)
-              }
-            >
-              {breakPoints.map(({ width }, i) => (
-                <option
-                  key={width}
-                  class="breakpoints__option"
-                  selected={breakpoint === i}
-                >
-                  {width}px
-                </option>
-              ))}
-            </select>
-            Breakpoints
-          </label>
-
-          <label class="preview__width">
-            Width
-            <input
-              type="number"
-              min="0"
-              value={previewSize[0]}
-              onInput={(e) => {
-                const { value } = e.currentTarget;
-
-                const width = parseInt(value);
-                if (width && !isNaN(width)) {
-                  setPreviewSize([width, previewSize[1]]);
-                }
-              }}
-            />
-            px
-          </label>
-
-          <label class="preview__zoom">
-            Zoom
-            <input
-              type="number"
-              min="0"
-              value={(zoomScale * 100).toFixed(0)}
-              onInput={(e) => {
-                const { value } = e.currentTarget;
-
-                const zoom = parseInt(value);
-                if (zoom && !isNaN(zoom)) {
-                  setZoomScale(zoom / 100);
-                }
-              }}
-            />
-            %
-          </label>
-        </div>
-
-        <div
-          class={`preview__container ${
-            spacePressed ? "preview__container--drag" : ""
-          }`}
-          ref={previewEl}
-        >
-          {selectedFrames.length > 0 && needsRender && (
-            <p class="warning">Need to update</p>
-          )}
-
-          {selectedFrames.length === 0 && (
-            <p class="warning">Need to select at least one frame</p>
-          )}
-          <div
-            class="preview__wrapper"
-            style={`
-              width: ${previewSize[0]}px;
-              height: ${previewSize[1]}px;
-              transform: scale(${zoomScale}) translate(${translation[0]}px,  ${translation[1]}px);
-              position: absolute;
-            `}
-          >
-            <iframe ref={iframeEl} class="preview__iframe" srcDoc={html} />
-          </div>
-
-          <div class="preview__help">
-            <p>
-              <span>Zoom</span> cmd / ctrl and + / -
-            </p>
-            <p>
-              <span>Pan</span> Spacebar and drag
-            </p>
-          </div>
-        </div>
-
-        <p class="footer">Version {version}</p>
-      </section>
+      <Preview
+        html={html}
+        responsive={responsive}
+        setResponsive={setResponsive}
+        breakPoints={breakPoints}
+        renderedFrames={renderedFrames}
+      />
 
       <section class="sidebar">
         <fieldset class="selection">
@@ -490,6 +224,7 @@ export const App = function () {
             Headline
             <input
               type="text"
+              ref={headlineEl}
               value={headline}
               onChange={(e) => setHeadline(e.currentTarget.value)}
             />
@@ -555,6 +290,16 @@ export const App = function () {
       >
         Loading...
       </div>
+
+      <p class="footer">Version {version}</p>
+
+      {selectedFrames.length > 0 && needsRender && (
+        <p class="warning">Need to update</p>
+      )}
+
+      {selectedFrames.length === 0 && (
+        <p class="warning">Need to select at least one frame</p>
+      )}
     </div>
   );
 };
