@@ -131,31 +131,31 @@ export const App = function () {
 
   const handleZoom = (e: WheelEvent | KeyboardEvent) => {
     const ZOOM_INCREMENT = 0.1;
-    const { type, ctrlKey } = e;
+    const { type, ctrlKey, metaKey } = e;
 
-    if (ctrlKey === false) return;
+    if (ctrlKey || metaKey) {
+      let direction = 1;
 
-    let direction = 1;
-
-    if (type === "wheel") {
-      const { deltaY } = e;
-      direction = deltaY > 0 ? 1 - ZOOM_INCREMENT : 1 + ZOOM_INCREMENT;
-    }
-
-    if (type === "keydown") {
-      switch (e.key) {
-        case "=":
-          direction = 1 + ZOOM_INCREMENT;
-          break;
-        case "-":
-          direction = 1 - ZOOM_INCREMENT;
-          break;
-        default:
-          direction = 1;
+      if (type === "wheel") {
+        const { deltaY } = e;
+        direction = deltaY > 0 ? 1 - ZOOM_INCREMENT : 1 + ZOOM_INCREMENT;
       }
-    }
 
-    setZoomScale(zoomScale * direction);
+      if (type === "keydown") {
+        switch (e.key) {
+          case "=":
+            direction = 1 + ZOOM_INCREMENT;
+            break;
+          case "-":
+            direction = 1 - ZOOM_INCREMENT;
+            break;
+          default:
+            direction = 1;
+        }
+      }
+
+      setZoomScale(zoomScale * direction);
+    }
   };
 
   const handlePanStart = (e: KeyboardEvent) =>
