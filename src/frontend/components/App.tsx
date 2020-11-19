@@ -78,6 +78,7 @@ export const App = function () {
 
   // Listen to preview events
   const [dragEnabled, setDragEnabled] = useState(false);
+  const [spacePressed, setSpacePressed] = useState(false);
   const [dragOrigin, setDragOrigin] = useState<[number, number]>([0, 0]);
   const [translation, setTrasnlation] = useState<[number, number]>([0, 0]);
   const [prevTrans, setPrevTrans] = useState<[number, number]>([0, 0]);
@@ -90,23 +91,37 @@ export const App = function () {
     window.addEventListener("mouseup", handleMouseClick);
     window.addEventListener("wheel", handleZoom);
     window.addEventListener("keydown", handleZoom);
+    window.addEventListener("keydown", handlePanStart);
+    window.addEventListener("keyup", handlePanEnd);
     return () => {
       previewEl.current?.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mousedown", handleMouseClick);
       window.removeEventListener("mouseup", handleMouseClick);
       window.removeEventListener("wheel", handleZoom);
       window.removeEventListener("keydown", handleZoom);
+      window.removeEventListener("keydown", handlePanStart);
+      window.removeEventListener("keyup", handlePanEnd);
     };
-  }, [zoomScale, dragEnabled, dragOrigin, translation, prevTrans]);
+  }, [
+    zoomScale,
+    dragEnabled,
+    dragOrigin,
+    translation,
+    prevTrans,
+    spacePressed,
+  ]);
 
   const handleMouseClick = (e: MouseEvent) => {
     const { button, type, x, y } = e;
-    if (button !== 1) return;
 
-    setDragEnabled(type === "mousedown");
-    setDragOrigin([x, y]);
+    if (button === 0 && spacePressed && type === "mousedown") {
+      setDragEnabled(true);
+      // Set new drag origin
+      setDragOrigin([x, y]);
+    }
 
-    if (type === "mouseup") {
+    if (button === 0 && dragEnabled && type === "mouseup") {
+      setDragEnabled(false);
       setPrevTrans([...translation]);
     }
   };
@@ -140,8 +155,23 @@ export const App = function () {
     setZoomScale(zoomScale * direction);
   };
 
+  const handlePanStart = (e: KeyboardEvent) =>
+    e.code === "Space" && setSpacePressed(true);
+
+  const handlePanEnd = (e: KeyboardEvent) => {
+    if (e.code === "Space") {
+      // Store translation info
+      setPrevTrans([...translation]);
+      // Stop panning
+      setSpacePressed(false);
+      setDragEnabled(false);
+    }
+  };
+
   const handleMouseMove = (e: MouseEvent) => {
     if (dragEnabled === false) return;
+
+    console.log(e);
 
     const { x, y } = e;
     const translateX = prevTrans[0] + (x - dragOrigin[0]) / zoomScale;
@@ -381,7 +411,12 @@ export const App = function () {
           </label>
         </div>
 
-        <div class="preview__container" ref={previewEl}>
+        <div
+          class={`preview__container ${
+            spacePressed ? "preview__container--drag" : ""
+          }`}
+          ref={previewEl}
+        >
           <div
             class="preview__wrapper"
             style={`
@@ -396,10 +431,10 @@ export const App = function () {
 
           <div class="preview__help">
             <p>
-              <span>Zoom</span> Ctrl mousewheel or Ctrl + / -{" "}
+              <span>Zoom</span> cmd / ctrl and + / -
             </p>
             <p>
-              <span>Pan</span> Mousewheel &amp; button drag
+              <span>Pan</span> Spacebar and drag
             </p>
           </div>
         </div>
@@ -446,7 +481,7 @@ export const App = function () {
             <input
               type="text"
               value={headline}
-              onBlur={({ currentTarget: { value } }) => setHeadline(value)}
+              onChange={({ currentTarget: { value } }) => setHeadline(value)}
             />
           </label>
 
