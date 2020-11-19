@@ -114,13 +114,16 @@ export const App = function () {
   const handleMouseClick = (e: MouseEvent) => {
     const { button, type, x, y } = e;
 
-    if (button === 0 && spacePressed && type === "mousedown") {
+    // Only allow main and middle mouse buttons to control panning
+    if (button > 1) return;
+
+    if (spacePressed && type === "mousedown") {
       setDragEnabled(true);
       // Set new drag origin
       setDragOrigin([x, y]);
     }
 
-    if (button === 0 && dragEnabled && type === "mouseup") {
+    if (dragEnabled && type === "mouseup") {
       setDragEnabled(false);
       setPrevTrans([...translation]);
     }
@@ -156,10 +159,12 @@ export const App = function () {
   };
 
   const handlePanStart = (e: KeyboardEvent) =>
-    e.code === "Space" && setSpacePressed(true);
+    e.code === "Space" &&
+    e.target?.nodeName !== "INPUT" &&
+    setSpacePressed(true);
 
   const handlePanEnd = (e: KeyboardEvent) => {
-    if (e.code === "Space") {
+    if (e.code === "Space" && e.target?.nodeName !== "INPUT") {
       // Store translation info
       setPrevTrans([...translation]);
       // Stop panning
@@ -170,8 +175,6 @@ export const App = function () {
 
   const handleMouseMove = (e: MouseEvent) => {
     if (dragEnabled === false) return;
-
-    console.log(e);
 
     const { x, y } = e;
     const translateX = prevTrans[0] + (x - dragOrigin[0]) / zoomScale;
@@ -214,8 +217,6 @@ export const App = function () {
     const scrollHeight =
       iframeEl?.current?.contentWindow?.document?.body?.scrollHeight || 0;
 
-    console.log(scrollHeight, height);
-
     if (height && width) {
       setPreviewSize([width, scrollHeight]);
     }
@@ -243,7 +244,7 @@ export const App = function () {
   }, [html, breakpoint]);
 
   const handleIframeResize = (e) => {
-    console.log("readystatechange / resize", e);
+    // console.log("readystatechange / resize", e);
     const { readyState, body } =
       iframeEl?.current?.contentWindow?.document || {};
 
@@ -417,6 +418,13 @@ export const App = function () {
           }`}
           ref={previewEl}
         >
+          {selectedFrames.length > 0 && needsRender && (
+            <p class="warning">Need to update</p>
+          )}
+
+          {selectedFrames.length === 0 && (
+            <p class="warning">Need to select at least one frame</p>
+          )}
           <div
             class="preview__wrapper"
             style={`
@@ -465,13 +473,13 @@ export const App = function () {
             ))}
           </div>
 
-          {selectedFrames.length === 0 && (
-            <p class="selection__warning">Need to select at least one frame</p>
-          )}
-
-          {selectedFrames.length > 0 && needsRender && (
-            <p class="selection__warning">Need to re-generate</p>
-          )}
+          <button
+            class="btn export__generate"
+            onClick={() => setStatus(STATUS.RENDER)}
+            disabled={!needsRender || selectedFrames.length === 0}
+          >
+            Update
+          </button>
         </fieldset>
 
         <fieldset class="headlines">
@@ -481,7 +489,7 @@ export const App = function () {
             <input
               type="text"
               value={headline}
-              onChange={({ currentTarget: { value } }) => setHeadline(value)}
+              onChange={(e) => setHeadline(e.currentTarget.value)}
             />
           </label>
 
@@ -490,7 +498,7 @@ export const App = function () {
             <input
               type="text"
               value={subhead}
-              onBlur={({ currentTarget: { value } }) => setSubHead(value)}
+              onChange={(e) => setSubHead(e.currentTarget.value)}
             />
           </label>
 
@@ -499,7 +507,7 @@ export const App = function () {
             <input
               type="text"
               value={source}
-              onBlur={({ currentTarget: { value } }) => setSource(value)}
+              onChange={(e) => setSource(e.currentTarget.value)}
             />
           </label>
         </fieldset>
@@ -511,14 +519,6 @@ export const App = function () {
               {Math.ceil(svgText.length / 1024)}k
             </span>
           </legend>
-
-          <button
-            class="btn export__generate"
-            onClick={() => setStatus(STATUS.RENDER)}
-            disabled={!needsRender || selectedFrames.length === 0}
-          >
-            Generate
-          </button>
 
           <button
             class="btn export__copy"
