@@ -26,7 +26,7 @@ import esbuild from "esbuild";
       platform: "browser",
       loader: { [".css"]: "text" },
       define: {
-        "process.env.NODE_ENV": "development",
+        "process.env.NODE_ENV": '"development"',
         "process.browser": "true",
       },
       bundle: true,
@@ -44,7 +44,7 @@ import esbuild from "esbuild";
       target: "es2017",
       platform: "browser",
       define: {
-        "process.env.NODE_ENV": "development",
+        "process.env.NODE_ENV": '"development"',
         "process.browser": "true",
       },
       loader: { [".css"]: "text" },
