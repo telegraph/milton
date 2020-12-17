@@ -71,6 +71,20 @@ export async function renderFrames(frameIds: string[]): Promise<FrameRender> {
       })
     );
 
+    // Flatten boolean elements
+    let booleanNodes = outputNode.findAll(
+      (node) => node.type === "BOOLEAN_OPERATION"
+    );
+    while (booleanNodes.length > 0) {
+      const node = booleanNodes[0];
+      const index = node.parent.children.indexOf(node);
+      figma.flatten([node], node.parent, index);
+
+      booleanNodes = outputNode.findAll(
+        (node) => node.type === "BOOLEAN_OPERATION"
+      );
+    }
+
     // Render output container frames to SVG mark-up (in a uint8 byte array)
     const svgData = await outputNode.exportAsync({
       format: "SVG",
