@@ -115,9 +115,8 @@ export async function decodeSvgToString(
   svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
 
   cleanUpSvg(svgEl);
-  optimizeSvgPaths(svgEl);
+  // optimizeSvgPaths(svgEl);
   addLinks(svgEl);
-  optimizeSvgPaths(svgEl);
   await optimizeSvgImages(svgEl, imageNodeDimensions);
 
   return svgEl?.outerHTML;
