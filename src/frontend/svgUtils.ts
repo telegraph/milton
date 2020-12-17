@@ -1,6 +1,5 @@
 import { resizeAndOptimiseImage } from "./imageHelper";
 import { imageNodeDimensions } from "types";
-import { pointsOnPath } from "points-on-path";
 
 // TODO: Is there a way to identify mapping of image to elements from
 // the @figma context? If so we don't need to look inside the SVG elements
@@ -44,13 +43,13 @@ async function optimizeSvgImages(
   }
 }
 
-function optimizeSvgPaths(svgEl: SVGElement): void {
+export function reducePathPrecision(svgEl: SVGElement): void {
   svgEl.querySelectorAll("path").forEach((path) => {
     let d = path.getAttribute("d");
     if (d) {
       // Simplify paths
-      const points = pointsOnPath(d, 0.1, 0.3);
-      d = points.reduce((acc, point) => (acc += "M" + point.join(" ")), "");
+      // const points = pointsOnPath(d, 0.1, 0.3);
+      // d = points.reduce((acc, point) => (acc += "M" + point.join(" ")), "");
       // Reduce precision
       path.setAttribute("d", d.replace(/(\.\d{2})\d+/g, "$1"));
     }
@@ -58,7 +57,7 @@ function optimizeSvgPaths(svgEl: SVGElement): void {
 }
 
 // Replace all HTTP urls with HTTPS
-function replaceHttpWithHttps(svgText: string): string {
+export function replaceHttpWithHttps(svgText: string): string {
   return svgText.replace(/http:\/\//g, "https://");
 }
 
@@ -68,12 +67,21 @@ function createSvgElement(svgText: string): SVGElement | null {
   return emptyDiv.querySelector("svg");
 }
 
+export function transformToValidId(id: string): string {
+  return id.trim().replace(/\W/g, "");
+}
+
 function cleanUpSvg(svgEl: SVGElement): void {
   // BUG: Remove empty clip paths
   svgEl.querySelectorAll("clipPath").forEach((clipPath) => {
     if (clipPath.childElementCount === 0) {
       clipPath.parentNode?.removeChild(clipPath);
     }
+  });
+
+  // Change IDS to valid format
+  svgEl.querySelectorAll("*[id]").forEach((el) => {
+    el.setAttribute("id", transformToValidId(el.id));
   });
 
   // Remove text nodes
@@ -115,7 +123,7 @@ export async function decodeSvgToString(
   svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
 
   cleanUpSvg(svgEl);
-  // optimizeSvgPaths(svgEl);
+  reducePathPrecision(svgEl);
   addLinks(svgEl);
   await optimizeSvgImages(svgEl, imageNodeDimensions);
 
