@@ -25,8 +25,7 @@
     "esModuleInterop": true,
     "downlevelIteration": true,
     "resolveJsonModule": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipDefaultLibCheck": true
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/./*"]
