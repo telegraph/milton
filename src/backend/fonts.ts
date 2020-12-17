@@ -24,6 +24,20 @@ const fonts: FontsType = {
     },
   },
 
+  "Austin News Headline Cond": {
+    normal: {
+      300: "AustinNewsHeadlineCond-Light-Web",
+      400: "AustinNewsHeadlineCond-Roman-Web",
+      500: "AustinNewsHeadlineCond-Medium-Web",
+      600: "AustinNewsHeadlineCond-Semibold-Web",
+    },
+    italic: {
+      300: "AustinNewsHeadlineCond-LightItalic-Web",
+      400: "AustinNewsHeadlineCond-Italic-Web",
+      500: "AustinNewsHeadlineCond-MediumItalic-Web",
+    },
+  },
+
   "Austin News Text": {
     normal: {
       400: "Austin News Text Web-Roman",
@@ -35,7 +49,8 @@ const fonts: FontsType = {
   "Telesans Agate": {
     normal: {
       400: "Telesans Agate-Regular",
-      500: "Telesans Agate-Medium",
+      500: "TelesansAgate-Medium",
+      600: "TelesansAgate-Medium", // NOTE: Re-using 500
       700: "Telesans Agate-Bold",
     },
   },
@@ -43,6 +58,8 @@ const fonts: FontsType = {
   "Telesans Text": {
     normal: {
       400: "Telesans Text Web-Regular",
+      500: "Telesans Text Web-Regular", // NOTE: Re-using 400
+      600: "Telesans Text Web-Regular", // NOTE: Re-using 400
       700: "Telesans Text Web-Bold",
     },
   },

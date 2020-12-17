@@ -138,8 +138,15 @@ function generateSpanStyles({
   lineHeight,
   size,
 }: TextRange): string {
+  // Special-case Telesans which online font version is wider
+  let letterSpacingAlt = letterSpacing;
+
+  if (family?.includes("Telesans Text")) {
+    letterSpacingAlt = `-0.04em`;
+  }
+
   let cssStyle = "";
-  if (letterSpacing) cssStyle += `letter-spacing: ${letterSpacing};`;
+  if (letterSpacingAlt) cssStyle += `letter-spacing: ${letterSpacingAlt};`;
   if (lineHeight) cssStyle += `line-height: ${lineHeight};`;
   if (size) cssStyle += `font-size: ${size}px;`;
   if (colour) cssStyle += `color: ${colour};`;
