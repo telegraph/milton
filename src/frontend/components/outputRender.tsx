@@ -298,7 +298,7 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
   for (let i = 0; i < sortedFrames.length; i++) {
     const { id, width, height } = sortedFrames[i];
 
-    const relContainerWidth = ((width / height) * 100).toPrecision(PRECISION);
+    // const relContainerWidth = ((width / height) * 100).toPrecision(PRECISION);
     const relSvgWidth = ((largestWidth / width) * 100).toPrecision(PRECISION);
     const paddingHeight = ((height / width) * 100).toPrecision(PRECISION);
 

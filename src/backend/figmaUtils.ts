@@ -3,9 +3,9 @@ import {
   IFrameData,
   FrameRender,
   FrameDataInterface,
+  imageNodeDimensions,
 } from "types";
-import { getNodeText, getTextNodesFromFrame } from "utils/figmaText";
-import { HEADLINE_NODE_NAMES } from "../constants";
+import { getTextNodesFromFrame } from "utils/figmaText";
 
 /**
  * Test if Figma node supports fill property type
@@ -17,6 +17,66 @@ function supportsFills(
   return node.type !== "SLICE" && node.type !== "GROUP";
 }
 
+function flattenBooleanGroups(frameNode: FrameNode): void {
+  // Flatten boolean elements
+  let booleanNodes = frameNode.findAll(
+    (node) => node.type === "BOOLEAN_OPERATION"
+  ) as BooleanOperationNode[];
+
+  // Sort nodes based on child hierarchy
+  booleanNodes.sort((a, b) => (a.children.includes(b) ? 1 : -1));
+
+  for (const node of booleanNodes) {
+    if (!node || !node.parent) break;
+    const index = node.parent.children.indexOf(node);
+    figma.flatten([node], node.parent, index);
+  }
+}
+
+function getImageDimensions(frameNode: FrameNode): imageNodeDimensions[] {
+  const nodesWithImages = frameNode.findAll(
+    (node) =>
+      supportsFills(node) &&
+      node.fills !== figma.mixed &&
+      node.fills.some((fill) => fill.type === "IMAGE")
+  );
+
+  return nodesWithImages.map(({ name, width, height }) => ({
+    name,
+    width,
+    height,
+  }));
+}
+
+function resizeOutputToMaxSize(frameNode: FrameNode): void {
+  const maxWidth = Math.max(...frameNode.children.map((f) => f.width));
+  const maxHeight = Math.max(...frameNode.children.map((f) => f.height));
+  frameNode.resizeWithoutConstraints(maxWidth, maxHeight);
+}
+
+function createCloneOfFrames(frames: FrameNode[]): FrameNode {
+  const outputNode = figma.createFrame();
+  outputNode.name = "output";
+
+  for (const frame of frames) {
+    const clone = frame?.clone() as FrameNode;
+
+    // NOTE: Previously text nodes were removed here but this caused
+    // width changes in auto-layout. Text is removed as part of the
+    // SVG optimisation step.
+
+    // Append cloned frame to temp output frame and position in top left
+    outputNode.appendChild(clone);
+    clone.x = 0;
+    clone.y = 0;
+
+    // Store the frame ID as node name (exported in SVG props)
+    clone.name = frame.id;
+  }
+
+  return outputNode;
+}
+
 /**
  * Render all specified frames out as SVG element.
  * Images are optimised for size and image type compression via the frontend UI
@@ -24,66 +84,22 @@ function supportsFills(
  * @context figma
  */
 export async function renderFrames(frameIds: string[]): Promise<FrameRender> {
-  const outputNode = figma.createFrame();
-  outputNode.name = "output";
+  let outputNode: FrameNode | null = null;
 
   try {
     // Clone each selected frame adding them to the temporary container frame
-    const frames = figma.currentPage.findAll(({ id }) => frameIds.includes(id));
+    const frames = figma.currentPage.findAll(({ id }) =>
+      frameIds.includes(id)
+    ) as FrameNode[];
+
     if (frames.length < 1) {
       throw new Error(`No frames found to render ${frameIds.join(" ,")}`);
     }
 
-    // Calculate the max dimensions for output container frame
-    const maxWidth = Math.max(...frames.map((f) => f.width));
-    const maxHeight = Math.max(...frames.map((f) => f.height));
-    outputNode.resizeWithoutConstraints(maxWidth, maxHeight);
-
-    for (const frame of frames) {
-      const clone = frame?.clone() as FrameNode;
-
-      // NOTE: Previously text nodes were removed here but this caused
-      // width changes in auto-layout. Text is removed as part of the
-      // SVG optimisation step.
-
-      // Append cloned frame to temp output frame and position in top left
-      outputNode.appendChild(clone);
-      clone.x = 0;
-      clone.y = 0;
-
-      // Store the frame ID as node name (exported in SVG props)
-      clone.name = frame.id;
-    }
-
-    // Find all nodes with image fills
-    const nodesWithImages = outputNode.findAll(
-      (node) =>
-        supportsFills(node) &&
-        node.fills !== figma.mixed &&
-        node.fills.some((fill) => fill.type === "IMAGE")
-    );
-
-    const imageNodeDimensions = nodesWithImages.map(
-      ({ name, width, height }) => ({
-        name,
-        width,
-        height,
-      })
-    );
-
-    // Flatten boolean elements
-    let booleanNodes = outputNode.findAll(
-      (node) => node.type === "BOOLEAN_OPERATION"
-    );
-    while (booleanNodes.length > 0) {
-      const node = booleanNodes[0];
-      const index = node.parent.children.indexOf(node);
-      figma.flatten([node], node.parent, index);
-
-      booleanNodes = outputNode.findAll(
-        (node) => node.type === "BOOLEAN_OPERATION"
-      );
-    }
+    outputNode = createCloneOfFrames(frames);
+    resizeOutputToMaxSize(outputNode);
+    flattenBooleanGroups(outputNode);
+    const imageNodeDimensions = getImageDimensions(outputNode);
 
     // Render output container frames to SVG mark-up (in a uint8 byte array)
     const svgData = await outputNode.exportAsync({
@@ -101,7 +117,7 @@ export async function renderFrames(frameIds: string[]): Promise<FrameRender> {
     throw new Error(err);
   } finally {
     // Remove the output frame whatever happens
-    outputNode.remove();
+    outputNode?.remove();
   }
 }
 

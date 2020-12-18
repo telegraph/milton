@@ -67,21 +67,12 @@ function createSvgElement(svgText: string): SVGElement | null {
   return emptyDiv.querySelector("svg");
 }
 
-export function transformToValidId(id: string): string {
-  return id.trim().replace(/\W/g, "");
-}
-
 function cleanUpSvg(svgEl: SVGElement): void {
   // BUG: Remove empty clip paths
   svgEl.querySelectorAll("clipPath").forEach((clipPath) => {
     if (clipPath.childElementCount === 0) {
       clipPath.parentNode?.removeChild(clipPath);
     }
-  });
-
-  // Change IDS to valid format
-  svgEl.querySelectorAll("*[id]").forEach((el) => {
-    el.setAttribute("id", transformToValidId(el.id));
   });
 
   // Remove text nodes
