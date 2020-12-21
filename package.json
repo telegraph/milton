@@ -7,7 +7,7 @@
     "start": "watchexec --exts css,scss,html,tsx,ts,json --clear -w ./src node ./build.js",
     "build": "node build.js",
     "test": "npx uvu -r ts-node/register ./src",
-    "check": "tsc --noEmit"
+    "lint": "npx eslint src --ext .js,.jsx,.ts,.tsx"
   },
   "author": "Andrew Mason",
   "license": "ISC",
