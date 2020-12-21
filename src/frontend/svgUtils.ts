@@ -45,7 +45,7 @@ async function optimizeSvgImages(
 
 export function reducePathPrecision(svgEl: SVGElement): void {
   svgEl.querySelectorAll("path").forEach((path) => {
-    let d = path.getAttribute("d");
+    const d = path.getAttribute("d");
     if (d) {
       // Simplify paths
       // const points = pointsOnPath(d, 0.1, 0.3);
@@ -83,7 +83,7 @@ function cleanUpSvg(svgEl: SVGElement): void {
 
 function addLinks(svgEl: SVGElement): void {
   // @ref: https://ihateregex.io/expr/url/
-  const urlPattern = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/;
+  const urlPattern = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_+.~#?&//=]*)/;
   const elWithIds = svgEl.querySelectorAll("[id]");
 
   for (const el of elWithIds) {

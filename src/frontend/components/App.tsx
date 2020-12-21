@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { FunctionalComponent, h } from "preact";
 import { useState, useEffect, useRef } from "preact/hooks";
 import { saveAs } from "file-saver";
 import { MSG_EVENTS, ERRORS, UI_TEXT } from "constants";
@@ -16,7 +16,7 @@ const enum STATUS {
   ERROR,
 }
 
-export const App = function () {
+export const App: FunctionalComponent = function () {
   const clipboardEl = useRef<HTMLTextAreaElement>(null);
   const headlineEl = useRef<HTMLInputElement>(null);
 
@@ -76,11 +76,13 @@ export const App = function () {
   }, []);
 
   // Store headings on Figma page when headings change
-  useEffect(() => {
-    postMan.send({
-      workload: MSG_EVENTS.UPDATE_HEADLINES,
-      data: { headline, subhead, source },
-    });
+  useEffect((): void => {
+    postMan
+      .send({
+        workload: MSG_EVENTS.UPDATE_HEADLINES,
+        data: { headline, subhead, source },
+      })
+      .catch(console.error);
   }, [headline, subhead, source]);
 
   // Generate HTML when headings, SVG or responsive flag changes
@@ -102,7 +104,15 @@ export const App = function () {
 
     setHtml(html);
     setStatus(STATUS.READY);
-  }, [headline, subhead, source, svgText, responsive]);
+  }, [
+    headline,
+    subhead,
+    source,
+    svgText,
+    responsive,
+    figmaFrames,
+    renderedFrames,
+  ]);
 
   // Render SVG and store output when Status changes to Render
   useEffect(() => {
@@ -119,9 +129,9 @@ export const App = function () {
         setNeedsRender(false);
       };
 
-      getAndStoreSvgHtml();
+      getAndStoreSvgHtml().catch(console.error);
     }
-  }, [status]);
+  }, [status, selectedFrames]);
 
   // Toggle frames between selected states
   const toggleSelected = (id: string): void => {

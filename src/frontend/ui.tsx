@@ -1,6 +1,6 @@
 import { h, render } from "preact";
 import { App } from "frontend/components/App";
-import { ErrorBoundry } from "frontend/components/ErrorBoundary";
+import { ErrorBoundary as ErrorBoundary } from "frontend/components/ErrorBoundary";
 import { MSG_EVENTS } from "constants";
 import { postMan } from "utils/messages";
 import { resizeAndOptimiseImage } from "frontend/imageHelper";
@@ -18,8 +18,8 @@ postMan.registerWorker(MSG_EVENTS.UPDATE_HEADLINES, setHeadlinesAndSource);
 
 // Render app
 render(
-  <ErrorBoundry>
+  <ErrorBoundary>
     <App />
-  </ErrorBoundry>,
+  </ErrorBoundary>,
   document.body
 );

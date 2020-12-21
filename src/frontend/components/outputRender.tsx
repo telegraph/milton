@@ -168,10 +168,10 @@ function Text(props: TextProps) {
 
   return (
     <div
-      className={`f2h__text ${node.strokeWeight ? "f2h__text--stroke" : ""}`}
+      class={`f2h__text ${node.strokeWeight ? "f2h__text--stroke" : ""}`}
       style={generateParagraphStyle(node, width, height, positionFixed)}
     >
-      <div className="f2h__text_inner">
+      <div class="f2h__text_inner">
         {node.rangeStyles.map((style) => (
           <span
             key={style.text}
