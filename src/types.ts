@@ -17,10 +17,10 @@ export type MsgEventType =
   | MsgCompressImageType;
 
 export type IFrameData = {
-  frames: Omit<FrameDataInterface, "uid">[];
-  headline: string | undefined;
-  subhead: string | undefined;
-  source: string | undefined;
+  frames: Record<string, FrameDataInterface>;
+  headline: string;
+  subhead: string;
+  source: string;
 };
 
 export type MsgFramesType = IFrameData & {

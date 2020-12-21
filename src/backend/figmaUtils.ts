@@ -19,7 +19,7 @@ function supportsFills(
 
 function flattenBooleanGroups(frameNode: FrameNode): void {
   // Flatten boolean elements
-  let booleanNodes = frameNode.findAll(
+  const booleanNodes = frameNode.findAll(
     (node) => node.type === "BOOLEAN_OPERATION"
   ) as BooleanOperationNode[];
 
@@ -59,7 +59,7 @@ function createCloneOfFrames(frames: FrameNode[]): FrameNode {
   outputNode.name = "output";
 
   for (const frame of frames) {
-    const clone = frame?.clone() as FrameNode;
+    const clone = frame?.clone();
 
     // NOTE: Previously text nodes were removed here but this caused
     // width changes in auto-layout. Text is removed as part of the
@@ -172,7 +172,7 @@ export function getRootFrames(): IFrameData {
     ) as FrameNode[];
   }
 
-  const frames = {};
+  const frames: Record<string, FrameDataInterface> = {};
   for (const frame of selectedFrames) {
     const { id } = frame;
     frames[id] = createFrameData(frame);

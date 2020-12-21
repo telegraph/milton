@@ -4,7 +4,7 @@ import { saveAs } from "file-saver";
 import { MSG_EVENTS, ERRORS, UI_TEXT } from "constants";
 import { decodeSvgToString } from "frontend/svgUtils";
 import { postMan } from "utils/messages";
-import { FrameCollection } from "types";
+import { FrameCollection, FrameRender, IFrameData } from "types";
 import { Preview } from "./Preview";
 import { generateEmbedHtml } from "./outputRender";
 import { version } from "../../../package.json";
@@ -39,7 +39,7 @@ export const App: FunctionalComponent = function () {
   useEffect(() => {
     postMan
       .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
-      .then(({ frames, headline, subhead, source }) => {
+      .then(({ frames, headline, subhead, source }: IFrameData) => {
         // Check for missing frames
         if (!frames || Object.keys(frames).length === 0) {
           setError(ERRORS.MISSING_FRAMES);
@@ -118,10 +118,10 @@ export const App: FunctionalComponent = function () {
   useEffect(() => {
     if (status === STATUS.RENDER) {
       const getAndStoreSvgHtml = async () => {
-        const { svgData, imageNodeDimensions } = await postMan.send({
+        const { svgData, imageNodeDimensions } = (await postMan.send({
           workload: MSG_EVENTS.RENDER,
           data: selectedFrames,
-        });
+        })) as FrameRender;
 
         const svgText = await decodeSvgToString(svgData, imageNodeDimensions);
         setSvgText(svgText);
@@ -142,8 +142,8 @@ export const App: FunctionalComponent = function () {
     frameIds = frameIds.sort();
     setSelectedFrames(frameIds);
 
-    const diffreentFrames = frameIds.join() !== renderedFrames.join();
-    setNeedsRender(diffreentFrames);
+    const differentFrames = frameIds.join() !== renderedFrames.join();
+    setNeedsRender(differentFrames);
   };
 
   // Output HTML to clipboard
