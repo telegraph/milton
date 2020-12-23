@@ -30,6 +30,7 @@ import esbuild from "esbuild";
         "process.browser": "true",
       },
       bundle: true,
+      sourcemap: "inline",
       minify: false,
     });
 

@@ -33,10 +33,3 @@ export function downloadHtml(html: string): void {
 
   saveAs(new Blob([fileText], { type: "text/html" }), fileName);
 }
-
-export function copyToClipboard(text: string): void {
-  const textArea = document.createElement("textarea");
-  textArea.value = text;
-  textArea.select();
-  document.execCommand("copy");
-}

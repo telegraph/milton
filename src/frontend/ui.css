@@ -233,6 +233,7 @@ body {
   resize: auto;
   outline: 1px solid rgba(0, 0, 0, 0.2);
   position: absolute;
+  min-width: 100px;
 }
 .preview__iframe::before {
   content: attr(style);

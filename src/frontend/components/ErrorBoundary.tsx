@@ -14,7 +14,7 @@ export class ErrorBoundary extends Component<Props> {
   }
 
   componentDidCatch(err: Error, errInfo: string): void {
-    console.error(err, errInfo);
+    console.error("caught error", err, errInfo);
   }
 
   render(): JSX.Element | preact.ComponentChildren {

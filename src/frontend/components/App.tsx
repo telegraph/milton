@@ -102,62 +102,58 @@ export function App(): JSX.Element {
 
   if (status === STATUS.LOADING) return <p>LOADING</p>;
 
-  if (status === STATUS.RENDERING) return <p>RENDERING</p>;
+  const outputFrames = Object.values(figmaFrames).filter(({ id }) =>
+    selectedFrames.includes(id)
+  );
 
-  if (status === STATUS.IDLE) return <p>IDLE</p>;
+  const breakpoints = outputFrames.map(({ width, height }) => ({
+    width,
+    height,
+  }));
 
-  if (status === STATUS.READY) {
-    const frames = Object.values(figmaFrames).filter(({ id }) =>
-      selectedFrames.includes(id)
-    );
+  const html =
+    outputFrames.length > 0
+      ? generateEmbedHtml({
+          frames: outputFrames,
+          svg,
+          headline,
+          subhead,
+          source,
+          responsive,
+        })
+      : "";
 
-    const html = generateEmbedHtml({
-      frames,
-      svg,
-      headline,
-      subhead,
-      source,
-      responsive,
-    });
+  return (
+    <div class="app">
+      <Preview
+        html={html}
+        responsive={responsive}
+        handleChange={dispatch}
+        breakpoint={breakpoints}
+      />
 
-    const breakPoints = frames.map(({ width, height }) => ({ width, height }));
-
-    // console.log(dispatch);
-    return (
-      <div class="app">
-        <Preview
-          html={html}
-          responsive={responsive}
+      <section class="sidebar">
+        <Frames
+          figmaFrames={figmaFrames}
+          selectedFrames={selectedFrames}
           handleChange={dispatch}
-          breakPoints={breakPoints}
-          // renderedFrames={renderedFrames}
         />
 
-        <section class="sidebar">
-          <Frames
-            figmaFrames={figmaFrames}
-            selectedFrames={selectedFrames}
-            handleChange={dispatch}
-          />
+        <FrameText
+          headline={headline}
+          subhead={subhead}
+          source={source}
+          handleChange={dispatch}
+        />
 
-          <FrameText
-            headline={headline}
-            subhead={subhead}
-            source={source}
-            handleChange={dispatch}
-          />
+        <Export svg={svg} html={html} />
+      </section>
 
-          <Export svg={svg} html={html} />
-        </section>
+      <p class="footer">Version {version}</p>
 
-        <p class="footer">Version {version}</p>
-
-        {selectedFrames.length === 0 && (
-          <p class="warning">Need to select at least one frame</p>
-        )}
-      </div>
-    );
-  }
-
-  return <p>UNKNOWN STATE</p>;
+      {selectedFrames.length === 0 && (
+        <p class="warning">Need to select at least one frame</p>
+      )}
+    </div>
+  );
 }

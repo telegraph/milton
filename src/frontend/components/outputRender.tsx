@@ -246,7 +246,7 @@ type renderInlineProps = {
 export function generateEmbedHtml(props: renderInlineProps): string {
   const { frames, svg, headline, subhead, source, responsive } = props;
 
-  const mediaQuery = genreateMediaQueries(frames);
+  const mediaQuery = generateMediaQueries(frames);
   const fontFaces = generateFontFaces(frames);
   const css = fontFaces + embedCss + mediaQuery;
 
@@ -285,7 +285,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
 /**
  * TODO: There's too much logic in  here. Breakout into separate functions
  */
-function genreateMediaQueries(frames: FrameDataInterface[]) {
+function generateMediaQueries(frames: FrameDataInterface[]) {
   // Sort frames by ascending height. Small > big
   const sortedFrames = Object.values(frames)
     .map(({ width, height, id }) => ({ width, height, id }))

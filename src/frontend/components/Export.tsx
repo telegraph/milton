@@ -1,6 +1,6 @@
 import { h, JSX } from "preact";
-
-import { downloadHtml, copyToClipboard } from "utils/common";
+import copy from "clipboard-copy";
+import { downloadHtml } from "utils/common";
 
 interface ExportProps {
   svg: string;
@@ -14,7 +14,16 @@ export function Export({ svg, html }: ExportProps): JSX.Element {
         <span class="export__filesize">{Math.ceil(svg.length / 1024)}k</span>
       </legend>
 
-      <button class="btn export__copy" onClick={() => copyToClipboard(html)}>
+      <button
+        class="btn export__copy"
+        onClick={() => {
+          copy(html)
+            .then(() => {
+              alert("Figma2HTML code copied to clipboard");
+            })
+            .catch(console.error);
+        }}
+      >
         Copy to clipboard
       </button>
 

@@ -8,7 +8,6 @@ export enum STATUS {
   LOADING = "LOADING",
   READY = "READY",
   RENDERING = "RENDERING",
-  IDLE = "IDLE",
   ERROR = "ERROR",
 }
 
