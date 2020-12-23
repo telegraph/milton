@@ -207,7 +207,7 @@ body {
   background-position: 0 0, 30px 30px;
 }
 .preview__container--drag {
-  cursor: move;
+  cursor: grab;
 }
 .preview__width input,
 .preview__zoom input {

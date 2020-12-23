@@ -1,12 +1,6 @@
 import { actionSetResponsive, ReducerProps } from "frontend/store";
 import { FunctionalComponent, h, JSX } from "preact";
-import {
-  useState,
-  useEffect,
-  useRef,
-  useReducer,
-  useCallback,
-} from "preact/hooks";
+import { useState, useEffect, useRef, useReducer } from "preact/hooks";
 
 interface ZoomContainerProps {
   html: string;
@@ -152,6 +146,7 @@ interface PreviewState {
   zoom: number;
   breakpointIndex: number;
   panning: boolean;
+  panningEnabled: boolean;
 }
 
 const initialState: PreviewState = {
@@ -166,6 +161,7 @@ const initialState: PreviewState = {
   zoom: 1,
   breakpointIndex: 0,
   panning: false,
+  panningEnabled: false,
 };
 
 interface PreviewProps {
@@ -176,9 +172,11 @@ interface PreviewProps {
 }
 
 type actionType =
-  | { type: "UPDATE_POSITION"; payload: { x: number; y: number } }
+  | { type: "ENABLED_PANNING" }
   | { type: "START_PANNING"; payload: { x: number; y: number } }
+  | { type: "UPDATE_POSITION"; payload: { x: number; y: number } }
   | { type: "END_PANNING" }
+  | { type: "DISABLE_PANNING" }
   | { type: "RESET" }
   | {
       type: "UPDATE_BREAKPOINT_INDEX";
@@ -200,27 +198,34 @@ function reducer(state: PreviewState, action: actionType): PreviewState {
       };
     }
 
-    case "START_PANNING":
-      return {
-        ...state,
-        panning: true,
-        startX: action.payload.x,
-        startY: action.payload.y,
-      };
+    case "ENABLED_PANNING":
+      return { ...state, panningEnabled: true };
 
-    case "UPDATE_POSITION": {
-      if (!state.panning) {
+    case "START_PANNING":
+      if (state.panningEnabled) {
+        return {
+          ...state,
+          panning: true,
+          startX: action.payload.x,
+          startY: action.payload.y,
+        };
+      } else {
         return state;
       }
 
-      const distanceX = state.translateX + (action.payload.x - state.startX);
-      const distanceY = state.translateY + (action.payload.y - state.startY);
+    case "UPDATE_POSITION": {
+      if (state.panningEnabled && state.panning) {
+        const distanceX = state.translateX + (action.payload.x - state.startX);
+        const distanceY = state.translateY + (action.payload.y - state.startY);
 
-      return {
-        ...state,
-        x: distanceX,
-        y: distanceY,
-      };
+        return {
+          ...state,
+          x: distanceX,
+          y: distanceY,
+        };
+      } else {
+        return state;
+      }
     }
 
     case "END_PANNING":
@@ -229,7 +234,11 @@ function reducer(state: PreviewState, action: actionType): PreviewState {
         translateX: state.x,
         translateY: state.y,
         panning: false,
+        panningEnabled: false,
       };
+
+    case "DISABLE_PANNING":
+      return { ...state, panningEnabled: state.panning };
 
     default:
       throw new Error("Unknown action") as never;
@@ -388,6 +397,10 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
   // }, []);
 
   const handleMouseDown = (e: MouseEvent) => {
+    if (e.button === 1) {
+      dispatch({ type: "ENABLED_PANNING" });
+    }
+
     dispatch({ type: "START_PANNING", payload: { x: e.x, y: e.y } });
   };
 
@@ -400,13 +413,13 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    const { type } = e;
-    console.log(type);
+    if (e.code === "Space") {
+      dispatch({ type: "ENABLED_PANNING" });
+    }
   };
 
-  const handleKeyUp = (e: KeyboardEvent) => {
-    const { type } = e;
-    console.log(type);
+  const handleKeyUp = () => {
+    dispatch({ type: "DISABLE_PANNING" });
   };
 
   useEffect(() => {
@@ -425,11 +438,11 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
       el.removeEventListener("mouseup", handleMouseUp);
       el.removeEventListener("mouseleave", handleMouseUp);
       window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
+      window.addEventListener("keyup", handleKeyUp);
     };
   }, []);
 
-  const { x, y, zoom, width, height, breakpointIndex } = state;
+  const { x, y, zoom, width, height, breakpointIndex, panningEnabled } = state;
 
   const iframeStyle = `
     width: ${width}px;
@@ -478,7 +491,12 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
         </label>
       </div>
 
-      <div class={`preview__container`} ref={previewEl}>
+      <div
+        class={`preview__container ${
+          panningEnabled ? "preview__container--drag" : ""
+        }`}
+        ref={previewEl}
+      >
         <iframe
           ref={iframeEl}
           class="preview__iframe"
