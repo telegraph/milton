@@ -230,6 +230,9 @@ body {
   width: 100%;
   border: none;
   pointer-events: none;
+  resize: auto;
+  outline: 1px solid rgba(0, 0, 0, 0.2);
+  position: absolute;
 }
 .preview__iframe::before {
   content: attr(style);

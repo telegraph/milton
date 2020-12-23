@@ -178,6 +178,7 @@ type actionType =
   | { type: "END_PANNING" }
   | { type: "DISABLE_PANNING" }
   | { type: "RESET" }
+  | { type: "SET_WIDTH"; payload: { width: number; height: number } }
   | {
       type: "UPDATE_BREAKPOINT_INDEX";
       payload: { width: number; height: number; index: number };
@@ -239,6 +240,9 @@ function reducer(state: PreviewState, action: actionType): PreviewState {
 
     case "DISABLE_PANNING":
       return { ...state, panningEnabled: state.panning };
+
+    case "SET_WIDTH":
+      return { ...state, ...action.payload };
 
     default:
       throw new Error("Unknown action") as never;
@@ -422,23 +426,33 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
     dispatch({ type: "DISABLE_PANNING" });
   };
 
+  const resizeObserver = new ResizeObserver((entries) => {
+    const { width, height } = entries[0].contentRect;
+    dispatch({ type: "SET_WIDTH", payload: { width, height } });
+  });
+
   useEffect(() => {
-    console.log("in here");
-    const el = previewEl.current;
-    el.addEventListener("mousedown", handleMouseDown);
-    el.addEventListener("mousemove", handleMouseMove);
-    el.addEventListener("mouseup", handleMouseUp);
-    el.addEventListener("mouseleave", handleMouseUp);
+    const previewRefEl = previewEl.current;
+    const iframeElRef = iframeEl.current;
+
+    // Translation
+    previewRefEl.addEventListener("mousedown", handleMouseDown);
+    previewRefEl.addEventListener("mousemove", handleMouseMove);
+    previewRefEl.addEventListener("mouseup", handleMouseUp);
+    previewRefEl.addEventListener("mouseleave", handleMouseUp);
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
+    // Zoom
+    resizeObserver.observe(iframeElRef);
 
     return () => {
-      el.removeEventListener("mousedown", handleMouseDown);
-      el.removeEventListener("mousemove", handleMouseMove);
-      el.removeEventListener("mouseup", handleMouseUp);
-      el.removeEventListener("mouseleave", handleMouseUp);
+      previewRefEl.removeEventListener("mousedown", handleMouseDown);
+      previewRefEl.removeEventListener("mousemove", handleMouseMove);
+      previewRefEl.removeEventListener("mouseup", handleMouseUp);
+      previewRefEl.removeEventListener("mouseleave", handleMouseUp);
       window.removeEventListener("keydown", handleKeyDown);
-      window.addEventListener("keyup", handleKeyUp);
+      window.removeEventListener("keyup", handleKeyUp);
+      resizeObserver.unobserve(iframeElRef);
     };
   }, []);
 
@@ -448,7 +462,6 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
     width: ${width}px;
     height: ${height}px;
     transform: scale(${zoom}) translate(${x}px,  ${y}px);
-    position: absolute;
   `;
 
   return (
@@ -464,6 +477,7 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
         </label>
 
         <label class="preview__breakpoints">
+          Breakpoints
           <select
             class="breakpoints"
             onInput={(e) =>
@@ -487,8 +501,13 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
               </option>
             ))}
           </select>
-          Breakpoints
         </label>
+
+        <p class="preview__info">
+          {width} x {height}
+        </p>
+
+        <button onClick={() => dispatch({ type: "RESET" })}>Reset</button>
       </div>
 
       <div
@@ -505,7 +524,6 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
         />
 
         <div class="preview__help">
-          <button onClick={() => dispatch({ type: "RESET" })}>Reset</button>
           <p>
             <span>Zoom</span> cmd / ctrl and + / -
           </p>
