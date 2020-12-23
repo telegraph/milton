@@ -11,7 +11,15 @@ interface PreviewProps {
 
 export const Preview: FunctionalComponent<PreviewProps> = (props) => {
   const { html, responsive, handleChange, breakPoints } = props;
+
   const [breakpointIndex, setBreakpointIndex] = useState(0);
+  const breakpointWidth = breakPoints[breakpointIndex].width;
+  const breakpointHeight = breakPoints[breakpointIndex].height;
+
+  const [dimensions, setDimensions] = useState([
+    breakpointWidth,
+    breakpointHeight,
+  ]);
 
   return (
     <section class="preview">
@@ -42,11 +50,17 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
             ))}
           </select>
         </label>
+
+        <p>
+          {dimensions[0]} x {dimensions[1]}
+        </p>
       </div>
 
       <PreviewIframe
         html={html}
-        breakpointWidth={breakPoints[breakpointIndex].width}
+        breakpointWidth={breakpointWidth}
+        breakpointHeight={breakpointHeight}
+        setDimensions={setDimensions}
       />
     </section>
   );
@@ -67,29 +81,17 @@ interface PreviewIframeState {
   panningEnabled: boolean;
 }
 
-const initialState: PreviewIframeState = {
-  x: 0,
-  y: 0,
-  startX: 0,
-  startY: 0,
-  width: 100,
-  height: 100,
-  translateX: 0,
-  translateY: 0,
-  zoom: 1,
-  breakpointIndex: 0,
-  panning: false,
-  panningEnabled: false,
-};
-
 type actionType =
   | { type: "ENABLED_PANNING" }
   | { type: "START_PANNING"; payload: { x: number; y: number } }
   | { type: "UPDATE_POSITION"; payload: { x: number; y: number } }
   | { type: "END_PANNING" }
   | { type: "DISABLE_PANNING" }
-  | { type: "RESET" }
-  | { type: "SET_WIDTH"; payload: { width: number; height?: number } };
+  | { type: "RESET"; payload: PreviewIframeState }
+  | {
+      type: "SET_DIMENSIONS";
+      payload: { width: number; height?: number; zoom?: number };
+    };
 
 function reducer(
   state: PreviewIframeState,
@@ -97,7 +99,7 @@ function reducer(
 ): PreviewIframeState {
   switch (action.type) {
     case "RESET":
-      return initialState;
+      return action.payload;
 
     case "ENABLED_PANNING":
       return { ...state, panningEnabled: true };
@@ -116,8 +118,10 @@ function reducer(
 
     case "UPDATE_POSITION": {
       if (state.panningEnabled && state.panning) {
-        const distanceX = state.translateX + (action.payload.x - state.startX);
-        const distanceY = state.translateY + (action.payload.y - state.startY);
+        const { translateX, translateY, startX, startY, zoom } = state;
+
+        const distanceX = translateX + (action.payload.x - startX) / zoom;
+        const distanceY = translateY + (action.payload.y - startY) / zoom;
 
         return {
           ...state,
@@ -141,7 +145,7 @@ function reducer(
     case "DISABLE_PANNING":
       return { ...state, panningEnabled: state.panning };
 
-    case "SET_WIDTH":
+    case "SET_DIMENSIONS":
       return { ...state, ...action.payload };
 
     default:
@@ -152,12 +156,40 @@ function reducer(
 interface PreviewIframeProps {
   html: string;
   breakpointWidth: number;
+  breakpointHeight: number;
+  setDimensions: (x: [number, number]) => void;
 }
 
-function PreviewIframe({ html, breakpointWidth }: PreviewIframeProps) {
+function PreviewIframe({
+  html,
+  breakpointWidth,
+  breakpointHeight,
+  setDimensions,
+}: PreviewIframeProps) {
+  const initialState: PreviewIframeState = {
+    x: 0,
+    y: 0,
+    startX: 0,
+    startY: 0,
+    width: 100,
+    height: 100,
+    translateX: 0,
+    translateY: 0,
+    zoom: 1,
+    breakpointIndex: 0,
+    panning: false,
+    panningEnabled: false,
+  };
+
   const previewEl = useRef<HTMLDivElement>(null);
   const iframeEl = useRef<HTMLIFrameElement>(null);
-  const [state, dispatch] = useReducer(reducer, { ...initialState });
+  const [state, dispatch] = useReducer(reducer, {
+    ...initialState,
+    width: breakpointWidth,
+    height: breakpointHeight,
+  });
+
+  const { x, y, zoom, width, height, panningEnabled, panning } = state;
 
   const handleMouseDown = (e: MouseEvent) => {
     if (e.button === 1) {
@@ -188,20 +220,23 @@ function PreviewIframe({ html, breakpointWidth }: PreviewIframeProps) {
   useEffect(() => {
     const previewRefEl = previewEl.current;
     const iframeElRef = iframeEl.current;
-
     const resizeObserver = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
-      dispatch({ type: "SET_WIDTH", payload: { width, height } });
+      dispatch({ type: "SET_DIMENSIONS", payload: { width, height } });
+      setDimensions([width, height]);
     });
 
     // Translation
     previewRefEl.addEventListener("mousedown", handleMouseDown);
-    previewRefEl.addEventListener("mousemove", handleMouseMove);
-    previewRefEl.addEventListener("mouseup", handleMouseUp);
-    previewRefEl.addEventListener("mouseleave", handleMouseUp);
+    if (panning) {
+      previewRefEl.addEventListener("mousemove", handleMouseMove);
+      previewRefEl.addEventListener("mouseup", handleMouseUp);
+      previewRefEl.addEventListener("mouseleave", handleMouseUp);
+    }
+
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
-    // Zoom
+    // Resize
     resizeObserver.observe(iframeElRef);
 
     return () => {
@@ -213,21 +248,34 @@ function PreviewIframe({ html, breakpointWidth }: PreviewIframeProps) {
       window.removeEventListener("keyup", handleKeyUp);
       resizeObserver.unobserve(iframeElRef);
     };
-  }, []);
+  }, [setDimensions, panning]);
 
   useEffect(() => {
-    dispatch({ type: "SET_WIDTH", payload: { width: breakpointWidth } });
-  }, [breakpointWidth]);
+    const previewRect = previewEl.current.getBoundingClientRect();
+    const zoom = Math.min(
+      previewRect.width / breakpointWidth,
+      previewRect.height / breakpointHeight
+    );
 
-  const { x, y, zoom, width, height, panningEnabled } = state;
+    dispatch({
+      type: "SET_DIMENSIONS",
+      payload: {
+        ...initialState,
+        width: breakpointWidth,
+        height: breakpointHeight,
+        zoom,
+      },
+    });
+  }, [breakpointWidth, breakpointHeight]);
+
   const iframeWidth = Math.max(breakpointWidth, width);
 
   const iframeStyle = `
-  width: ${iframeWidth}px;
-  height: ${height}px;
-  transform: scale(${zoom}) translate(${x}px,  ${y}px);
-  min-width: ${breakpointWidth}px;
-`;
+    width: ${iframeWidth}px;
+    height: ${height}px;
+    transform: scale(${zoom}) translate(${x}px,  ${y}px);
+    min-width: ${breakpointWidth}px;
+  `;
 
   return (
     <div
@@ -244,7 +292,11 @@ function PreviewIframe({ html, breakpointWidth }: PreviewIframeProps) {
       />
 
       <div class="preview__help">
-        <button onClick={() => dispatch({ type: "RESET" })}>Reset</button>
+        <button
+          onClick={() => dispatch({ type: "RESET", payload: initialState })}
+        >
+          Reset
+        </button>
         <p>
           <span>Zoom</span> cmd / ctrl and + / -
         </p>
