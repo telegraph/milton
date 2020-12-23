@@ -1,140 +1,58 @@
 import { actionSetResponsive, ReducerProps } from "frontend/store";
-import { FunctionalComponent, h, JSX } from "preact";
-import { useState, useEffect, useRef, useReducer } from "preact/hooks";
+import { FunctionalComponent, h } from "preact";
+import { useEffect, useRef, useReducer, useState } from "preact/hooks";
 
-interface ZoomContainerProps {
+interface PreviewProps {
   html: string;
+  responsive: boolean;
+  breakPoints: { width: number; height: number }[];
+  handleChange: (action: ReducerProps) => void;
 }
 
-function ZoomContainer({ html }: ZoomContainerProps): JSX.Element {
-  const iframeEl = useRef<HTMLIFrameElement>(null);
-  const previewEl = useRef<HTMLDivElement>(null);
-
-  const [zoomScale, setZoomScale] = useState(1);
-  const [previewSize, setPreviewSize] = useState<[number, number]>([0, 0]);
-  const [translation, setTranslation] = useState<[number, number]>([0, 0]);
-  // Listen to preview events
-  const [dragEnabled, setDragEnabled] = useState(false);
-  const [spacePressed, setSpacePressed] = useState(false);
-
-  // const handleZoom = (e: WheelEvent | KeyboardEvent) => {
-  //   const ZOOM_INCREMENT = 0.1;
-  //   const { type, ctrlKey, metaKey } = e;
-
-  //   if (ctrlKey || metaKey) {
-  //     let direction = 1;
-
-  //     if (type === "wheel") {
-  //       const { deltaY } = e;
-  //       direction = deltaY > 0 ? 1 - ZOOM_INCREMENT : 1 + ZOOM_INCREMENT;
-  //     }
-
-  //     if (type === "keydown") {
-  //       switch (e.key) {
-  //         case "=":
-  //           direction = 1 + ZOOM_INCREMENT;
-  //           break;
-  //         case "-":
-  //           direction = 1 - ZOOM_INCREMENT;
-  //           break;
-  //         default:
-  //           direction = 1;
-  //       }
-  //     }
-
-  //     setZoomScale(zoomScale * direction);
-  //   }
-  // };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (dragEnabled === false) return;
-
-    const { x, y } = e;
-    const translateX = prevTrans[0] + (x - dragOrigin[0]) / zoomScale;
-    const translateY = prevTrans[1] + (y - dragOrigin[1]) / zoomScale;
-    setTranslation([translateX, translateY]);
-  };
-
-  const [dragOrigin, setDragOrigin] = useState<[number, number]>([0, 0]);
-  const [prevTrans, setPrevTrans] = useState<[number, number]>([0, 0]);
-
-  const handleMouseClick = (e: MouseEvent) => {
-    const { button, type, x, y } = e;
-
-    // Only allow main and middle mouse buttons to control panning
-    if (button > 1) return;
-
-    if (spacePressed && type === "mousedown") {
-      setDragEnabled(true);
-      // Set new drag origin
-      setDragOrigin([x, y]);
-    }
-
-    if (dragEnabled && type === "mouseup") {
-      setDragEnabled(false);
-      setPrevTrans([...translation]);
-    }
-  };
-
-  const handlePanStart = (e: KeyboardEvent) =>
-    e.code === "Space" &&
-    e.target?.nodeName !== "INPUT" &&
-    setSpacePressed(true);
-
-  const handlePanEnd = (e: KeyboardEvent) => {
-    if (e.code === "Space" && e.target?.nodeName !== "INPUT") {
-      // Store translation info
-      setPrevTrans([...translation]);
-      // Stop panning
-      setSpacePressed(false);
-      setDragEnabled(false);
-    }
-  };
-
-  // Event listeners
-
-  useEffect(() => {
-    const el = previewEl.current;
-    if (dragEnabled) {
-      el?.addEventListener("mousemove", handleMouseMove);
-    }
-
-    window.addEventListener("mousedown", handleMouseClick);
-    window.addEventListener("mouseup", handleMouseClick);
-    // window.addEventListener("wheel", handleZoom);
-    // window.addEventListener("keydown", handleZoom);
-    window.addEventListener("keydown", handlePanStart);
-    window.addEventListener("keyup", handlePanEnd);
-  }, [
-    previewEl,
-    dragEnabled,
-    handleMouseClick,
-    handlePanEnd,
-    handlePanStart,
-    // handleZoom,
-    handleMouseMove,
-  ]);
-
-  const iframeStyle = `
-    width: ${previewSize[0]}px;
-    height: ${previewSize[1]}px;
-    transform: scale(${zoomScale}) translate(${translation[0]}px,  ${translation[1]}px);
-    position: absolute;
-  `;
+export const Preview: FunctionalComponent<PreviewProps> = (props) => {
+  const { html, responsive, handleChange, breakPoints } = props;
+  const [breakpointIndex, setBreakpointIndex] = useState(0);
 
   return (
-    <div class="preview__wrapper" ref={previewEl}>
-      <iframe
-        ref={iframeEl}
-        class="preview__iframe"
-        srcDoc={html}
-        style={iframeStyle}
-      />
-    </div>
-  );
-}
+    <section class="preview">
+      <div class="preview__settings">
+        <label class="checkbox preview__responsive">
+          <input
+            type="checkbox"
+            checked={responsive}
+            onInput={() => handleChange(actionSetResponsive(!responsive))}
+          />
+          Responsive
+        </label>
 
-interface PreviewState {
+        <label class="preview__breakpoints">
+          Breakpoints
+          <select
+            class="breakpoints"
+            onInput={(e) => setBreakpointIndex(e.currentTarget.selectedIndex)}
+          >
+            {breakPoints.map(({ width }, i) => (
+              <option
+                key={width}
+                class="breakpoints__option"
+                selected={breakpointIndex === i}
+              >
+                {width}px
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <PreviewIframe
+        html={html}
+        breakpointWidth={breakPoints[breakpointIndex].width}
+      />
+    </section>
+  );
+};
+
+interface PreviewIframeState {
   x: number;
   y: number;
   startX: number;
@@ -149,7 +67,7 @@ interface PreviewState {
   panningEnabled: boolean;
 }
 
-const initialState: PreviewState = {
+const initialState: PreviewIframeState = {
   x: 0,
   y: 0,
   startX: 0,
@@ -164,13 +82,6 @@ const initialState: PreviewState = {
   panningEnabled: false,
 };
 
-interface PreviewProps {
-  html: string;
-  responsive: boolean;
-  breakPoints: { width: number; height: number }[];
-  handleChange: (action: ReducerProps) => void;
-}
-
 type actionType =
   | { type: "ENABLED_PANNING" }
   | { type: "START_PANNING"; payload: { x: number; y: number } }
@@ -178,26 +89,15 @@ type actionType =
   | { type: "END_PANNING" }
   | { type: "DISABLE_PANNING" }
   | { type: "RESET" }
-  | { type: "SET_WIDTH"; payload: { width: number; height: number } }
-  | {
-      type: "UPDATE_BREAKPOINT_INDEX";
-      payload: { width: number; height: number; index: number };
-    };
+  | { type: "SET_WIDTH"; payload: { width: number; height?: number } };
 
-function reducer(state: PreviewState, action: actionType): PreviewState {
+function reducer(
+  state: PreviewIframeState,
+  action: actionType
+): PreviewIframeState {
   switch (action.type) {
     case "RESET":
       return initialState;
-
-    case "UPDATE_BREAKPOINT_INDEX": {
-      const { width, height, index } = action.payload;
-      return {
-        ...state,
-        breakpointIndex: index,
-        width,
-        height,
-      };
-    }
 
     case "ENABLED_PANNING":
       return { ...state, panningEnabled: true };
@@ -249,156 +149,15 @@ function reducer(state: PreviewState, action: actionType): PreviewState {
   }
 }
 
-export const Preview: FunctionalComponent<PreviewProps> = (props) => {
-  const {
-    html,
-    responsive,
-    handleChange,
-    // renderedFrames,
-    // setResponsive,
-    breakPoints,
-  } = props;
+interface PreviewIframeProps {
+  html: string;
+  breakpointWidth: number;
+}
 
-  // const containerEl = useRef<HTMLDivElement>(null);
-
-  // Listen to preview events
-  // const [dragEnabled, setDragEnabled] = useState(false);
-  // const [spacePressed, setSpacePressed] = useState(false);
-
-  // const [breakpoint, setBreakpoint] = useState(0);
-
-  // Update preview iframe based on new HTML content
-  // useEffect(() => {
-  //   if (!html) return;
-
-  //   const { width = 320, height = 240 } = breakPoints[breakpoint] ?? {};
-  //   const scrollHeight =
-  //     iframeEl?.current?.contentWindow?.document?.body?.scrollHeight || 0;
-  //   if (height && width) {
-  //     setPreviewSize([width, scrollHeight]);
-  //   }
-  //   iframeEl.current?.contentWindow?.addEventListener(
-  //     "resize",
-  //     handleIframeResize
-  //   );
-  //   iframeEl.current?.contentWindow?.document.addEventListener(
-  //     "readystatechange",
-  //     handleIframeResize
-  //   );
-
-  //   return () => {
-  //     iframeEl.current?.contentWindow?.document.removeEventListener(
-  //       "readystatechange",
-  //       handleIframeResize
-  //     );
-  //     iframeEl.current?.contentWindow?.removeEventListener(
-  //       "resize",
-  //       handleIframeResize
-  //     );
-  //   };
-  // }, [html, breakpoint]);
-
-  // // Reset zoom and translation on breakpoint and rendered frame changes
-  // useEffect(() => {
-  //   if (!html || !previewEl.current) return;
-  //   const { width } = previewEl.current.getBoundingClientRect();
-
-  //   const maxWidth = breakPoints.reduce(
-  //     (acc, { width }) => (acc > width ? acc : width),
-  //     1
-  //   );
-
-  //   const zoomScale = width / maxWidth;
-
-  //   setZoomScale(zoomScale > 1 ? 1 : zoomScale);
-  //   setTranslation([0, 0]);
-  //   setPrevTrans([0, 0]);
-  // }, [breakpoint, breakPoints, renderedFrames, html]);
-
-  // const handleIframeResize = (e) => {
-  //   // console.log("readystatechange / resize", e);
-  //   const { readyState, body } =
-  //     iframeEl?.current?.contentWindow?.document || {};
-
-  //   if (readyState === "complete" && body) {
-  //     const { scrollHeight, offsetWidth } = body;
-  //     // const { width = 320 } = breakPoints[breakpoint] ?? {};
-  //     setPreviewSize([offsetWidth, scrollHeight]);
-  //   }
-  // };
-
+function PreviewIframe({ html, breakpointWidth }: PreviewIframeProps) {
   const previewEl = useRef<HTMLDivElement>(null);
   const iframeEl = useRef<HTMLIFrameElement>(null);
-
-  const [state, dispatch] = useReducer(reducer, {
-    ...initialState,
-    width: breakPoints[0].width,
-    height: breakPoints[0].height,
-  });
-
-  // const [zoomScale, setZoomScale] = useState(1);
-  // const [dragEnabled, setDragEnabled] = useState(false);
-  // const [spacePressed, setSpacePressed] = useState(false);
-  // const [translation, setTranslation] = useState<[number, number]>([0, 0]);
-  // const [size, setSize] = useState<{ width: number; height: number } | null>(
-  //   null
-  // );
-
-  // const [breakpointIndex, setBreakpointIndex] = useState(0);
-  // const updateBreakpointIndex = (index: number) => {
-  //   setBreakpointIndex(index);
-  //   setSize(null);
-  // };
-
-  // const handleMouseMove = (e: MouseEvent) => {
-  //   if (dragEnabled === false) return;
-
-  //   const { x, y } = e;
-  //   const translateX = prevTrans[0] + (x - dragOrigin[0]) / zoomScale;
-  //   const translateY = prevTrans[1] + (y - dragOrigin[1]) / zoomScale;
-  //   setTranslation([translateX, translateY]);
-  // };
-
-  // const [dragOrigin, setDragOrigin] = useState<[number, number]>([0, 0]);
-  // const [prevTrans, setPrevTrans] = useState<[number, number]>([0, 0]);
-
-  // const handlePanStart = (e: KeyboardEvent) =>
-  //   e.code === "Space" &&
-  //   e.target?.nodeName !== "INPUT" &&
-  //   setSpacePressed(true);
-
-  // const handlePanEnd = (e: KeyboardEvent) => {
-  //   if (e.code === "Space" && e.target?.nodeName !== "INPUT") {
-  //     // Store translation info
-  //     setPrevTrans([...translation]);
-  //     // Stop panning
-  //     setSpacePressed(false);
-  //     setDragEnabled(false);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   console.log(previewEl.current);
-  //   const handleMouseClick = (e: MouseEvent) => {
-  //     const { button, type, x, y } = e;
-
-  //     // Only allow main and middle mouse buttons to control panning
-  //     if (button > 1) return;
-
-  //     if (spacePressed && type === "mousedown") {
-  //       setDragEnabled(true);
-  //       // Set new drag origin
-  //       setDragOrigin([x, y]);
-  //     }
-
-  //     if (dragEnabled && type === "mouseup") {
-  //       setDragEnabled(false);
-  //       setPrevTrans([...translation]);
-  //     }
-  //   };
-
-  //   previewEl.current.addEventListener("click", handleMouseClick);
-  // }, []);
+  const [state, dispatch] = useReducer(reducer, { ...initialState });
 
   const handleMouseDown = (e: MouseEvent) => {
     if (e.button === 1) {
@@ -426,14 +185,14 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
     dispatch({ type: "DISABLE_PANNING" });
   };
 
-  const resizeObserver = new ResizeObserver((entries) => {
-    const { width, height } = entries[0].contentRect;
-    dispatch({ type: "SET_WIDTH", payload: { width, height } });
-  });
-
   useEffect(() => {
     const previewRefEl = previewEl.current;
     const iframeElRef = iframeEl.current;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      dispatch({ type: "SET_WIDTH", payload: { width, height } });
+    });
 
     // Translation
     previewRefEl.addEventListener("mousedown", handleMouseDown);
@@ -456,82 +215,43 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
     };
   }, []);
 
-  const { x, y, zoom, width, height, breakpointIndex, panningEnabled } = state;
+  useEffect(() => {
+    dispatch({ type: "SET_WIDTH", payload: { width: breakpointWidth } });
+  }, [breakpointWidth]);
+
+  const { x, y, zoom, width, height, panningEnabled } = state;
+  const iframeWidth = Math.max(breakpointWidth, width);
 
   const iframeStyle = `
-    width: ${width}px;
-    height: ${height}px;
-    transform: scale(${zoom}) translate(${x}px,  ${y}px);
-  `;
+  width: ${iframeWidth}px;
+  height: ${height}px;
+  transform: scale(${zoom}) translate(${x}px,  ${y}px);
+  min-width: ${breakpointWidth}px;
+`;
 
   return (
-    <section class="preview">
-      <div class="preview__settings">
-        <label class="checkbox preview__responsive">
-          <input
-            type="checkbox"
-            checked={responsive}
-            onInput={() => handleChange(actionSetResponsive(!responsive))}
-          />
-          Responsive
-        </label>
+    <div
+      class={`preview__container ${
+        panningEnabled ? "preview__container--drag" : ""
+      }`}
+      ref={previewEl}
+    >
+      <iframe
+        ref={iframeEl}
+        class="preview__iframe"
+        srcDoc={html}
+        style={iframeStyle}
+      />
 
-        <label class="preview__breakpoints">
-          Breakpoints
-          <select
-            class="breakpoints"
-            onInput={(e) =>
-              dispatch({
-                type: "UPDATE_BREAKPOINT_INDEX",
-                payload: {
-                  width: breakPoints[e.currentTarget.selectedIndex].width,
-                  height: breakPoints[e.currentTarget.selectedIndex].height,
-                  index: e.currentTarget.selectedIndex,
-                },
-              })
-            }
-          >
-            {breakPoints.map(({ width }, i) => (
-              <option
-                key={width}
-                class="breakpoints__option"
-                selected={breakpointIndex === i}
-              >
-                {width}px
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <p class="preview__info">
-          {width} x {height}
-        </p>
-
+      <div class="preview__help">
         <button onClick={() => dispatch({ type: "RESET" })}>Reset</button>
+        <p>
+          <span>Zoom</span> cmd / ctrl and + / -
+        </p>
+        <p>
+          <span>Pan</span> Space-bar and drag
+        </p>
       </div>
-
-      <div
-        class={`preview__container ${
-          panningEnabled ? "preview__container--drag" : ""
-        }`}
-        ref={previewEl}
-      >
-        <iframe
-          ref={iframeEl}
-          class="preview__iframe"
-          srcDoc={html}
-          style={iframeStyle}
-        />
-
-        <div class="preview__help">
-          <p>
-            <span>Zoom</span> cmd / ctrl and + / -
-          </p>
-          <p>
-            <span>Pan</span> Space-bar and drag
-          </p>
-        </div>
-      </div>
-    </section>
+    </div>
   );
-};
+}
