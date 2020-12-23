@@ -126,6 +126,7 @@ export function App(): JSX.Element {
   return (
     <div class="app">
       <Preview
+        rendering={status === STATUS.RENDERING}
         html={html}
         responsive={responsive}
         handleChange={dispatch}

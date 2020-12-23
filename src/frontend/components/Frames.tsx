@@ -1,11 +1,7 @@
 import { h, JSX } from "preact";
 import { FigmaFramesType } from "types";
-import { STATUS } from "constants";
-import {
-  actionToggleSelectedFrame,
-  actionSetStatus,
-  ReducerProps,
-} from "../store";
+
+import { actionToggleSelectedFrame, ReducerProps } from "../store";
 
 interface FramesProps {
   figmaFrames: FigmaFramesType;
@@ -44,13 +40,6 @@ export function Frames({
           </label>
         ))}
       </div>
-
-      <button
-        class="btn export__generate"
-        onClick={() => handleChange(actionSetStatus(STATUS.RENDERING))}
-      >
-        Update
-      </button>
     </fieldset>
   );
 }

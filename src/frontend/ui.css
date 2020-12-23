@@ -157,6 +157,21 @@ body {
 
   grid-row: 2/4;
   grid-column: 1/2;
+  position: relative;
+}
+.preview__rendering {
+  display: flex;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  z-index: 4;
+  pointer-events: none;
 }
 .preview__settings {
   display: flex;

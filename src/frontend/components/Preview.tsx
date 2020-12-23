@@ -3,6 +3,7 @@ import { FunctionalComponent, h } from "preact";
 import { useEffect, useRef, useReducer, useState } from "preact/hooks";
 
 interface PreviewProps {
+  rendering: boolean;
   html: string;
   responsive: boolean;
   breakpoint: { width: number; height: number }[];
@@ -10,7 +11,13 @@ interface PreviewProps {
 }
 
 export const Preview: FunctionalComponent<PreviewProps> = (props) => {
-  const { html, responsive, handleChange, breakpoint: breakPoints } = props;
+  const {
+    html,
+    responsive,
+    handleChange,
+    breakpoint: breakPoints,
+    rendering,
+  } = props;
 
   const [breakpointIndex, setBreakpointIndex] = useState(0);
   const breakpointWidth = breakPoints[breakpointIndex]?.width;
@@ -23,6 +30,7 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
 
   return (
     <section class="preview">
+      {rendering && <div class="preview__rendering">Rendering</div>}
       <div class="preview__settings">
         <label class="checkbox preview__responsive">
           <input
@@ -105,8 +113,10 @@ function reducer(
     case "RESET":
       return action.payload;
 
-    case "ZOOM_IN":
-      return { ...state, zoom: state.zoom * ZOOM_INCREMENT };
+    case "ZOOM_IN": {
+      const zoom = Math.min(1, state.zoom * ZOOM_INCREMENT);
+      return { ...state, zoom };
+    }
 
     case "ZOOM_OUT":
       return { ...state, zoom: state.zoom / ZOOM_INCREMENT };
@@ -271,6 +281,7 @@ function PreviewIframe({
   useEffect(() => {
     const previewRect = previewEl.current.getBoundingClientRect();
     const zoom = Math.min(
+      1,
       previewRect.width / breakpointWidth,
       previewRect.height / breakpointHeight
     );
