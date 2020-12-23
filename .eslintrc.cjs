@@ -19,13 +19,12 @@ module.exports = {
   plugins: ["@typescript-eslint"],
   extends: [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "prettier",
     "prettier/@typescript-eslint",
-    "prettier/react",
   ],
   settings: {
     react: {
@@ -36,4 +35,15 @@ module.exports = {
   rules: {
     "react/no-unknown-property": [2, { ignore: ["class"] }],
   },
+
+  // Fix eslint-plugin-react typescript props bug
+  // https://github.com/yannickcr/eslint-plugin-react/issues/2353
+  overrides: [
+    {
+      files: ["**/*.tsx"],
+      rules: {
+        "react/prop-types": "off",
+      },
+    },
+  ],
 };

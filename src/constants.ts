@@ -1,10 +1,18 @@
-export const enum STAGES {
+export enum STAGES {
   CHOOSE_FRAMES,
   RESPONSIVE_PREVIEW,
   SAVE_OUTPUT,
 }
 
-export const enum MSG_EVENTS {
+export enum STATUS {
+  LOADING = "LOADING",
+  READY = "READY",
+  RENDERING = "RENDERING",
+  IDLE = "IDLE",
+  ERROR = "ERROR",
+}
+
+export enum MSG_EVENTS {
   FOUND_FRAMES,
   NO_FRAMES,
   RENDER,
@@ -17,15 +25,17 @@ export const enum MSG_EVENTS {
   RENDER_IFRAME_HTML,
 }
 
-export const enum OUTPUT_FORMATS {
+export enum OUTPUT_FORMATS {
   INLINE,
   IFRAME,
 }
 
-export const enum ERRORS {
-  MISSING_FRAMES,
-  MULTIPLE_SAME_WIDTH,
-  UNKNOWN,
+export enum ERRORS {
+  MISSING_FRAMES = "MISSING_FRAMES",
+  MULTIPLE_SAME_WIDTH = "MULTIPLE_SAME_WIDTH",
+  FAILED_TO_FETCH_DATA = "FAILED_TO_FETCH_DATA",
+  FAILED_TO_SET_HEADINGS = "FAILED_TO_SET_HEADINGS",
+  UNKNOWN = "UNKNOWN",
 }
 
 export const UI_TEXT = {
@@ -52,7 +62,7 @@ export const UI_TEXT = {
 
 export const FRAME_WARNING_SIZE = 300;
 
-export const enum HEADLINE_NODE_NAMES {
+export enum HEADLINE_NODE_NAMES {
   HEADLINE = "headline",
   SUBHEAD = "subhead",
   SOURCE = "source",

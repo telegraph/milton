@@ -237,14 +237,14 @@ function generateFontFaces(frames: FrameDataInterface[]): string {
 
 type renderInlineProps = {
   frames: FrameDataInterface[];
-  svgText: string;
+  svg: string;
   headline?: string;
   subhead?: string;
   source?: string;
   responsive: boolean;
 };
 export function generateEmbedHtml(props: renderInlineProps): string {
-  const { frames, svgText, headline, subhead, source, responsive } = props;
+  const { frames, svg, headline, subhead, source, responsive } = props;
 
   const mediaQuery = genreateMediaQueries(frames);
   const fontFaces = generateFontFaces(frames);
@@ -264,7 +264,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
       <div className="f2h__wrap" style={`position: relative;`}>
         <div
           className="f2h__svg_container"
-          dangerouslySetInnerHTML={{ __html: svgText }}
+          dangerouslySetInnerHTML={{ __html: svg }}
         />
         <TextContainer frames={frames} />
       </div>

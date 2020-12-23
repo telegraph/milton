@@ -16,8 +16,10 @@ export type MsgEventType =
   | MsgErrorType
   | MsgCompressImageType;
 
+export type FigmaFramesType = Record<string, FrameDataInterface>;
+
 export type IFrameData = {
-  frames: Record<string, FrameDataInterface>;
+  frames: FigmaFramesType;
   headline: string;
   subhead: string;
   source: string;
@@ -49,11 +51,6 @@ export type MsgCompressImageType = {
   height: number;
   uid: string;
 };
-
-export interface FrameCollection {
-  [id: string]: FrameDataInterface;
-}
-
 export type AppPropsInterface = {
   version: string;
 };
@@ -61,7 +58,7 @@ export type AppPropsInterface = {
 export type AppState = {
   readonly error: string | undefined;
   readonly ready: boolean;
-  readonly frames: FrameCollection;
+  readonly frames: FigmaFramesType;
   readonly stage: STAGES;
   readonly responsive: boolean;
   readonly headline: string | undefined;
