@@ -72,6 +72,7 @@ export function App(): JSX.Element {
   } = state;
 
   // Load frame data from backend
+  // TODO: Only fetch data once!!
   useEffect(() => {
     postMan
       .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
@@ -90,6 +91,7 @@ export function App(): JSX.Element {
   }, [headline, subhead, source]);
 
   // Render SVG and store output when Status changes to Render
+  // TODO: Only fetch data once!!
   useEffect(() => {
     if (selectedFrames.length < 1) {
       return;
