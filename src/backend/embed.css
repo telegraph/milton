@@ -56,9 +56,14 @@ body {
 .f2h__svg_container path,
 .f2h__svg_container ellipse {
   vector-effect: non-scaling-stroke;
+  pointer-events: none;
 }
 .f2h__svg_container svg {
   height: auto;
+}
+
+.f2h__svg_container svg a > * {
+  pointer-events: all;
 }
 
 .f2h--responsive svg {
