@@ -1,5 +1,6 @@
 import { resizeAndOptimiseImage } from "./imageHelper";
 import { imageNodeDimensions } from "types";
+import { URL_REGEX } from "utils/common";
 
 // TODO: Is there a way to identify mapping of image to elements from
 // the @figma context? If so we don't need to look inside the SVG elements
@@ -83,12 +84,12 @@ function cleanUpSvg(svgEl: SVGElement): void {
 
 function addLinks(svgEl: SVGElement): void {
   // @ref: https://ihateregex.io/expr/url/
-  const urlPattern = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_+.~#?&//=]*)/;
+
   const elWithIds = svgEl.querySelectorAll("[id]");
 
   for (const el of elWithIds) {
     const { id } = el;
-    const [match] = urlPattern.exec(id) || [];
+    const [match] = URL_REGEX.exec(id) || [];
     // console.log(match, el);
 
     if (match) {

@@ -5,6 +5,7 @@ import {
   FrameDataInterface,
   imageNodeDimensions,
 } from "types";
+import { URL_REGEX } from "utils/common";
 import { getTextNodesFromFrame } from "utils/figmaText";
 
 /**
@@ -48,6 +49,15 @@ function getImageDimensions(frameNode: FrameNode): imageNodeDimensions[] {
   }));
 }
 
+function setRandomPrefixForUrlNodeNames(frameNode: FrameNode): void {
+  frameNode
+    .findAll(({ name }) => URL_REGEX.test(name))
+    .forEach((node) => {
+      const rndId = Math.random().toString(32).substr(2, 4);
+      node.name = `n_${rndId}_${node.name}`;
+    });
+}
+
 function resizeOutputToMaxSize(frameNode: FrameNode): void {
   const maxWidth = Math.max(...frameNode.children.map((f) => f.width));
   const maxHeight = Math.max(...frameNode.children.map((f) => f.height));
@@ -73,6 +83,8 @@ function createCloneOfFrames(frames: FrameNode[]): FrameNode {
     // Store the frame ID as node name (exported in SVG props)
     clone.name = frame.id;
   }
+
+  setRandomPrefixForUrlNodeNames(outputNode);
 
   return outputNode;
 }
