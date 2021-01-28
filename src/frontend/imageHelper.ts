@@ -117,7 +117,7 @@ export async function resizeAndOptimiseImage(
   dataUrl: string,
   nodeDimensions: imageNodeDimensions[],
   jpegQuality = 75,
-  paletteColours = 32
+  paletteColours = 164
 ): Promise<string> {
   const img = await loadImage(dataUrl);
 
