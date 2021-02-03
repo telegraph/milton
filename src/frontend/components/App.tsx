@@ -1,305 +1,162 @@
-import { h } from "preact";
-import { useState, useEffect, useRef } from "preact/hooks";
-import { saveAs } from "file-saver";
-import { MSG_EVENTS, ERRORS, UI_TEXT } from "constants";
+import { h, JSX } from "preact";
+import { useEffect, useReducer } from "preact/hooks";
+
+import { MSG_EVENTS, ERRORS, STATUS } from "constants";
 import { decodeSvgToString } from "frontend/svgUtils";
 import { postMan } from "utils/messages";
-import { FrameCollection } from "types";
-import { Preview } from "./Preview";
+import { FrameRender, IFrameData } from "types";
 import { generateEmbedHtml } from "./outputRender";
+import { Preview } from "./Preview";
+import { Frames } from "./Frames";
+import { FrameText } from "./FrameText";
+import { Export } from "./Export";
+
+import { containsDuplicate, isEmpty } from "utils/common";
+import {
+  initialState,
+  reducer,
+  actionSetSvg,
+  actionSetStatus,
+  actionSetError,
+  dispatchType,
+  actionStoreData,
+} from "../store";
 import { version } from "../../../package.json";
 
-const enum STATUS {
-  LOADING,
-  READY,
-  RENDER,
-  ERROR,
+function handleResponse(dispatch: dispatchType, response: IFrameData): void {
+  if (isEmpty(response.frames)) {
+    dispatch(actionSetError(ERRORS.MISSING_FRAMES));
+    return;
+  }
+
+  const widths = Object.values(response.frames).map(({ width }) => width);
+  if (containsDuplicate(widths)) {
+    dispatch(actionSetError(ERRORS.MULTIPLE_SAME_WIDTH));
+    return;
+  }
+
+  actionStoreData(dispatch, response).catch(console.error);
 }
 
-export const App = function () {
-  const clipboardEl = useRef<HTMLTextAreaElement>(null);
-  const headlineEl = useRef<HTMLInputElement>(null);
+async function getAndStoreSvgHtml(
+  dispatch: dispatchType,
+  frames: string[]
+): Promise<void> {
+  dispatch(actionSetStatus(STATUS.RENDERING));
 
-  // Setup state
-  const [status, setStatus] = useState(STATUS.LOADING);
-  const [selectedFrames, setSelectedFrames] = useState<string[]>([]);
-  const [renderedFrames, setRenderedFrames] = useState<string[]>([]);
-  const [responsive, setResponsive] = useState(true);
-  const [headline, setHeadline] = useState("");
-  const [subhead, setSubHead] = useState("");
-  const [source, setSource] = useState("");
-  const [html, setHtml] = useState("");
-  const [svgText, setSvgText] = useState("");
-  const [figmaFrames, setFigmaFrames] = useState<FrameCollection>({});
-  const [needsRender, setNeedsRender] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [error, setError] = useState<ERRORS | null>(null);
+  const response = (await postMan
+    .send({ workload: MSG_EVENTS.RENDER, data: frames })
+    .catch(console.error)) as FrameRender;
+
+  console.log(response, frames);
+  const { svgData, imageNodeDimensions } = response;
+
+  const svg = await decodeSvgToString(svgData, imageNodeDimensions);
+  dispatch(actionSetSvg(svg));
+  dispatch(actionSetStatus(STATUS.READY));
+}
+
+export function App(): JSX.Element {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const {
+    headline,
+    subhead,
+    source,
+    svg,
+    selectedFrames,
+    status,
+    error,
+    figmaFrames,
+    responsive,
+  } = state;
 
   // Load frame data from backend
+  // TODO: Only fetch data once!!
   useEffect(() => {
     postMan
       .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
-      .then(({ frames, headline, subhead, source }) => {
-        // Check for missing frames
-        if (!frames || Object.keys(frames).length === 0) {
-          setError(ERRORS.MISSING_FRAMES);
-          setStatus(STATUS.ERROR);
-          return;
-        }
-
-        // Check for multiple frames with the same size
-        const hasSameWidthFrames = Object.values(frames)
-          .map(({ width }) => width)
-          .some(
-            (width, _i, arr) => arr.filter((val) => val === width).length > 1
-          );
-        if (hasSameWidthFrames) {
-          setError(ERRORS.MULTIPLE_SAME_WIDTH);
-          setStatus(STATUS.ERROR);
-          return;
-        }
-
-        setFigmaFrames(frames);
-        setHeadline(headline);
-        setSubHead(subhead);
-        setSource(source);
-        setSelectedFrames(Object.keys(frames).sort());
-        setStatus(STATUS.RENDER);
-
-        headlineEl.current?.focus();
-      })
-      .catch((err) => {
-        console.error(err);
-        setError(ERRORS.UNKNOWN);
-        setStatus(STATUS.ERROR);
-      });
+      .then((response: IFrameData) => handleResponse(dispatch, response))
+      .catch(() => dispatch(actionSetError(ERRORS.FAILED_TO_FETCH_DATA)));
   }, []);
 
   // Store headings on Figma page when headings change
-  useEffect(() => {
-    postMan.send({
-      workload: MSG_EVENTS.UPDATE_HEADLINES,
-      data: { headline, subhead, source },
-    });
+  useEffect((): void => {
+    postMan
+      .send({
+        workload: MSG_EVENTS.UPDATE_HEADLINES,
+        data: { headline, subhead, source },
+      })
+      .catch(() => dispatch(actionSetError(ERRORS.FAILED_TO_SET_HEADINGS)));
   }, [headline, subhead, source]);
 
-  // Generate HTML when headings, SVG or responsive flag changes
-  useEffect(() => {
-    if (!svgText) return;
-
-    const framesOut = Object.values(figmaFrames).filter(({ id }) =>
-      renderedFrames.includes(id)
-    );
-
-    const html = generateEmbedHtml({
-      frames: framesOut,
-      svgText,
-      headline,
-      subhead,
-      source,
-      responsive,
-    });
-
-    setHtml(html);
-    setStatus(STATUS.READY);
-  }, [headline, subhead, source, svgText, responsive]);
-
   // Render SVG and store output when Status changes to Render
+  // TODO: Only fetch data once!!
   useEffect(() => {
-    if (status === STATUS.RENDER) {
-      const getAndStoreSvgHtml = async () => {
-        const { svgData, imageNodeDimensions } = await postMan.send({
-          workload: MSG_EVENTS.RENDER,
-          data: selectedFrames,
-        });
-
-        const svgText = await decodeSvgToString(svgData, imageNodeDimensions);
-        setSvgText(svgText);
-        setRenderedFrames(selectedFrames);
-        setNeedsRender(false);
-      };
-
-      getAndStoreSvgHtml();
+    if (selectedFrames.length < 1) {
+      return;
     }
-  }, [status]);
 
-  // Toggle frames between selected states
-  const toggleSelected = (id: string): void => {
-    let frameIds: string[] = selectedFrames.includes(id)
-      ? selectedFrames.filter((val) => val !== id)
-      : [...selectedFrames, id];
+    getAndStoreSvgHtml(dispatch, selectedFrames).catch(console.error);
+  }, [selectedFrames]);
 
-    frameIds = frameIds.sort();
-    setSelectedFrames(frameIds);
+  if (status === STATUS.ERROR) return <p>Error {error}</p>;
 
-    const diffreentFrames = frameIds.join() !== renderedFrames.join();
-    setNeedsRender(diffreentFrames);
-  };
+  if (status === STATUS.LOADING) return <p>LOADING</p>;
 
-  // Output HTML to clipboard
-  const copyToClipboard = () => {
-    clipboardEl.current?.select();
-    document.execCommand("copy");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 600);
-  };
-
-  // Trigger download SVG HTML as a file
-  const downloadHtml = () => {
-    const fileText = `
-    <!doctype html>
-    <html>
-      <head>
-        <base target="_parent">
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>html,body{margin:0;}</style>
-      </head>
-      <body>
-        ${html}
-      </body>
-    </html>
-  `;
-
-    const fileName = `figma2html-${new Date()
-      .toISOString()
-      .replace(/\W/g, "_")}.html`;
-
-    saveAs(new Blob([fileText], { type: "text/html" }), fileName);
-  };
-
-  const sizeSortedFrames = Object.values(figmaFrames).sort((a, b) =>
-    a.width > b.width ? 1 : -1
+  const outputFrames = Object.values(figmaFrames).filter(({ id }) =>
+    selectedFrames.includes(id)
   );
 
-  const breakPoints = sizeSortedFrames
-    .filter(({ id }) => renderedFrames.includes(id))
-    .map(({ width, height }) => ({ width, height }));
+  const breakpoints = outputFrames.map(({ width, height }) => ({
+    width,
+    height,
+  }));
+
+  const html =
+    outputFrames.length > 0
+      ? generateEmbedHtml({
+          frames: outputFrames,
+          svg,
+          headline,
+          subhead,
+          source,
+          responsive,
+        })
+      : "";
 
   return (
     <div class="app">
       <Preview
+        rendering={status === STATUS.RENDERING}
         html={html}
         responsive={responsive}
-        setResponsive={setResponsive}
-        breakPoints={breakPoints}
-        renderedFrames={renderedFrames}
+        handleChange={dispatch}
+        breakpoint={breakpoints}
       />
 
       <section class="sidebar">
-        <fieldset class="selection">
-          <legend>Frames</legend>
+        <Frames
+          figmaFrames={figmaFrames}
+          selectedFrames={selectedFrames}
+          handleChange={dispatch}
+        />
 
-          <div class="selection_inner">
-            {sizeSortedFrames.map(({ name, id, width, height }) => (
-              <label key={id} class="selection__item">
-                <input
-                  class="selection__input"
-                  type="checkbox"
-                  checked={selectedFrames.includes(id)}
-                  onInput={() => toggleSelected(id)}
-                />
+        <FrameText
+          headline={headline}
+          subhead={subhead}
+          source={source}
+          handleChange={dispatch}
+        />
 
-                <span class="selection__name">{name}</span>
-
-                <span class="selection__width">
-                  {Math.round(width)}x{Math.round(height)}
-                </span>
-              </label>
-            ))}
-          </div>
-
-          <button
-            class="btn export__generate"
-            onClick={() => setStatus(STATUS.RENDER)}
-            disabled={!needsRender || selectedFrames.length === 0}
-          >
-            Update
-          </button>
-        </fieldset>
-
-        <fieldset class="headlines">
-          <legend>Headlines</legend>
-          <label>
-            Headline
-            <input
-              type="text"
-              ref={headlineEl}
-              value={headline}
-              onChange={(e) => setHeadline(e.currentTarget.value)}
-            />
-          </label>
-
-          <label>
-            Sub headline
-            <input
-              type="text"
-              value={subhead}
-              onChange={(e) => setSubHead(e.currentTarget.value)}
-            />
-          </label>
-
-          <label>
-            Source
-            <input
-              type="text"
-              value={source}
-              onChange={(e) => setSource(e.currentTarget.value)}
-            />
-          </label>
-        </fieldset>
-
-        <fieldset class="export">
-          <legend>
-            Export{" "}
-            <span class="export__filesize">
-              {Math.ceil(svgText.length / 1024)}k
-            </span>
-          </legend>
-
-          <button
-            class="btn export__copy"
-            disabled={needsRender}
-            onClick={copyToClipboard}
-          >
-            {copied ? "Copied!" : "Copy to clipboard"}
-          </button>
-
-          <button
-            class="btn export__download"
-            disabled={needsRender}
-            onClick={downloadHtml}
-          >
-            Download
-          </button>
-
-          <textarea class="clipboard" ref={clipboardEl} value={html} />
-        </fieldset>
+        <Export svg={svg} html={html} />
       </section>
 
-      {status === STATUS.ERROR && (
-        <div class="error">
-          <h2>Error</h2>
-          <p>{UI_TEXT.ERRORS[error ?? ERRORS.UNKNOWN]}</p>
-        </div>
-      )}
-
-      <div
-        class="loading"
-        data-active={status === STATUS.LOADING || status === STATUS.RENDER}
-      >
-        Loading...
-      </div>
-
       <p class="footer">Version {version}</p>
-
-      {selectedFrames.length > 0 && needsRender && (
-        <p class="warning">Need to update</p>
-      )}
 
       {selectedFrames.length === 0 && (
         <p class="warning">Need to select at least one frame</p>
       )}
     </div>
   );
-};
+}

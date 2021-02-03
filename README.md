@@ -2,7 +2,7 @@
 
 Figma plug-in that helps generate HTML embeds.
 
-## Feaures
+## Features
 
 - Takes frames from current page and generates embedded SVGs
 - Shows preview of output at different breakpoints
@@ -10,7 +10,7 @@ Figma plug-in that helps generate HTML embeds.
 - Warning about missing breakpoints
 - Warn about unsupported content
 - Choice of output format in-line or iframe
-- Saves output as a HTML file for easy ouput (or ZIP)?
+- Saves output as a HTML file for easy output (or ZIP)?
 - Choose frames when more than three are present
 - Choose frames when names don't match (mobile/tablet/desktop)
 
@@ -19,7 +19,7 @@ Figma plug-in that helps generate HTML embeds.
 - [BUG] Responsive preview text alignment issues (clipping mask)
 - [BUG] Incorrect percentage based line-height
 - [Task] Sensible font loading
-- [Task] Font family shoudn't use style in name
+- [Task] Font family shouldn't use style in name
 - [Improvement] Optional headline, sub and source text
 - [Improvement] In situ preview mode
 - [BUG] Wide responsive preview breaks text layout
@@ -30,7 +30,7 @@ Figma plug-in that helps generate HTML embeds.
 - [QA] Test embedding in particle CMS
 - [QA] Check for CSS
 - [Improvement] Remove text nodes from SVG?
-- [Improvement] File size wanring. Information about large shapes?
+- [Improvement] File size warning. Information about large shapes?
 - [Improvement] Optimise images and SVG
 - [Improvement] Add drag scroll to preview
 - [Improvement] ZIP download
@@ -80,7 +80,7 @@ What is wanted from this tool
 
 ### 0.1.5
 
-- Compress images and simplfy SVG shapes
+- Compress images and simplify SVG shapes
 
 ### 0.1.4
 

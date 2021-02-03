@@ -168,10 +168,10 @@ function Text(props: TextProps) {
 
   return (
     <div
-      className={`f2h__text ${node.strokeWeight ? "f2h__text--stroke" : ""}`}
+      class={`f2h__text ${node.strokeWeight ? "f2h__text--stroke" : ""}`}
       style={generateParagraphStyle(node, width, height, positionFixed)}
     >
-      <div className="f2h__text_inner">
+      <div class="f2h__text_inner">
         {node.rangeStyles.map((style) => (
           <span
             key={style.text}
@@ -237,16 +237,16 @@ function generateFontFaces(frames: FrameDataInterface[]): string {
 
 type renderInlineProps = {
   frames: FrameDataInterface[];
-  svgText: string;
+  svg: string;
   headline?: string;
   subhead?: string;
   source?: string;
   responsive: boolean;
 };
 export function generateEmbedHtml(props: renderInlineProps): string {
-  const { frames, svgText, headline, subhead, source, responsive } = props;
+  const { frames, svg, headline, subhead, source, responsive } = props;
 
-  const mediaQuery = genreateMediaQueries(frames);
+  const mediaQuery = generateMediaQueries(frames);
   const fontFaces = generateFontFaces(frames);
   const css = fontFaces + embedCss + mediaQuery;
 
@@ -264,7 +264,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
       <div className="f2h__wrap" style={`position: relative;`}>
         <div
           className="f2h__svg_container"
-          dangerouslySetInnerHTML={{ __html: svgText }}
+          dangerouslySetInnerHTML={{ __html: svg }}
         />
         <TextContainer frames={frames} />
       </div>
@@ -285,7 +285,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
 /**
  * TODO: There's too much logic in  here. Breakout into separate functions
  */
-function genreateMediaQueries(frames: FrameDataInterface[]) {
+function generateMediaQueries(frames: FrameDataInterface[]) {
   // Sort frames by ascending height. Small > big
   const sortedFrames = Object.values(frames)
     .map(({ width, height, id }) => ({ width, height, id }))
@@ -314,13 +314,13 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
           }`;
 
       cssText += `.f2h--responsive svg { width: ${relSvgWidth}%; }`;
-      cssText += `[id="${id}"], [id="textblock-${id}"] { display: block; }`;
+      cssText += `[data-id="${id}"], [id="textblock-${id}"] { display: block; }`;
       cssText += `.f2h--responsive .f2h__wrap  { padding-top: ${paddingHeight}%; }`;
     } else {
       // Styles for the  remaining breakpoints
       const { id: prevId } = sortedFrames[i - 1];
 
-      cssText += `[id="${id}"], [id="textblock-${id}"] { display: none; }`;
+      cssText += `[data-id="${id}"], [id="textblock-${id}"] { display: none; }`;
 
       /* Hide previous and show current frame */
       cssText += `
@@ -339,8 +339,8 @@ function genreateMediaQueries(frames: FrameDataInterface[]) {
         .f2h--responsive .f2h__wrap  {
           padding-top: ${paddingHeight}%;
         }
-        [id="${prevId}"], [id="textblock-${prevId}"] { display: none !important; }
-        [id="${id}"], [id="textblock-${id}"] { display: block !important; }
+        [data-id="${prevId}"], [id="textblock-${prevId}"] { display: none !important; }
+        [data-id="${id}"], [id="textblock-${id}"] { display: block !important; }
       }
       `;
     }

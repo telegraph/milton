@@ -1,292 +1,330 @@
-import { h } from "preact";
-import { useState, useEffect, useRef } from "preact/hooks";
+import { actionSetResponsive, ReducerProps } from "frontend/store";
+import { FunctionalComponent, h } from "preact";
+import { useEffect, useRef, useReducer, useState } from "preact/hooks";
 
-type PreviewProps = {
+interface PreviewProps {
+  rendering: boolean;
   html: string;
   responsive: boolean;
-  setResponsive: (v: boolean) => void;
-  renderedFrames: string[];
-  breakPoints: { width: number; height: number }[];
-};
+  breakpoint: { width: number; height: number }[];
+  handleChange: (action: ReducerProps) => void;
+}
 
-export function Preview(props: PreviewProps) {
+export const Preview: FunctionalComponent<PreviewProps> = (props) => {
   const {
     html,
-    renderedFrames,
     responsive,
-    setResponsive,
-    breakPoints,
+    handleChange,
+    breakpoint: breakPoints,
+    rendering,
   } = props;
 
-  const containerEl = useRef<HTMLDivElement>(null);
-  const previewEl = useRef<HTMLDivElement>(null);
-  const iframeEl = useRef<HTMLIFrameElement>(null);
+  const [breakpointIndex, setBreakpointIndex] = useState(0);
+  const breakpointWidth = breakPoints[breakpointIndex]?.width;
+  const breakpointHeight = breakPoints[breakpointIndex]?.height;
 
-  // Listen to preview events
-  const [dragEnabled, setDragEnabled] = useState(false);
-  const [spacePressed, setSpacePressed] = useState(false);
-  const [dragOrigin, setDragOrigin] = useState<[number, number]>([0, 0]);
-  const [translation, setTrasnlation] = useState<[number, number]>([0, 0]);
-  const [prevTrans, setPrevTrans] = useState<[number, number]>([0, 0]);
-  const [breakpoint, setBreakpoint] = useState(0);
-  const [zoomScale, setZoomScale] = useState(1);
-  const [previewSize, setPreviewSize] = useState<[number, number]>([0, 0]);
-
-  useEffect(() => {
-    if (dragEnabled) {
-      previewEl.current?.addEventListener("mousemove", handleMouseMove);
-    }
-    window.addEventListener("mousedown", handleMouseClick);
-    window.addEventListener("mouseup", handleMouseClick);
-    window.addEventListener("wheel", handleZoom);
-    window.addEventListener("keydown", handleZoom);
-    window.addEventListener("keydown", handlePanStart);
-    window.addEventListener("keyup", handlePanEnd);
-    return () => {
-      previewEl.current?.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mousedown", handleMouseClick);
-      window.removeEventListener("mouseup", handleMouseClick);
-      window.removeEventListener("wheel", handleZoom);
-      window.removeEventListener("keydown", handleZoom);
-      window.removeEventListener("keydown", handlePanStart);
-      window.removeEventListener("keyup", handlePanEnd);
-    };
-  }, [
-    zoomScale,
-    dragEnabled,
-    dragOrigin,
-    translation,
-    prevTrans,
-    spacePressed,
+  const [dimensions, setDimensions] = useState([
+    breakpointWidth,
+    breakpointHeight,
   ]);
 
-  const handleMouseClick = (e: MouseEvent) => {
-    const { button, type, x, y } = e;
-
-    // Only allow main and middle mouse buttons to control panning
-    if (button > 1) return;
-
-    if (spacePressed && type === "mousedown") {
-      setDragEnabled(true);
-      // Set new drag origin
-      setDragOrigin([x, y]);
-    }
-
-    if (dragEnabled && type === "mouseup") {
-      setDragEnabled(false);
-      setPrevTrans([...translation]);
-    }
-  };
-
-  const handleZoom = (e: WheelEvent | KeyboardEvent) => {
-    const ZOOM_INCREMENT = 0.1;
-    const { type, ctrlKey, metaKey } = e;
-
-    if (ctrlKey || metaKey) {
-      let direction = 1;
-
-      if (type === "wheel") {
-        const { deltaY } = e;
-        direction = deltaY > 0 ? 1 - ZOOM_INCREMENT : 1 + ZOOM_INCREMENT;
-      }
-
-      if (type === "keydown") {
-        switch (e.key) {
-          case "=":
-            direction = 1 + ZOOM_INCREMENT;
-            break;
-          case "-":
-            direction = 1 - ZOOM_INCREMENT;
-            break;
-          default:
-            direction = 1;
-        }
-      }
-
-      setZoomScale(zoomScale * direction);
-    }
-  };
-
-  // Update preview iframe based on new HTML content
-  useEffect(() => {
-    if (!html) return;
-
-    const { width = 320, height = 240 } = breakPoints[breakpoint] ?? {};
-    const scrollHeight =
-      iframeEl?.current?.contentWindow?.document?.body?.scrollHeight || 0;
-    if (height && width) {
-      setPreviewSize([width, scrollHeight]);
-    }
-    iframeEl.current?.contentWindow?.addEventListener(
-      "resize",
-      handleIframeResize
-    );
-    iframeEl.current?.contentWindow?.document.addEventListener(
-      "readystatechange",
-      handleIframeResize
-    );
-
-    return () => {
-      iframeEl.current?.contentWindow?.document.removeEventListener(
-        "readystatechange",
-        handleIframeResize
-      );
-      iframeEl.current?.contentWindow?.removeEventListener(
-        "resize",
-        handleIframeResize
-      );
-    };
-  }, [html, breakpoint]);
-
-  // Reset zoom and translation on breakpoint and rendered frame changes
-  useEffect(() => {
-    if (!html || !previewEl.current) return;
-    const { width } = previewEl.current.getBoundingClientRect();
-
-    const maxWidth = breakPoints.reduce(
-      (acc, { width }) => (acc > width ? acc : width),
-      1
-    );
-
-    const zoomScale = width / maxWidth;
-
-    setZoomScale(zoomScale > 1 ? 1 : zoomScale);
-    setTrasnlation([0, 0]);
-    setPrevTrans([0, 0]);
-  }, [breakpoint, breakPoints, renderedFrames, html]);
-
-  const handleIframeResize = (e) => {
-    // console.log("readystatechange / resize", e);
-    const { readyState, body } =
-      iframeEl?.current?.contentWindow?.document || {};
-
-    if (readyState === "complete" && body) {
-      const { scrollHeight, offsetWidth } = body;
-      // const { width = 320 } = breakPoints[breakpoint] ?? {};
-      setPreviewSize([offsetWidth, scrollHeight]);
-    }
-  };
-
-  const handlePanStart = (e: KeyboardEvent) =>
-    e.code === "Space" &&
-    e.target?.nodeName !== "INPUT" &&
-    setSpacePressed(true);
-
-  const handlePanEnd = (e: KeyboardEvent) => {
-    if (e.code === "Space" && e.target?.nodeName !== "INPUT") {
-      // Store translation info
-      setPrevTrans([...translation]);
-      // Stop panning
-      setSpacePressed(false);
-      setDragEnabled(false);
-    }
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (dragEnabled === false) return;
-
-    const { x, y } = e;
-    const translateX = prevTrans[0] + (x - dragOrigin[0]) / zoomScale;
-    const translateY = prevTrans[1] + (y - dragOrigin[1]) / zoomScale;
-    setTrasnlation([translateX, translateY]);
-  };
-
   return (
-    <section class="preview" ref={containerEl}>
+    <section class="preview">
+      {rendering && <div class="preview__rendering">Rendering</div>}
       <div class="preview__settings">
         <label class="checkbox preview__responsive">
           <input
             type="checkbox"
             checked={responsive}
-            onInput={() => setResponsive(!responsive)}
+            onInput={() => handleChange(actionSetResponsive(!responsive))}
           />
           Responsive
         </label>
 
         <label class="preview__breakpoints">
+          Breakpoints
           <select
             class="breakpoints"
-            onInput={({ currentTarget: { selectedIndex } }) =>
-              setBreakpoint(selectedIndex)
-            }
+            onInput={(e) => setBreakpointIndex(e.currentTarget.selectedIndex)}
           >
             {breakPoints.map(({ width }, i) => (
               <option
                 key={width}
                 class="breakpoints__option"
-                selected={breakpoint === i}
+                selected={breakpointIndex === i}
               >
                 {width}px
               </option>
             ))}
           </select>
-          Breakpoints
         </label>
 
-        <label class="preview__width">
-          Width
-          <input
-            type="number"
-            min="0"
-            value={previewSize[0]}
-            onInput={(e) => {
-              const { value } = e.currentTarget;
-
-              const width = parseInt(value);
-              if (width && !isNaN(width)) {
-                setPreviewSize([width, previewSize[1]]);
-              }
-            }}
-          />
-          px
-        </label>
-
-        <label class="preview__zoom">
-          Zoom
-          <input
-            type="number"
-            min="0"
-            value={(zoomScale * 100).toFixed(0)}
-            onInput={(e) => {
-              const { value } = e.currentTarget;
-
-              const zoom = parseInt(value);
-              if (zoom && !isNaN(zoom)) {
-                setZoomScale(zoom / 100);
-              }
-            }}
-          />
-          %
-        </label>
+        <p>
+          {dimensions[0]} x {dimensions[1]}
+        </p>
       </div>
 
-      <div
-        class={`preview__container ${
-          spacePressed ? "preview__container--drag" : ""
-        }`}
-        ref={previewEl}
-      >
-        <div
-          class="preview__wrapper"
-          style={`
-          width: ${previewSize[0]}px;
-          height: ${previewSize[1]}px;
-          transform: scale(${zoomScale}) translate(${translation[0]}px,  ${translation[1]}px);
-          position: absolute;
-        `}
-        >
-          <iframe ref={iframeEl} class="preview__iframe" srcDoc={html} />
-        </div>
-
-        <div class="preview__help">
-          <p>
-            <span>Zoom</span> cmd / ctrl and + / -
-          </p>
-          <p>
-            <span>Pan</span> Spacebar and drag
-          </p>
-        </div>
-      </div>
+      <PreviewIframe
+        html={html}
+        breakpointWidth={breakpointWidth}
+        breakpointHeight={breakpointHeight}
+        setDimensions={setDimensions}
+      />
     </section>
+  );
+};
+
+interface PreviewIframeState {
+  x: number;
+  y: number;
+  startX: number;
+  startY: number;
+  translateX: number;
+  translateY: number;
+  width: number;
+  height: number;
+  zoom: number;
+  breakpointIndex: number;
+  panning: boolean;
+  panningEnabled: boolean;
+}
+
+type actionType =
+  | { type: "ENABLED_PANNING" }
+  | { type: "START_PANNING"; payload: { x: number; y: number } }
+  | { type: "UPDATE_POSITION"; payload: { x: number; y: number } }
+  | { type: "END_PANNING" }
+  | { type: "DISABLE_PANNING" }
+  | { type: "RESET"; payload: PreviewIframeState }
+  | { type: "ZOOM_IN" }
+  | { type: "ZOOM_OUT" }
+  | {
+      type: "SET_DIMENSIONS";
+      payload: { width: number; height?: number; zoom?: number };
+    };
+
+function reducer(
+  state: PreviewIframeState,
+  action: actionType
+): PreviewIframeState {
+  const ZOOM_INCREMENT = 1.5;
+
+  switch (action.type) {
+    case "RESET":
+      return action.payload;
+
+    case "ZOOM_IN": {
+      const zoom = Math.min(1, state.zoom * ZOOM_INCREMENT);
+      return { ...state, zoom };
+    }
+
+    case "ZOOM_OUT":
+      return { ...state, zoom: state.zoom / ZOOM_INCREMENT };
+
+    case "ENABLED_PANNING":
+      return { ...state, panningEnabled: true };
+
+    case "START_PANNING":
+      if (state.panningEnabled) {
+        return {
+          ...state,
+          panning: true,
+          startX: action.payload.x,
+          startY: action.payload.y,
+        };
+      } else {
+        return state;
+      }
+
+    case "UPDATE_POSITION": {
+      if (state.panningEnabled && state.panning) {
+        const { translateX, translateY, startX, startY, zoom } = state;
+
+        const distanceX = translateX + (action.payload.x - startX) / zoom;
+        const distanceY = translateY + (action.payload.y - startY) / zoom;
+
+        return {
+          ...state,
+          x: distanceX,
+          y: distanceY,
+        };
+      } else {
+        return state;
+      }
+    }
+
+    case "END_PANNING":
+      return {
+        ...state,
+        translateX: state.x,
+        translateY: state.y,
+        panning: false,
+        panningEnabled: false,
+      };
+
+    case "DISABLE_PANNING":
+      return { ...state, panningEnabled: state.panning };
+
+    case "SET_DIMENSIONS":
+      return { ...state, ...action.payload };
+
+    default:
+      throw new Error("Unknown action") as never;
+  }
+}
+
+interface PreviewIframeProps {
+  html: string;
+  breakpointWidth: number;
+  breakpointHeight: number;
+  setDimensions: (x: [number, number]) => void;
+}
+
+function PreviewIframe({
+  html,
+  breakpointWidth,
+  breakpointHeight,
+  setDimensions,
+}: PreviewIframeProps) {
+  const initialState: PreviewIframeState = {
+    x: 0,
+    y: 0,
+    startX: 0,
+    startY: 0,
+    width: 100,
+    height: 100,
+    translateX: 0,
+    translateY: 0,
+    zoom: 1,
+    breakpointIndex: 0,
+    panning: false,
+    panningEnabled: false,
+  };
+
+  const previewEl = useRef<HTMLDivElement>(null);
+  const iframeEl = useRef<HTMLIFrameElement>(null);
+  const [state, dispatch] = useReducer(reducer, {
+    ...initialState,
+    width: breakpointWidth,
+    height: breakpointHeight,
+  });
+
+  const { x, y, zoom, width, height, panningEnabled, panning } = state;
+
+  const handleMouseDown = (e: MouseEvent) => {
+    if (e.button === 1) {
+      dispatch({ type: "ENABLED_PANNING" });
+    }
+
+    dispatch({ type: "START_PANNING", payload: { x: e.x, y: e.y } });
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    dispatch({ type: "UPDATE_POSITION", payload: { x: e.x, y: e.y } });
+  };
+
+  const handleMouseUp = () => {
+    dispatch({ type: "END_PANNING" });
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.code === "Space") {
+      dispatch({ type: "ENABLED_PANNING" });
+    }
+
+    if (e.code === "Equal") {
+      dispatch({ type: "ZOOM_IN" });
+    }
+
+    if (e.code === "Minus") {
+      dispatch({ type: "ZOOM_OUT" });
+    }
+  };
+
+  const handleKeyUp = () => {
+    dispatch({ type: "DISABLE_PANNING" });
+  };
+
+  useEffect(() => {
+    const previewRefEl = previewEl.current;
+    const iframeElRef = iframeEl.current;
+    const resizeObserver = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      dispatch({ type: "SET_DIMENSIONS", payload: { width, height } });
+      setDimensions([width, height]);
+    });
+
+    // Translation
+    previewRefEl.addEventListener("mousedown", handleMouseDown);
+    if (panning) {
+      previewRefEl.addEventListener("mousemove", handleMouseMove);
+      previewRefEl.addEventListener("mouseup", handleMouseUp);
+      previewRefEl.addEventListener("mouseleave", handleMouseUp);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    // Resize
+    resizeObserver.observe(iframeElRef);
+
+    return () => {
+      previewRefEl.removeEventListener("mousedown", handleMouseDown);
+      previewRefEl.removeEventListener("mousemove", handleMouseMove);
+      previewRefEl.removeEventListener("mouseup", handleMouseUp);
+      previewRefEl.removeEventListener("mouseleave", handleMouseUp);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      resizeObserver.unobserve(iframeElRef);
+    };
+  }, [setDimensions, panning]);
+
+  useEffect(() => {
+    const previewRect = previewEl.current.getBoundingClientRect();
+    const zoom = Math.min(
+      1,
+      previewRect.width / breakpointWidth,
+      previewRect.height / breakpointHeight
+    );
+
+    dispatch({
+      type: "SET_DIMENSIONS",
+      payload: {
+        ...initialState,
+        width: breakpointWidth,
+        height: breakpointHeight,
+        zoom,
+      },
+    });
+  }, [breakpointWidth, breakpointHeight]);
+
+  const iframeStyle = `
+    width: ${width}px;
+    height: ${height}px;
+    transform: scale(${zoom}) translate(${x}px,  ${y}px);
+  `;
+
+  return (
+    <div
+      class={`preview__container ${
+        panningEnabled ? "preview__container--drag" : ""
+      }`}
+      ref={previewEl}
+    >
+      <iframe
+        ref={iframeEl}
+        class="preview__iframe"
+        srcDoc={html}
+        style={iframeStyle}
+      />
+
+      <div class="preview__help">
+        <p>
+          <span>Zoom</span> + / -
+        </p>
+        <p>
+          <span>Pan</span> Space-bar and drag
+        </p>
+      </div>
+    </div>
   );
 }

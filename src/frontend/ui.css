@@ -157,6 +157,21 @@ body {
 
   grid-row: 2/4;
   grid-column: 1/2;
+  position: relative;
+}
+.preview__rendering {
+  display: flex;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  z-index: 4;
+  pointer-events: none;
 }
 .preview__settings {
   display: flex;
@@ -207,7 +222,7 @@ body {
   background-position: 0 0, 30px 30px;
 }
 .preview__container--drag {
-  cursor: move;
+  cursor: grab;
 }
 .preview__width input,
 .preview__zoom input {
@@ -229,7 +244,10 @@ body {
   height: 100%;
   width: 100%;
   border: none;
-  pointer-events: none;
+  resize: auto;
+  outline: 1px solid rgba(0, 0, 0, 0.2);
+  position: absolute;
+  min-width: 100px;
 }
 .preview__iframe::before {
   content: attr(style);

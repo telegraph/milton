@@ -1,19 +1,23 @@
-import { h, Component } from "preact";
+import { h, Component, JSX } from "preact";
 
-export class ErrorBoundry extends Component {
+interface Props {
+  children: preact.ComponentChildren;
+}
+
+export class ErrorBoundary extends Component<Props> {
   state = {
     hasError: false,
   };
 
-  static getDerivedStateFromError() {
+  static getDerivedStateFromError(): { hasError: true } {
     return { hasError: true };
   }
 
-  componentDidCatch(err, errInfo) {
-    console.error(err, errInfo);
+  componentDidCatch(err: Error, errInfo: string): void {
+    console.error("caught error", err, errInfo);
   }
 
-  render() {
+  render(): JSX.Element | preact.ComponentChildren {
     if (this.state.hasError) {
       return (
         <div class="crash">
