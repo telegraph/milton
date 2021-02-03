@@ -62,7 +62,8 @@ body {
   height: auto;
 }
 
-.f2h__svg_container svg a > * {
+.f2h__svg_container svg a,
+.f2h__svg_container svg a * {
   pointer-events: all;
 }
 
