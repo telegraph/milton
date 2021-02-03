@@ -12,15 +12,14 @@ import { FrameText } from "./FrameText";
 import { Export } from "./Export";
 
 import { containsDuplicate, isEmpty } from "utils/common";
+import { initialState, reducer } from "../store";
 import {
-  initialState,
-  reducer,
   actionSetSvg,
   actionSetStatus,
   actionSetError,
   dispatchType,
   actionStoreData,
-} from "../store";
+} from "../actions";
 import { version } from "../../../package.json";
 
 function handleResponse(dispatch: dispatchType, response: IFrameData): void {
@@ -112,6 +111,8 @@ export function App(): JSX.Element {
     width,
     height,
   }));
+
+  console.log(source);
 
   const html =
     outputFrames.length > 0

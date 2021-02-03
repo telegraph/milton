@@ -56,14 +56,16 @@ export type AppPropsInterface = {
 };
 
 export type AppState = {
-  readonly error: string | undefined;
+  readonly error: string;
   readonly ready: boolean;
   readonly frames: FigmaFramesType;
   readonly stage: STAGES;
   readonly responsive: boolean;
-  readonly headline: string | undefined;
-  readonly subhead: string | undefined;
-  readonly source: string | undefined;
+  readonly headline: string;
+  readonly subhead: string;
+  readonly source: string;
+  readonly sourceLink: string;
+
   readonly selectedFrames: string[];
   readonly svgMarkup: string;
   readonly loading: boolean;
@@ -87,7 +89,7 @@ export type textData = textNodeSelectedProps & {
   strokeColour: string;
 };
 
-export type setHeadlinesAndSourceProps = {
+export type setExportProperties = {
   headline: string;
   subhead: string;
   source: string;

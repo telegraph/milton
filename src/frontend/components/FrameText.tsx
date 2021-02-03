@@ -1,11 +1,22 @@
 import { h, JSX } from "preact";
-import { actionSetText, ReducerProps } from "../store";
+import {
+  actionSetHeadlineText,
+  actionSetSubheadText,
+  actionSetSourceText,
+  ActionTypes,
+} from "../actions";
+
+enum INPUT_TYPES {
+  HEADLINE = "HEADLINE",
+  SUBHEAD = "SUBHEAD",
+  SOURCE = "SOURCE",
+}
 
 interface FrameTextProps {
   headline: string;
   subhead: string;
   source: string;
-  handleChange: (action: ReducerProps) => void;
+  handleChange: (action: ActionTypes) => void;
 }
 
 export function FrameText({
@@ -14,6 +25,26 @@ export function FrameText({
   source,
   handleChange,
 }: FrameTextProps): JSX.Element {
+  const handleInputUpdate = (
+    event: JSX.TargetedEvent<HTMLInputElement>
+  ): void => {
+    const { id, value } = event.currentTarget;
+
+    switch (id) {
+      case INPUT_TYPES.HEADLINE:
+        handleChange(actionSetHeadlineText(value));
+        break;
+
+      case INPUT_TYPES.SUBHEAD:
+        handleChange(actionSetSubheadText(value));
+        break;
+
+      case INPUT_TYPES.SOURCE:
+        handleChange(actionSetSourceText(value));
+        break;
+    }
+  };
+
   return (
     <fieldset class="headlines">
       <legend>Headlines</legend>
@@ -21,10 +52,9 @@ export function FrameText({
         Headline
         <input
           type="text"
+          id={INPUT_TYPES.HEADLINE}
           value={headline}
-          onChange={(e) =>
-            handleChange(actionSetText({ headline: e.currentTarget.value }))
-          }
+          onChange={handleInputUpdate}
         />
       </label>
 
@@ -33,9 +63,8 @@ export function FrameText({
         <input
           type="text"
           value={subhead}
-          onChange={(e) =>
-            handleChange(actionSetText({ subhead: e.currentTarget.value }))
-          }
+          id={INPUT_TYPES.SUBHEAD}
+          onChange={handleInputUpdate}
         />
       </label>
 
@@ -44,9 +73,8 @@ export function FrameText({
         <input
           type="text"
           value={source}
-          onChange={(e) =>
-            handleChange(actionSetText({ source: e.currentTarget.value }))
-          }
+          id={INPUT_TYPES.SOURCE}
+          onChange={handleInputUpdate}
         />
       </label>
     </fieldset>

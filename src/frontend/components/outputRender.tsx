@@ -238,9 +238,9 @@ function generateFontFaces(frames: FrameDataInterface[]): string {
 type renderInlineProps = {
   frames: FrameDataInterface[];
   svg: string;
-  headline?: string;
-  subhead?: string;
-  source?: string;
+  headline: string;
+  subhead: string;
+  source: string;
   responsive: boolean;
 };
 export function generateEmbedHtml(props: renderInlineProps): string {

@@ -1,5 +1,5 @@
 import {
-  setHeadlinesAndSourceProps,
+  setExportProperties,
   IFrameData,
   FrameRender,
   FrameDataInterface,
@@ -142,7 +142,7 @@ export function setHeadlinesAndSource({
   headline,
   subhead,
   source,
-}: setHeadlinesAndSourceProps): void {
+}: setExportProperties): void {
   figma.currentPage.setPluginData("headline", headline);
   figma.currentPage.setPluginData("subhead", subhead);
   figma.currentPage.setPluginData("source", source);

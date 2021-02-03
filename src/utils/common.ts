@@ -13,3 +13,9 @@ export const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA
 export function randomId(length = 6) {
   return Math.random().toString(36).substr(3, length);
 }
+
+export function toggleItem(item: any, list: any[]): any[] {
+  return list.includes(item)
+    ? list.filter((val) => val !== item)
+    : [...list, item];
+}
