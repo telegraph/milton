@@ -1,6 +1,6 @@
 {
   "name": "2020-05-06-figma2html",
-  "version": "0.6.0",
+  "version": "0.6.2",
   "description": "Export frames from Figma to HTML",
   "main": "index.tsx",
   "scripts": {
@@ -12,12 +12,10 @@
   "author": "Andrew Mason",
   "license": "ISC",
   "dependencies": {
-    "@types/resize-observer-browser": "^0.1.4",
     "clipboard-copy": "^4.0.1",
     "esbuild": "^0.8.23",
     "file-saver": "^2.0.5",
     "install": "^0.13.0",
-    "npm": "^6.14.10",
     "pica": "^6.1.1",
     "points-on-path": "^0.2.1",
     "preact": "^10.5.4",
@@ -25,6 +23,7 @@
     "upng-js": "^2.1.0"
   },
   "devDependencies": {
+    "@types/resize-observer-browser": "^0.1.4",
     "@figma/plugin-typings": "^1.19.0",
     "@types/file-saver": "^2.0.1",
     "@types/pica": "^5.1.1",

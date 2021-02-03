@@ -314,13 +314,13 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
           }`;
 
       cssText += `.f2h--responsive svg { width: ${relSvgWidth}%; }`;
-      cssText += `[id="${id}"], [id="textblock-${id}"] { display: block; }`;
+      cssText += `[data-id="${id}"], [id="textblock-${id}"] { display: block; }`;
       cssText += `.f2h--responsive .f2h__wrap  { padding-top: ${paddingHeight}%; }`;
     } else {
       // Styles for the  remaining breakpoints
       const { id: prevId } = sortedFrames[i - 1];
 
-      cssText += `[id="${id}"], [id="textblock-${id}"] { display: none; }`;
+      cssText += `[data-id="${id}"], [id="textblock-${id}"] { display: none; }`;
 
       /* Hide previous and show current frame */
       cssText += `
@@ -339,8 +339,8 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
         .f2h--responsive .f2h__wrap  {
           padding-top: ${paddingHeight}%;
         }
-        [id="${prevId}"], [id="textblock-${prevId}"] { display: none !important; }
-        [id="${id}"], [id="textblock-${id}"] { display: block !important; }
+        [data-id="${prevId}"], [id="textblock-${prevId}"] { display: none !important; }
+        [data-id="${id}"], [id="textblock-${id}"] { display: block !important; }
       }
       `;
     }

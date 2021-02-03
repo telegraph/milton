@@ -1,6 +1,6 @@
 import { resizeAndOptimiseImage } from "./imageHelper";
 import { imageNodeDimensions } from "types";
-import { URL_REGEX } from "utils/common";
+import { randomId, URL_REGEX } from "utils/common";
 
 // TODO: Is there a way to identify mapping of image to elements from
 // the @figma context? If so we don't need to look inside the SVG elements
@@ -102,6 +102,57 @@ function addLinks(svgEl: SVGElement): void {
   }
 }
 
+// https://www.w3.org/TR/SVG11/linking.html#processingIRI
+const ID_REF_PROPERTIES = [
+  "clip-path",
+  "fill",
+  "stroke",
+  "marker-mid",
+  "marker-start",
+  "xlink:href",
+];
+
+const ID_URL_PATTERN = /^((?:url\()?#)(.*?)(\)?$)/;
+
+function replaceIdsWithinSvgElementAttributes(
+  nodes: Element[],
+  idMap: Record<string, string>
+): void {
+  for (const el of nodes) {
+    if (!el.hasAttributes()) continue;
+
+    for (const attr of el.attributes) {
+      if (!ID_REF_PROPERTIES.includes(attr.name)) continue;
+
+      const match = attr.value.match(ID_URL_PATTERN);
+      if (!match) continue;
+
+      const originalId = match[2];
+      const replacementId = idMap[originalId];
+      if (!replacementId) continue;
+
+      const completeId = `$1${replacementId}$3`;
+      attr.value = attr.value.replace(ID_URL_PATTERN, completeId);
+    }
+  }
+}
+
+
+function randomiseIds(svgEl: SVGElement): void {
+  const idMap: Record<string, string> = {};
+
+  const elementsWithIds = svgEl.querySelectorAll("[id]");
+  for (const el of elementsWithIds) {
+    const rndId = `${el.id}-${randomId(4)}`;
+    idMap[el.id] = rndId;
+    el.setAttribute("data-id", el.id);
+    el.setAttribute("id", rndId);
+  }
+
+  const allChildElements = svgEl.querySelectorAll("*");
+  replaceIdsWithinSvgElementAttributes([...allChildElements], idMap);
+}
+
 export async function decodeSvgToString(
   svgData: Uint8Array,
   imageNodeDimensions: imageNodeDimensions[]
@@ -117,6 +168,7 @@ export async function decodeSvgToString(
   cleanUpSvg(svgEl);
   reducePathPrecision(svgEl);
   addLinks(svgEl);
+  randomiseIds(svgEl);
   await optimizeSvgImages(svgEl, imageNodeDimensions);
 
   return svgEl?.outerHTML;

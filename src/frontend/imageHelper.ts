@@ -128,10 +128,8 @@ export async function resizeAndOptimiseImage(
   const imgCanvas = await resizeImage(img, newSize.width, newSize.height);
 
   let newDataUrl = "";
-
   const imgFormat = getImageFormatFromDataUrl(dataUrl);
 
-  console.log(nodeDimensions, newSize, imgFormat);
   switch (imgFormat) {
     case "jpg":
       newDataUrl = imgCanvas.toDataURL("image/jpeg", jpegQuality);
