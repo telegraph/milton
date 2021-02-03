@@ -1,4 +1,5 @@
 import { MSG_EVENTS } from "../constants";
+import { randomId } from "./common";
 
 interface IPostmanMessage {
   name: string;
@@ -82,16 +83,16 @@ class Postman {
     return new Promise((resolve, reject) => {
       const { workload, data } = props;
 
-      const randomId = Math.random().toString(36).substr(5);
+      const uid = randomId();
 
       this.postMessage({
         name: this.name,
-        uid: randomId,
+        uid: uid,
         workload,
         data,
       } as IPostmanMessage);
 
-      this.callbackStore[randomId] = (result: any, err?: string) => {
+      this.callbackStore[uid] = (result: any, err?: string) => {
         if (err) {
           reject(err);
         } else {

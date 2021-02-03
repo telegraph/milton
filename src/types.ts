@@ -130,6 +130,6 @@ export type imageNodeDimensions = {
   height: number;
 };
 export type FrameRender = {
-  svgData: Uint8Array;
+  renderedFrames: { id: string; render: Uint8Array }[];
   imageNodeDimensions: imageNodeDimensions[];
 };

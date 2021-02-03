@@ -20,7 +20,6 @@ async function optimizePng(
   if (!ctx) return canvas.toDataURL();
 
   const imageData = ctx.getImageData(0, 0, width, height);
-  console.log(width, height);
 
   // Quantize palette
   const pngData = UPNG.encode([imageData?.data], width, height, colours);
@@ -72,37 +71,37 @@ async function resizeImage(
 function calcResizeDimensions(
   imgWidth: number,
   imgHeight: number,
-  nodeDimensions: imageNodeDimensions[]
+  nodeDimensions: imageNodeDimensions
 ): { width: number; height: number } {
   const imgAspect = imgWidth / imgHeight;
 
-  const sortedNodeAspects = [...nodeDimensions].sort((a, b) => {
-    const aAspect = a.width / a.height;
-    const bAspect = b.width / b.height;
-    return aAspect > bAspect ? 1 : -1;
-  });
-
-  const n = sortedNodeAspects.pop() as imageNodeDimensions;
-  const largestNodeAspect = n.width / n.height;
+  const aspectRatio = nodeDimensions.width / nodeDimensions.height;
 
   let width: number;
   let height: number;
 
-  if (imgAspect > largestNodeAspect) {
+  if (imgAspect > aspectRatio) {
     // scale image to node height
-    const scaleFactor = n.height / imgHeight;
+    const scaleFactor = nodeDimensions.height / imgHeight;
     width = Math.ceil(imgWidth * scaleFactor);
     height = Math.ceil(imgHeight * scaleFactor);
   } else {
     // scale image to node width
-    const scaleFactor = n.width / imgWidth;
+    const scaleFactor = nodeDimensions.width / imgWidth;
     width = Math.ceil(imgWidth * scaleFactor);
     height = Math.ceil(imgHeight * scaleFactor);
   }
 
+  if (width * 2 < imgWidth || height * 2 < imgHeight) {
+    width *= 2;
+    height *= 2;
+  }
+
+  console.log(width, width * 2, imgWidth);
+
   return {
-    width: width * 2,
-    height: height * 2,
+    width: width,
+    height: height,
   };
 }
 
@@ -115,23 +114,18 @@ function getImageFormatFromDataUrl(dataUrl: string): imageTypes | null {
 }
 export async function resizeAndOptimiseImage(
   dataUrl: string,
-  nodeDimensions: imageNodeDimensions[],
-  jpegQuality = 75,
-  paletteColours = 164
+  nodeDimensions: imageNodeDimensions,
+  jpegQuality = 70,
+  paletteColours = 132
 ): Promise<string> {
   const img = await loadImage(dataUrl);
+  if (!img?.width || !img?.height) return dataUrl;
 
-  const { width, height } = img || {};
-  if (!width || !height) return dataUrl;
-
-  const newSize = calcResizeDimensions(width, height, nodeDimensions);
+  const newSize = calcResizeDimensions(img.width, img.height, nodeDimensions);
   const imgCanvas = await resizeImage(img, newSize.width, newSize.height);
 
   let newDataUrl = "";
-
   const imgFormat = getImageFormatFromDataUrl(dataUrl);
-
-  console.log(nodeDimensions, newSize, imgFormat);
   switch (imgFormat) {
     case "jpg":
       newDataUrl = imgCanvas.toDataURL("image/jpeg", jpegQuality);

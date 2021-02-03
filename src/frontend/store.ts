@@ -5,6 +5,8 @@ interface StateInterface {
   status: STATUS;
   selectedFrames: string[];
   figmaFrames: FigmaFramesType;
+  renderedFrames: Record<string, Uint8Array>;
+  outputFrames: Record<string, string>;
   headline: string;
   subhead: string;
   source: string;
@@ -16,6 +18,8 @@ interface StateInterface {
 export const initialState: StateInterface = {
   status: STATUS.LOADING,
   figmaFrames: {},
+  renderedFrames: {},
+  outputFrames: {},
   selectedFrames: [],
   headline: "",
   subhead: "",

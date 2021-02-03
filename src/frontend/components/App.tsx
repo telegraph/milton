@@ -1,8 +1,18 @@
 import { h, JSX } from "preact";
 import { useEffect, useReducer } from "preact/hooks";
+import { saveAs } from "file-saver";
 
 import { MSG_EVENTS, ERRORS, STATUS } from "constants";
-import { decodeSvgToString } from "frontend/svgUtils";
+import {
+  convertRenderIntoSvg,
+  extractImageData,
+  findLargestElementSize,
+  getMaxImageElementDimensions,
+  MaxElementSizes,
+  optimizeSvgImages,
+  removeDuplicateImages,
+  replaceImage,
+} from "frontend/svgUtils";
 import { postMan } from "utils/messages";
 import { FrameRender, IFrameData } from "types";
 import { generateEmbedHtml } from "./outputRender";
@@ -22,6 +32,7 @@ import {
   actionStoreData,
 } from "../store";
 import { version } from "../../../package.json";
+import { resizeAndOptimiseImage } from "frontend/imageHelper";
 
 function handleResponse(dispatch: dispatchType, response: IFrameData): void {
   if (isEmpty(response.frames)) {
@@ -49,10 +60,74 @@ async function getAndStoreSvgHtml(
     .catch(console.error)) as FrameRender;
 
   console.log(response, frames);
-  const { svgData, imageNodeDimensions } = response;
+  const { renderedFrames, imageNodeDimensions } = response;
+  console.log(renderedFrames);
+  console.log(imageNodeDimensions);
 
-  const svg = await decodeSvgToString(svgData, imageNodeDimensions);
-  dispatch(actionSetSvg(svg));
+  const originalImages: Record<string, string> = {};
+  const outputFrames: Record<string, string> = {};
+  const maxImageSizes: MaxElementSizes = {};
+
+  const svgs: SVGElement[] = [];
+
+  const containerEl = document.createElement("div");
+
+  for (const frame of renderedFrames) {
+    const svgEl = await convertRenderIntoSvg(frame, []);
+
+    removeDuplicateImages(svgEl, originalImages);
+    const imageIds = Object.keys(originalImages);
+    const imageSizes = getMaxImageElementDimensions(svgEl, imageIds);
+
+    // Work out max width
+    for (const imageId of imageIds) {
+      if (maxImageSizes[imageId]) {
+        if (maxImageSizes[imageId].width < imageSizes[imageId].width) {
+          maxImageSizes[imageId].width = imageSizes[imageId].width;
+        }
+
+        if (maxImageSizes[imageId].height < imageSizes[imageId].height) {
+          maxImageSizes[imageId].height = imageSizes[imageId].height;
+        }
+      } else {
+        maxImageSizes[imageId] = imageSizes[imageId];
+      }
+    }
+
+    containerEl.appendChild(svgEl);
+
+    outputFrames[frame.id] = svgEl?.outerHTML;
+  }
+
+  const resizedImages: Record<string, string> = {};
+  for (const imgId of Object.keys(maxImageSizes)) {
+    resizedImages[imgId] = await resizeAndOptimiseImage(
+      originalImages[imgId],
+      maxImageSizes[imgId]
+    );
+
+    replaceImage(imgId, containerEl, resizedImages[imgId]);
+  }
+
+  console.log("maxImageSizes", maxImageSizes);
+  console.log("original images", originalImages);
+  console.log("resizedImages images", resizedImages);
+
+  // for (const svgEl of svgs) {
+  //   const childNodes = [...svgEl.querySelectorAll("*")];
+  //   findLargestElementSize(childNodes, Object.keys(originalImages));
+  // }
+
+  // console.log(originalImages);
+
+  // const html = `<html><head></head><body>
+  //   ${containerEl.outerHTML}
+  // </body></html>`;
+
+  // const blob = new Blob([html]);
+  // saveAs(blob, "separate_svgs.html");
+
+  dispatch(actionSetSvg(containerEl.innerHTML));
   dispatch(actionSetStatus(STATUS.READY));
 }
 

@@ -5,18 +5,8 @@ import {
   FrameDataInterface,
   imageNodeDimensions,
 } from "types";
-import { URL_REGEX } from "utils/common";
+import { randomId, URL_REGEX } from "utils/common";
 import { getTextNodesFromFrame } from "utils/figmaText";
-
-/**
- * Test if Figma node supports fill property type
- * @context figma
- */
-function supportsFills(
-  node: SceneNode
-): node is Exclude<SceneNode, SliceNode | GroupNode> {
-  return node.type !== "SLICE" && node.type !== "GROUP";
-}
 
 function flattenBooleanGroups(frameNode: FrameNode): void {
   // Flatten boolean elements
@@ -34,26 +24,55 @@ function flattenBooleanGroups(frameNode: FrameNode): void {
   }
 }
 
-function getImageDimensions(frameNode: FrameNode): imageNodeDimensions[] {
-  const nodesWithImages = frameNode.findAll(
-    (node) =>
-      supportsFills(node) &&
-      node.fills !== figma.mixed &&
-      node.fills.some((fill) => fill.type === "IMAGE")
-  );
+function doesNodeHaveImageFills(node: SceneNode): boolean {
+  if (node.type === "SLICE" || node.type === "GROUP") return false;
+  if (node.fills === figma.mixed) return false;
+  return node.fills.some((fill) => fill.type === "IMAGE");
+}
 
-  return nodesWithImages.map(({ name, width, height }) => ({
-    name,
-    width,
-    height,
-  }));
+function getImageDimensions(frameNode: FrameNode): imageNodeDimensions[] {
+  const nodesWithImages = frameNode.findAll(doesNodeHaveImageFills);
+  const imageDimensions: imageNodeDimensions[] = [];
+
+  for (const node of nodesWithImages) {
+    const { height, width, name, fills } = node as VectorNode;
+    let fillsWithImages = [];
+
+    if (fills !== figma.mixed) {
+      for (const fill of fills) {
+        if (fill.type !== "IMAGE") continue;
+
+        const { imageHash, scaleMode, scalingFactor } = fill;
+        console.log(node);
+
+        fillsWithImages.push({
+          imageHash,
+          scaleMode,
+          scalingFactor,
+        });
+      }
+    }
+
+    console.log(fillsWithImages);
+
+    const imageInfo: imageNodeDimensions = {
+      height,
+      name,
+      width,
+      images: fillsWithImages,
+    };
+
+    imageDimensions.push(imageInfo);
+  }
+
+  return imageDimensions;
 }
 
 function setRandomPrefixForUrlNodeNames(frameNode: FrameNode): void {
   frameNode
     .findAll(({ name }) => URL_REGEX.test(name))
     .forEach((node) => {
-      const rndId = Math.random().toString(32).substr(2, 4);
+      const rndId = randomId(4);
       node.name = `n_${rndId}_${node.name}`;
     });
 }
@@ -84,7 +103,7 @@ function createCloneOfFrames(frames: FrameNode[]): FrameNode {
     clone.name = frame.id;
   }
 
-  setRandomPrefixForUrlNodeNames(outputNode);
+  // setRandomPrefixForUrlNodeNames(outputNode);
 
   return outputNode;
 }
@@ -96,7 +115,7 @@ function createCloneOfFrames(frames: FrameNode[]): FrameNode {
  * @context figma
  */
 export async function renderFrames(frameIds: string[]): Promise<FrameRender> {
-  let outputNode: FrameNode | null = null;
+  // let outputNode: FrameNode | null = null;
 
   try {
     // Clone each selected frame adding them to the temporary container frame
@@ -108,28 +127,36 @@ export async function renderFrames(frameIds: string[]): Promise<FrameRender> {
       throw new Error(`No frames found to render ${frameIds.join(" ,")}`);
     }
 
-    outputNode = createCloneOfFrames(frames);
-    resizeOutputToMaxSize(outputNode);
-    flattenBooleanGroups(outputNode);
-    const imageNodeDimensions = getImageDimensions(outputNode);
+    // outputNode = createCloneOfFrames(frames);
+    // resizeOutputToMaxSize(outputNode);
+    // flattenBooleanGroups(outputNode);
+    const imageNodeDimensions = getImageDimensions(frames[0]);
 
-    // Render output container frames to SVG mark-up (in a uint8 byte array)
-    const svgData = await outputNode.exportAsync({
-      format: "SVG",
-      svgSimplifyStroke: true,
-      svgOutlineText: false,
-      svgIdAttribute: true,
-    });
+    const renderedFrames = await Promise.all(
+      frames.map(async (frame) => {
+        const svg = await frame.exportAsync({
+          format: "SVG",
+          svgSimplifyStroke: true,
+          svgOutlineText: false,
+          svgIdAttribute: true,
+        });
+
+        return {
+          id: frame.id,
+          render: svg,
+        };
+      })
+    );
 
     return {
-      svgData,
+      renderedFrames,
       imageNodeDimensions,
     };
   } catch (err) {
     throw new Error(err);
   } finally {
     // Remove the output frame whatever happens
-    outputNode?.remove();
+    // outputNode?.remove();
   }
 }
 

@@ -299,7 +299,7 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
     const { id, width, height } = sortedFrames[i];
 
     // const relContainerWidth = ((width / height) * 100).toPrecision(PRECISION);
-    const relSvgWidth = ((largestWidth / width) * 100).toPrecision(PRECISION);
+    // const relSvgWidth = ((largestWidth / width) * 100).toPrecision(PRECISION);
     const paddingHeight = ((height / width) * 100).toPrecision(PRECISION);
 
     // Styles for the first (smallest) breakpoint
@@ -313,7 +313,7 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
             height: ${height}px;
           }`;
 
-      cssText += `.f2h--responsive svg { width: ${relSvgWidth}%; }`;
+      // cssText += `.f2h--responsive svg { width: ${relSvgWidth}%; }`;
       cssText += `[id="${id}"], [id="textblock-${id}"] { display: block; }`;
       cssText += `.f2h--responsive .f2h__wrap  { padding-top: ${paddingHeight}%; }`;
     } else {
@@ -324,18 +324,7 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
 
       /* Hide previous and show current frame */
       cssText += `
-      
-      @media (min-width: ${width}px) {
-    
-
-        .f2h__svg_container,
-        .f2h__wrap {
-            width: ${width}px;
-            height: ${height}px;
-        }
-        .f2h--responsive svg {
-          width: ${relSvgWidth}%;
-        }
+      @media (min-width: ${width}px) {  
         .f2h--responsive .f2h__wrap  {
           padding-top: ${paddingHeight}%;
         }
