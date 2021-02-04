@@ -112,6 +112,10 @@ body {
   margin: 12px 0 0;
 }
 
+.f2h_source a {
+  color: #04777b;
+}
+
 /* Experiment stroking text */
 .f2h__text--stroke span {
   position: relative;
