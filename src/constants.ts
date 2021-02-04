@@ -4,6 +4,14 @@ export enum STAGES {
   SAVE_OUTPUT,
 }
 
+export enum EMBED_PROPERTIES {
+  HEADLINE = "headline",
+  SUBHEAD = "subhead",
+  SOURCE = "source",
+  SOURCE_URL = "sourceUrl",
+  EMBED_URL = "embedUrl",
+}
+
 export enum STATUS {
   LOADING = "LOADING",
   READY = "READY",

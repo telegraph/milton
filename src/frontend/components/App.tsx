@@ -8,7 +8,7 @@ import { FrameRender, IFrameData } from "types";
 import { generateEmbedHtml } from "./outputRender";
 import { Preview } from "./Preview";
 import { Frames } from "./Frames";
-import { FrameText } from "./FrameText";
+import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
 import { Export } from "./Export";
 
 import { containsDuplicate, isEmpty } from "utils/common";
@@ -34,7 +34,7 @@ function handleResponse(dispatch: dispatchType, response: IFrameData): void {
     return;
   }
 
-  actionStoreData(dispatch, response).catch(console.error);
+  dispatch(actionStoreData(response));
 }
 
 async function getAndStoreSvgHtml(
@@ -62,11 +62,13 @@ export function App(): JSX.Element {
     headline,
     subhead,
     source,
+    sourceUrl,
+    embedUrl,
     svg,
     selectedFrames,
     status,
     error,
-    figmaFrames,
+    frames,
     responsive,
   } = state;
 
@@ -84,10 +86,10 @@ export function App(): JSX.Element {
     postMan
       .send({
         workload: MSG_EVENTS.UPDATE_HEADLINES,
-        data: { headline, subhead, source },
+        data: { headline, subhead, source, sourceUrl, embedUrl },
       })
       .catch(() => dispatch(actionSetError(ERRORS.FAILED_TO_SET_HEADINGS)));
-  }, [headline, subhead, source]);
+  }, [headline, subhead, source, sourceUrl, embedUrl]);
 
   // Render SVG and store output when Status changes to Render
   // TODO: Only fetch data once!!
@@ -103,7 +105,7 @@ export function App(): JSX.Element {
 
   if (status === STATUS.LOADING) return <p>LOADING</p>;
 
-  const outputFrames = Object.values(figmaFrames).filter(({ id }) =>
+  const outputFrames = Object.values(frames).filter(({ id }) =>
     selectedFrames.includes(id)
   );
 
@@ -111,8 +113,6 @@ export function App(): JSX.Element {
     width,
     height,
   }));
-
-  console.log(source);
 
   const html =
     outputFrames.length > 0
@@ -138,15 +138,17 @@ export function App(): JSX.Element {
 
       <section class="sidebar">
         <Frames
-          figmaFrames={figmaFrames}
+          figmaFrames={frames}
           selectedFrames={selectedFrames}
           handleChange={dispatch}
         />
 
-        <FrameText
+        <EmbedPropertiesInputs
           headline={headline}
           subhead={subhead}
           source={source}
+          sourceUrl={sourceUrl}
+          embedUrl={embedUrl}
           handleChange={dispatch}
         />
 

@@ -14,6 +14,7 @@ export enum ACTIONS {
   SET_RESPONSIVE,
   SET_SELECTED_FRAMES,
   SET_SVG,
+  SET_INITIAL_DATA,
   TOGGLE_SELECTED_FRAME,
 }
 
@@ -105,23 +106,9 @@ export function actionToggleSelectedFrame(
 }
 
 export const actionStoreData = (
-  dispatch: dispatchType,
   figmaData: IFrameData
-): Promise<void> => {
-  const { headline, subhead, source, frames } = figmaData;
-
-  console.log("actionStoreData", "actionSetFrames");
-  dispatch(actionSetFrames(frames));
-  console.log("actionStoreData", "actionSetSelectedFrames");
-  dispatch(actionSetSelectedFrames(Object.keys(frames)));
-  console.log("actionStoreData", "actionSetText");
-
-  dispatch(actionSetHeadlineText(headline));
-  dispatch(actionSetSubheadText(subhead));
-  dispatch(actionSetSourceText(source));
-  console.log("actionStoreData", "actionSetStatus");
-  dispatch(actionSetStatus(STATUS.READY));
-  return Promise.resolve();
+): { type: ACTIONS.SET_INITIAL_DATA; payload: IFrameData } => {
+  return { type: ACTIONS.SET_INITIAL_DATA, payload: figmaData };
 };
 
 export type ActionTypes =
@@ -136,6 +123,7 @@ export type ActionTypes =
   | ReturnType<typeof actionSetSvg>
   | ReturnType<typeof actionSetStatus>
   | ReturnType<typeof actionToggleSelectedFrame>
+  | ReturnType<typeof actionStoreData>
   | ReturnType<typeof actionSetError>;
 
 export type dispatchType = (action: ActionTypes) => void;

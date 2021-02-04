@@ -6,7 +6,7 @@ import { ACTIONS, ActionTypes } from "./actions";
 interface StateInterface {
   status: STATUS;
   selectedFrames: string[];
-  figmaFrames: FigmaFramesType;
+  frames: FigmaFramesType;
   headline: string;
   subhead: string;
   source: string;
@@ -19,7 +19,7 @@ interface StateInterface {
 
 export const initialState: StateInterface = {
   status: STATUS.LOADING,
-  figmaFrames: {},
+  frames: {},
   selectedFrames: [],
   headline: "",
   subhead: "",
@@ -35,6 +35,13 @@ export function reducer(
   action: ActionTypes
 ): StateInterface {
   switch (action.type) {
+    case ACTIONS.SET_INITIAL_DATA:
+      return {
+        ...state,
+        ...action.payload,
+        selectedFrames: Object.keys(action.payload.frames),
+      };
+
     case ACTIONS.SET_HEADLINE:
       return { ...state, headline: action.payload };
 
@@ -54,7 +61,7 @@ export function reducer(
       return { ...state, status: action.payload };
 
     case ACTIONS.SET_FRAMES:
-      return { ...state, figmaFrames: action.payload };
+      return { ...state, frames: action.payload };
 
     case ACTIONS.SET_SELECTED_FRAMES:
       return { ...state, selectedFrames: action.payload };

@@ -4,17 +4,18 @@ import { ErrorBoundary as ErrorBoundary } from "frontend/components/ErrorBoundar
 import { MSG_EVENTS } from "constants";
 import { postMan } from "utils/messages";
 import { resizeAndOptimiseImage } from "frontend/imageHelper";
+import { setEmbedProperties } from "backend/figmaUtils";
 
 // Load CSS via esbuild CSS loader
 import uiCss from "./ui.css";
-import { setHeadlinesAndSource } from "backend/figmaUtils";
+
 const styleEl = window.document.createElement("style");
 styleEl.appendChild(window.document.createTextNode(uiCss));
 window.document.head.appendChild(styleEl);
 
 // Register messenger event functions
 postMan.registerWorker(MSG_EVENTS.COMPRESS_IMAGE, resizeAndOptimiseImage);
-postMan.registerWorker(MSG_EVENTS.UPDATE_HEADLINES, setHeadlinesAndSource);
+postMan.registerWorker(MSG_EVENTS.UPDATE_HEADLINES, setEmbedProperties);
 
 // Render app
 render(

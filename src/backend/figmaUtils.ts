@@ -5,6 +5,7 @@ import {
   FrameDataInterface,
   imageNodeDimensions,
 } from "types";
+import { EMBED_PROPERTIES } from "constants";
 import { URL_REGEX } from "utils/common";
 import { getTextNodesFromFrame } from "utils/figmaText";
 
@@ -138,14 +139,15 @@ export async function renderFrames(frameIds: string[]): Promise<FrameRender> {
  *
  * @context figma
  */
-export function setHeadlinesAndSource({
-  headline,
-  subhead,
-  source,
-}: setExportProperties): void {
-  figma.currentPage.setPluginData("headline", headline);
-  figma.currentPage.setPluginData("subhead", subhead);
-  figma.currentPage.setPluginData("source", source);
+export function setEmbedProperties(props: setExportProperties): void {
+  const { headline, subhead, source, sourceUrl, embedUrl } = props;
+  console.log(props);
+
+  figma.currentPage.setPluginData(EMBED_PROPERTIES.HEADLINE, headline);
+  figma.currentPage.setPluginData(EMBED_PROPERTIES.SUBHEAD, subhead);
+  figma.currentPage.setPluginData(EMBED_PROPERTIES.SOURCE, source);
+  figma.currentPage.setPluginData(EMBED_PROPERTIES.SOURCE_URL, sourceUrl);
+  figma.currentPage.setPluginData(EMBED_PROPERTIES.EMBED_URL, embedUrl);
 }
 
 export function createFrameData(node: FrameNode): FrameDataInterface {
@@ -192,8 +194,10 @@ export function getRootFrames(): IFrameData {
 
   return {
     frames,
-    headline: currentPage.getPluginData("headline"),
-    subhead: currentPage.getPluginData("subhead"),
-    source: currentPage.getPluginData("source"),
+    headline: currentPage.getPluginData(EMBED_PROPERTIES.HEADLINE),
+    subhead: currentPage.getPluginData(EMBED_PROPERTIES.SUBHEAD),
+    source: currentPage.getPluginData(EMBED_PROPERTIES.SOURCE),
+    sourceUrl: currentPage.getPluginData(EMBED_PROPERTIES.SOURCE_URL),
+    embedUrl: currentPage.getPluginData(EMBED_PROPERTIES.EMBED_URL),
   };
 }

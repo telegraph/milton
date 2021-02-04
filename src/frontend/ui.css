@@ -112,18 +112,23 @@ body {
 
 /* [ Sidebar - Headlines ]
 ----------------------------------------------------------------- */
-.headlines {
+.embed_properties {
   display: flex;
   flex-direction: column;
   flex: 1.3;
 }
-.headlines label {
+.embed_properties label {
   font-size: var(--font-size--small, 1rem);
   margin: var(--padding-small, 0) 0;
+  display: flex;
 }
-.headlines label input {
+.embed_properties label span {
+  min-width: 12ch;
+}
+.embed_properties label input {
   width: 100%;
   font-size: var(--font-size--small, 1rem);
+  flex: 1;
 }
 
 /* [ Sidebar - Export ]

@@ -23,6 +23,8 @@ export type IFrameData = {
   headline: string;
   subhead: string;
   source: string;
+  sourceUrl: string;
+  embedUrl: string;
 };
 
 export type MsgFramesType = IFrameData & {
@@ -93,12 +95,8 @@ export type setExportProperties = {
   headline: string;
   subhead: string;
   source: string;
-};
-
-export type HeadlinesInterface = {
-  headline: string | undefined;
-  subhead: string | undefined;
-  source: string | undefined;
+  sourceUrl: string;
+  embedUrl: string;
 };
 
 export interface UiPostMessageEvent extends MessageEvent {
