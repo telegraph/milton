@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { Fragment, FunctionalComponent, h, JSX } from "preact";
 import render from "preact-render-to-string";
 import { textData, FrameDataInterface, TextRange, FontStyle } from "types";
 
@@ -235,16 +235,45 @@ function generateFontFaces(frames: FrameDataInterface[]): string {
   return buildFontFaceCss(fontStyles);
 }
 
+const WrapIf: FunctionalComponent<{
+  condition: boolean;
+  Wrapper: FunctionalComponent;
+  [id: string]: any;
+}> = (props) => {
+  const { condition, Wrapper, children, ...rest } = props;
+
+  if (condition) return <Wrapper {...rest}>{children}</Wrapper>;
+  if (children) return <Fragment>{children}</Fragment>;
+  return null;
+};
+
+const LinkWrapper: FunctionalComponent = (props): JSX.Element => {
+  const { children, ...rest } = props;
+
+  return <a {...rest}>{children}</a>;
+};
+
 type renderInlineProps = {
   frames: FrameDataInterface[];
   svg: string;
   headline: string;
   subhead: string;
   source: string;
+  sourceUrl: string;
+  embedUrl: string;
   responsive: boolean;
 };
 export function generateEmbedHtml(props: renderInlineProps): string {
-  const { frames, svg, headline, subhead, source, responsive } = props;
+  const {
+    frames,
+    svg,
+    headline,
+    subhead,
+    source,
+    sourceUrl,
+    responsive,
+    embedUrl,
+  } = props;
 
   const mediaQuery = generateMediaQueries(frames);
   const fontFaces = generateFontFaces(frames);
@@ -262,16 +291,20 @@ export function generateEmbedHtml(props: renderInlineProps): string {
       )}
 
       <div className="f2h__wrap" style={`position: relative;`}>
-        <div
-          className="f2h__svg_container"
-          dangerouslySetInnerHTML={{ __html: svg }}
-        />
-        <TextContainer frames={frames} />
+        <WrapIf condition={!!embedUrl} Wrapper={LinkWrapper} href={embedUrl}>
+          <div
+            className="f2h__svg_container"
+            dangerouslySetInnerHTML={{ __html: svg }}
+          />
+          <TextContainer frames={frames} />
+        </WrapIf>
       </div>
 
       {source && (
         <footer>
-          <p className="f2h_source">{source}</p>
+          <p className="f2h_source">
+            {sourceUrl ? <a href={sourceUrl}>{source}</a> : source}
+          </p>
         </footer>
       )}
     </div>,

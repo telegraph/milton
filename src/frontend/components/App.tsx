@@ -123,6 +123,8 @@ export function App(): JSX.Element {
           subhead,
           source,
           responsive,
+          sourceUrl,
+          embedUrl,
         })
       : "";
 
