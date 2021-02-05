@@ -50,7 +50,7 @@ export function actionSetSourceUrl(
 ): { type: ACTIONS.SET_SOURCE_URL; payload: string } {
   return {
     type: ACTIONS.SET_SOURCE_URL,
-    payload: url,
+    payload: url.trim(),
   };
 }
 
@@ -59,7 +59,7 @@ export function actionSetEmbedUrl(
 ): { type: ACTIONS.SET_EMBED_URL; payload: string } {
   return {
     type: ACTIONS.SET_EMBED_URL,
-    payload: url,
+    payload: url.trim(),
   };
 }
 

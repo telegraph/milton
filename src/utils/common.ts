@@ -15,7 +15,15 @@ export function randomId(length = 6) {
 }
 
 export function toggleItem(item: any, list: any[]): any[] {
-  return list.includes(item)
-    ? list.filter((val) => val !== item)
-    : [...list, item];
+  if (list.includes(item)) return list.filter((val) => val !== item);
+  return [...list, item];
+}
+
+export function addOnce(item: any, list: any[]): any[] {
+  if (list.includes(item)) return list;
+  return [...list, item];
+}
+
+export function removeItem(item: any, list: any[]): any[] {
+  return list.filter((listItem) => listItem !== item);
 }

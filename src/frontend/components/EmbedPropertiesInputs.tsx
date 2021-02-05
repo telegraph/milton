@@ -1,11 +1,12 @@
 import { h, JSX } from "preact";
-import { EMBED_PROPERTIES } from "../../constants";
+import { EMBED_PROPERTIES, ERRORS } from "../../constants";
 import {
   actionSetHeadlineText,
   actionSetSubheadText,
   actionSetSourceText,
   actionSetSourceUrl,
   actionSetEmbedUrl,
+  actionSetError,
   ActionTypes,
 } from "../actions";
 
@@ -90,7 +91,9 @@ export function EmbedPropertiesInputs({
       <label>
         <span>Source URL</span>
         <input
-          type="text"
+          type="url"
+          pattern="https?://.*"
+          placeholder="https://example.com"
           value={sourceUrl}
           id={EMBED_PROPERTIES.SOURCE_URL}
           onChange={handleInputUpdate}
@@ -100,8 +103,10 @@ export function EmbedPropertiesInputs({
       <label>
         <span>Embed URL</span>
         <input
-          type="text"
+          type="url"
+          pattern="https?://.*"
           value={embedUrl}
+          placeholder="https://example.com"
           id={EMBED_PROPERTIES.EMBED_URL}
           onChange={handleInputUpdate}
         />

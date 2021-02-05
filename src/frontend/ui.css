@@ -131,6 +131,12 @@ body {
   flex: 1;
 }
 
+.embed_properties label input:invalid {
+  border: 1px solid #e8a417;
+  background: #ffe6af;
+  border-radius: 2px;
+}
+
 /* [ Sidebar - Export ]
 ----------------------------------------------------------------- */
 .export {
@@ -366,4 +372,34 @@ body {
   justify-content: center;
   box-sizing: border-box;
   flex-direction: column;
+}
+
+
+
+/* [ Errors ]
+----------------------------------------------------------------- */
+.error_notification {
+  grid-column: 1/2;
+  grid-row: 3/2;
+  background: #ffebd3;
+  z-index: 2;
+  text-align: center;
+  border-bottom: 1px solid #ffa5a5;
+}
+.error_notification__heading {
+  margin: 0;
+  background: #ff6e60;
+  font-size: 12px;
+  color: white;
+  padding: 2px 0;
+}
+.error_notification__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+.error_notification__list li {
+  margin: 4px 0;
+  color:#d81d1d;
 }
