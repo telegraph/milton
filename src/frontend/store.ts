@@ -52,27 +52,27 @@ export function reducer(
     case ACTIONS.SET_SOURCE:
       return { ...state, source: action.payload };
 
-    case ACTIONS.SET_SOURCE_URL: {
-      const errors =
-        action.payload === "" || URL_REGEX.test(action.payload)
-          ? removeItem(ERRORS.INPUT_INVALID_URL, state.errors)
-          : addOnce(ERRORS.INPUT_INVALID_URL, state.errors);
+    case ACTIONS.SET_SOURCE_URL:
+      return {
+        ...state,
+        sourceUrl: action.payload,
+        errors: toggleItem(
+          ERRORS.INPUT_INVALID_URL,
+          state.errors,
+          action.payload === "" || URL_REGEX.test(action.payload)
+        ),
+      };
 
-      return { ...state, sourceUrl: action.payload, errors };
-    }
-
-    case ACTIONS.SET_EMBED_URL: {
-      const errors =
-        action.payload === "" || URL_REGEX.test(action.payload)
-          ? removeItem(ERRORS.INPUT_INVALID_URL, state.errors)
-          : addOnce(ERRORS.INPUT_INVALID_URL, state.errors);
-
+    case ACTIONS.SET_EMBED_URL:
       return {
         ...state,
         embedUrl: action.payload,
-        errors,
+        errors: toggleItem(
+          ERRORS.INPUT_INVALID_URL,
+          state.errors,
+          action.payload === "" || URL_REGEX.test(action.payload)
+        ),
       };
-    }
 
     case ACTIONS.SET_STATUS:
       return { ...state, status: action.payload };
@@ -90,25 +90,28 @@ export function reducer(
       return { ...state, svg: action.payload };
 
     case ACTIONS.TOGGLE_SELECTED_FRAME: {
-      const selection = toggleItem(action.payload, state.selectedFrames);
-      const errors =
-        selection.length > 0
-          ? removeItem(ERRORS.NO_FRAMES_SELECTED, state.errors)
-          : addOnce(ERRORS.NO_FRAMES_SELECTED, state.errors);
+      const newSelection = toggleItem(action.payload, state.selectedFrames);
 
       return {
         ...state,
-        selectedFrames: selection,
-        errors: errors,
+        selectedFrames: newSelection,
+        errors: toggleItem(
+          ERRORS.NO_FRAMES_SELECTED,
+          state.errors,
+          newSelection.length > 0
+        ),
       };
     }
 
     case ACTIONS.SET_ERROR:
-      const errors = state.errors.includes(action.payload)
-        ? removeItem(action.payload, state.errors)
-        : addOnce(action.payload, state.errors);
-
-      return { ...state, errors: errors };
+      return {
+        ...state,
+        errors: toggleItem(
+          action.payload,
+          state.errors,
+          state.errors.includes(action.payload)
+        ),
+      };
 
     default:
       throw new Error("Unknown action type") as never;

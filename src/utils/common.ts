@@ -14,8 +14,10 @@ export function randomId(length = 6) {
   return Math.random().toString(36).substr(3, length);
 }
 
-export function toggleItem(item: any, list: any[]): any[] {
-  if (list.includes(item)) return list.filter((val) => val !== item);
+export function toggleItem(item: any, list: any[], force?: boolean): any[] {
+  if (force === true) return removeItem(item, list);
+  if (force === false) return addOnce(item, list);
+  if (list.includes(item)) return removeItem(item, list);
   return [...list, item];
 }
 
