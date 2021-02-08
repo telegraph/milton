@@ -31,6 +31,19 @@ type FontsType = {
   };
 };
 
+const CORE_WEB_FONTS = [
+  "arial",
+  "helvetica",
+  "times",
+  "times new roman",
+  "georgia",
+  "courier",
+  "courier mew",
+  "sans-serif",
+  "serif",
+  "monospace",
+];
+
 const fonts: FontsType = {
   "Austin News Deck": {
     normal: {
@@ -142,6 +155,10 @@ export function findMissingFonts(
             layerName: textNode.name.substr(0, 10),
             text: rangeStyle.text.substr(0, 10),
           });
+          continue;
+        }
+
+        if (CORE_WEB_FONTS.includes(rangeStyle.family.toLowerCase())) {
           continue;
         }
 
