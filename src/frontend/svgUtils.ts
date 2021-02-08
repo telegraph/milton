@@ -107,6 +107,7 @@ const ID_REF_PROPERTIES = [
   "clip-path",
   "fill",
   "stroke",
+  "mask",
   "marker-mid",
   "marker-start",
   "xlink:href",
@@ -136,7 +137,6 @@ function replaceIdsWithinSvgElementAttributes(
     }
   }
 }
-
 
 function randomiseIds(svgEl: SVGElement): void {
   const idMap: Record<string, string> = {};
