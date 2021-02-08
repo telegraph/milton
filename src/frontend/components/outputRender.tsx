@@ -3,7 +3,7 @@ import render from "preact-render-to-string";
 import { textData, FrameDataInterface, TextRange, FontStyle } from "types";
 
 // Import CSS file as plain text via esbuild loader option
-
+// @ts-ignore
 import embedCss from "backend/embed.css";
 // import fontsCss from "backend/telegraphFonts.css";
 import { buildFontFaceCss } from "../../backend/fonts";
@@ -55,11 +55,11 @@ function generateParagraphStyle(
 
   let styleText = "";
 
-  // Strokes
   if (strokeWeight && strokeColour) {
-    styleText += `
-     -webkit-text-stroke-color:  ${strokeColour};
-    `;
+    const rgbValues = Object.values(strokeColour);
+    const rgbScaled = rgbValues.map((colour) => colour * 255);
+    const rgbText = `rgb(${rgbScaled.join(",")})`;
+    styleText += `-webkit-text-stroke-color:  ${rgbText};`;
   }
 
   // TODO: Add sensible logic for vertical alignment in responsive view

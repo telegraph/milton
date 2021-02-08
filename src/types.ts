@@ -82,13 +82,13 @@ type textNodeSelectedProps = Pick<
   | "textAlignHorizontal"
   | "textAlignVertical"
   | "constraints"
-  | "strokeWeight"
 >;
 
 export type textData = textNodeSelectedProps & {
   rangeStyles: TextRange[];
   id: string;
-  strokeColour: string;
+  strokeColour?: RGB;
+  strokeWeight?: number;
 };
 
 export type setExportProperties = {

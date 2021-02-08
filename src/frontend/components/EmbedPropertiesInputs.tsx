@@ -1,12 +1,11 @@
 import { h, JSX } from "preact";
-import { EMBED_PROPERTIES, ERRORS } from "../../constants";
+import { EMBED_PROPERTIES } from "../../constants";
 import {
   actionSetHeadlineText,
   actionSetSubheadText,
   actionSetSourceText,
   actionSetSourceUrl,
   actionSetEmbedUrl,
-  actionSetError,
   ActionTypes,
 } from "../actions";
 

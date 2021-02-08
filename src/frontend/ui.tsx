@@ -7,6 +7,7 @@ import { resizeAndOptimiseImage } from "frontend/imageHelper";
 import { setEmbedProperties } from "backend/figmaUtils";
 
 // Load CSS via esbuild CSS loader
+// @ts-ignore
 import uiCss from "./ui.css";
 
 const styleEl = window.document.createElement("style");

@@ -1,6 +1,6 @@
 import { ERRORS, STATUS } from "constants";
 import { FigmaFramesType } from "types";
-import { toggleItem, URL_REGEX, addOnce, removeItem } from "utils/common";
+import { toggleItem, URL_REGEX } from "utils/common";
 import { ACTIONS, ActionTypes } from "./actions";
 
 interface StateInterface {
@@ -52,27 +52,25 @@ export function reducer(
     case ACTIONS.SET_SOURCE:
       return { ...state, source: action.payload };
 
-    case ACTIONS.SET_SOURCE_URL:
+    case ACTIONS.SET_SOURCE_URL: {
+      const validUrl = action.payload === "" || URL_REGEX.test(action.payload);
+
       return {
         ...state,
         sourceUrl: action.payload,
-        errors: toggleItem(
-          ERRORS.INPUT_INVALID_URL,
-          state.errors,
-          action.payload === "" || URL_REGEX.test(action.payload)
-        ),
+        errors: toggleItem(ERRORS.INPUT_INVALID_URL, state.errors, validUrl),
       };
+    }
 
-    case ACTIONS.SET_EMBED_URL:
+    case ACTIONS.SET_EMBED_URL: {
+      const validUrl = action.payload === "" || URL_REGEX.test(action.payload);
+
       return {
         ...state,
         embedUrl: action.payload,
-        errors: toggleItem(
-          ERRORS.INPUT_INVALID_URL,
-          state.errors,
-          action.payload === "" || URL_REGEX.test(action.payload)
-        ),
+        errors: toggleItem(ERRORS.INPUT_INVALID_URL, state.errors, validUrl),
       };
+    }
 
     case ACTIONS.SET_STATUS:
       return { ...state, status: action.payload };
@@ -91,6 +89,7 @@ export function reducer(
 
     case ACTIONS.TOGGLE_SELECTED_FRAME: {
       const newSelection = toggleItem(action.payload, state.selectedFrames);
+      const validSelection = newSelection.length > 0;
 
       return {
         ...state,
@@ -98,7 +97,7 @@ export function reducer(
         errors: toggleItem(
           ERRORS.NO_FRAMES_SELECTED,
           state.errors,
-          newSelection.length > 0
+          validSelection
         ),
       };
     }
