@@ -64,9 +64,10 @@ export const UI_TEXT = {
       "No frames found. Please add a frame and try again",
     [ERRORS.MULTIPLE_SAME_WIDTH]:
       "Some frames have the same width. All frame widths need to be different",
-    [ERRORS.UNKNOWN]: "Unknown error",
+    [ERRORS.FAILED_TO_FETCH_DATA]: "Failed to fetch data",
     [ERRORS.INPUT_INVALID_URL]: "Invalid URL. Please check and update the URL.",
-    [ERRORS.NO_FRAMES_SELECTED]: "Need to select at least one frame."
+    [ERRORS.NO_FRAMES_SELECTED]: "Need to select at least one frame.",
+    [ERRORS.UNKNOWN]: "Unknown error",
   },
 };
 
