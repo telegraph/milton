@@ -29,8 +29,10 @@ class Postman {
       : window.addEventListener("message", this.receive);
   }
 
-  private receive = async (event: MessageEvent<IPostmanMessage>) => {
-    const msgBody = this.inFigmaSandbox ? event : event?.data?.pluginMessage;
+  private receive = async (event: MessageEvent) => {
+    const msgBody: IPostmanMessage = this.inFigmaSandbox
+      ? event
+      : event?.data?.pluginMessage;
     const { data, workload, name, uid, returning, err } = msgBody || {};
 
     try {
