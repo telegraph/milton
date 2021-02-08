@@ -20,8 +20,10 @@ import {
   actionSetError,
   dispatchType,
   actionStoreData,
+  actionClearError,
 } from "../actions";
 import { version } from "../../../package.json";
+import { findMissingFonts } from "backend/fonts";
 
 function handleResponse(dispatch: dispatchType, response: IFrameData): void {
   if (isEmpty(response.frames)) {
@@ -71,6 +73,7 @@ export function App(): JSX.Element {
     errors,
     frames,
     responsive,
+    errorInfo,
   } = state;
 
   // Load frame data from backend
@@ -101,14 +104,36 @@ export function App(): JSX.Element {
 
   // if (status === STATUS.LOADING) return <p>LOADING</p>;
 
+  useEffect(() => {
+    const missingFonts = findMissingFonts(outputFrames);
+
+    console.log(missingFonts);
+
+    if (missingFonts.length > 0) {
+      const missingFontInfo = missingFonts.map(
+        (missingInfo) =>
+          `family=["${missingInfo.family}"] text=["${missingInfo.text}…"] frame=["${missingInfo.frame}"] layer["${missingInfo.layerName}"]`
+      );
+      dispatch(
+        actionSetError(ERRORS.MISSING_FONT, missingFontInfo.join("\n"), false)
+      );
+    }
+
+    if (missingFonts.length === 0 && errors.includes(ERRORS.MISSING_FONT)) {
+      console.log("NO missing frames", missingFonts);
+      dispatch(actionClearError(ERRORS.MISSING_FONT));
+    }
+  }, [selectedFrames]);
+
   const outputFrames = Object.values(frames).filter(({ id }) =>
     selectedFrames.includes(id)
   );
-
   const breakpoints = outputFrames.map(({ width, height }) => ({
     width,
     height,
   }));
+
+  console.log(state);
 
   const html =
     outputFrames.length > 0
@@ -126,7 +151,9 @@ export function App(): JSX.Element {
 
   return (
     <div class="app">
-      {errors.length > 0 && <ErrorNotification errors={errors} />}
+      {errors.length > 0 && (
+        <ErrorNotification errors={errors} errorInfo={errorInfo} />
+      )}
       <Preview
         rendering={status === STATUS.RENDERING}
         html={html}

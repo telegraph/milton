@@ -104,6 +104,7 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       strokes,
       strokeWeight,
       id,
+      name,
     } = textNode;
 
     let strokeColour: RGB | undefined;
@@ -131,6 +132,7 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       constraints,
       rangeStyles: getRangeStyles(textNode),
       id,
+      name,
       strokeColour,
       strokeWeight,
     });

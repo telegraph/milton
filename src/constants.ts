@@ -38,6 +38,7 @@ export enum OUTPUT_FORMATS {
 
 export enum ERRORS {
   MISSING_FRAMES = "MISSING_FRAMES",
+  MISSING_FONT = "MISSING_FONT",
   MULTIPLE_SAME_WIDTH = "MULTIPLE_SAME_WIDTH",
   FAILED_TO_FETCH_DATA = "FAILED_TO_FETCH_DATA",
   FAILED_TO_SET_HEADINGS = "FAILED_TO_SET_HEADINGS",
@@ -71,6 +72,7 @@ export const UI_TEXT = {
     [ERRORS.INPUT_INVALID_SOURCE_URL]:
       "Invalid source URL. Please check and update the URL.",
     [ERRORS.NO_FRAMES_SELECTED]: "Need to select at least one frame.",
+    [ERRORS.MISSING_FONT]: "Unknown font",
     [ERRORS.UNKNOWN]: "Unknown error",
   },
 };

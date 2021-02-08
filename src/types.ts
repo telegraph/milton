@@ -87,6 +87,7 @@ type textNodeSelectedProps = Pick<
 export type textData = textNodeSelectedProps & {
   rangeStyles: TextRange[];
   id: string;
+  name: string;
   strokeColour?: RGB;
   strokeWeight?: number;
 };

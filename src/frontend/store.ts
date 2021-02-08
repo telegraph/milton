@@ -15,6 +15,7 @@ interface StateInterface {
   responsive: boolean;
   svg: string;
   errors: ERRORS[];
+  errorInfo: { [key in ERRORS]?: string };
 }
 
 export const initialState: StateInterface = {
@@ -29,6 +30,7 @@ export const initialState: StateInterface = {
   responsive: true,
   svg: "",
   errors: [],
+  errorInfo: {},
 };
 
 export function reducer(
@@ -114,10 +116,21 @@ export function reducer(
       return {
         ...state,
         errors: toggleItem(
-          action.payload,
+          action.payload.error,
           state.errors,
-          state.errors.includes(action.payload)
+          action.payload.force ?? state.errors.includes(action.payload.error)
         ),
+        errorInfo: {
+          ...state.errorInfo,
+          [action.payload.error]: action.payload.message,
+        },
+      };
+
+    case ACTIONS.CLEAR_ERROR:
+      return {
+        ...state,
+        errors: toggleItem(action.payload, state.errors, true),
+        errorInfo: { ...state.errorInfo, [action.payload]: "" },
       };
 
     default:

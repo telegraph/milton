@@ -15,6 +15,7 @@ export enum ACTIONS {
   SET_SELECTED_FRAMES,
   SET_SVG,
   SET_INITIAL_DATA,
+  CLEAR_ERROR,
   TOGGLE_SELECTED_FRAME,
 }
 
@@ -94,9 +95,20 @@ export function actionSetSvg(
 }
 
 export function actionSetError(
+  error: ERRORS,
+  message?: string,
+  force?: boolean
+): {
+  type: ACTIONS.SET_ERROR;
+  payload: { error: ERRORS; message?: string; force?: boolean };
+} {
+  return { type: ACTIONS.SET_ERROR, payload: { error, message, force } };
+}
+
+export function actionClearError(
   error: ERRORS
-): { type: ACTIONS.SET_ERROR; payload: ERRORS } {
-  return { type: ACTIONS.SET_ERROR, payload: error };
+): { type: ACTIONS.CLEAR_ERROR; payload: ERRORS } {
+  return { type: ACTIONS.CLEAR_ERROR, payload: error };
 }
 
 export function actionToggleSelectedFrame(
@@ -124,6 +136,7 @@ export type ActionTypes =
   | ReturnType<typeof actionSetStatus>
   | ReturnType<typeof actionToggleSelectedFrame>
   | ReturnType<typeof actionStoreData>
-  | ReturnType<typeof actionSetError>;
+  | ReturnType<typeof actionSetError>
+  | ReturnType<typeof actionClearError>;
 
 export type dispatchType = (action: ActionTypes) => void;

@@ -1,12 +1,12 @@
 import { Fragment, FunctionalComponent, h, JSX } from "preact";
 import render from "preact-render-to-string";
-import { textData, FrameDataInterface, TextRange, FontStyle } from "types";
+import { textData, FrameDataInterface, TextRange } from "types";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-ignore
 import embedCss from "backend/embed.css";
 // import fontsCss from "backend/telegraphFonts.css";
-import { buildFontFaceCss } from "../../backend/fonts";
+import { buildFontFaceCss, generateFontStyles } from "../../backend/fonts";
 
 const PRECISION = 4;
 
@@ -211,30 +211,6 @@ function TextContainer(props: FrameProps) {
   );
 }
 
-// Extract unique font styles from range styles nested deep in frame info
-// frames[] -> textNodes[] -> rangeStyles[] -> { style }
-function generateFontFaces(frames: FrameDataInterface[]): string {
-  // @TODO: Extracting font styles is messy. Could we collect this info
-  // from the backend when building up the text style ranges?
-  const fontStyles = frames
-    .flatMap(({ textNodes }) => textNodes)
-    .flatMap(({ rangeStyles }) => rangeStyles)
-    .flatMap(({ family, italic, weight }) => ({ family, italic, weight }))
-    .reduce((acc, style): FontStyle[] => {
-      // De-dupe styles by searching for a match in the accumulator
-      return acc.some(
-        ({ family, weight, italic }) =>
-          family === style.family &&
-          italic === style.italic &&
-          weight === style.weight
-      )
-        ? acc
-        : [...acc, style];
-    }, [] as FontStyle[]);
-
-  return buildFontFaceCss(fontStyles);
-}
-
 const WrapIf: FunctionalComponent<{
   condition: boolean;
   Wrapper: FunctionalComponent;
@@ -276,7 +252,8 @@ export function generateEmbedHtml(props: renderInlineProps): string {
   } = props;
 
   const mediaQuery = generateMediaQueries(frames);
-  const fontFaces = generateFontFaces(frames);
+  const fontStyles = generateFontStyles(frames);
+  const fontFaces = buildFontFaceCss(fontStyles);
   const css = fontFaces + embedCss + mediaQuery;
 
   const html = render(
