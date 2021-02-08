@@ -58,7 +58,11 @@ export function reducer(
       return {
         ...state,
         sourceUrl: action.payload,
-        errors: toggleItem(ERRORS.INPUT_INVALID_URL, state.errors, validUrl),
+        errors: toggleItem(
+          ERRORS.INPUT_INVALID_SOURCE_URL,
+          state.errors,
+          validUrl
+        ),
       };
     }
 
@@ -68,7 +72,11 @@ export function reducer(
       return {
         ...state,
         embedUrl: action.payload,
-        errors: toggleItem(ERRORS.INPUT_INVALID_URL, state.errors, validUrl),
+        errors: toggleItem(
+          ERRORS.INPUT_INVALID_EMBED_URL,
+          state.errors,
+          validUrl
+        ),
       };
     }
 
