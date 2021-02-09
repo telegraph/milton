@@ -17,12 +17,12 @@ const { ui_html } = __uiFiles__;
 figma.showUI(ui_html);
 
 // Resize UI to max viewport dimensions
-const { width, height } = figma.viewport.bounds;
+const { width, height, x } = figma.viewport.bounds;
 const { zoom } = figma.viewport;
 
 const MIN_WIDTH = 600;
-const WIDTH_PERCENTAGE = 0.8;
-const pluginWidth = Math.round(width * zoom * WIDTH_PERCENTAGE);
+const WIDTH_PERCENTAGE = 0.9;
+const pluginWidth = Math.round((width + Math.abs(x)) * zoom * WIDTH_PERCENTAGE);
 const initialWindowWidth = Math.max(pluginWidth, MIN_WIDTH);
 
 const MIN_HEIGHT = 480;
