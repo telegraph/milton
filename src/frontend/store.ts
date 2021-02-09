@@ -1,187 +1,136 @@
 import { ERRORS, STATUS } from "constants";
-import { FigmaFramesType, IFrameData } from "types";
+import { FigmaFramesType } from "types";
+import { toggleItem, URL_REGEX } from "utils/common";
+import { ACTIONS, ActionTypes } from "./actions";
 
 interface StateInterface {
   status: STATUS;
   selectedFrames: string[];
-  figmaFrames: FigmaFramesType;
+  frames: FigmaFramesType;
   headline: string;
   subhead: string;
   source: string;
+  sourceUrl: string;
+  embedUrl: string;
   responsive: boolean;
   svg: string;
-  error?: ERRORS;
+  errors: ERRORS[];
+  errorInfo: { [key in ERRORS]?: string };
 }
 
 export const initialState: StateInterface = {
   status: STATUS.LOADING,
-  figmaFrames: {},
+  frames: {},
   selectedFrames: [],
   headline: "",
   subhead: "",
   source: "",
+  sourceUrl: "",
+  embedUrl: "",
   responsive: true,
   svg: "",
+  errors: [],
+  errorInfo: {},
 };
-
-enum ActionTypes {
-  SET_TEXT,
-  SET_STATUS,
-  SET_ERROR,
-  SET_FRAMES,
-  SET_RESPONSIVE,
-  SET_SELECTED_FRAMES,
-  SET_SVG,
-  TOGGLE_SELECTED_FRAME,
-}
-
-export function actionSetText(props: {
-  headline?: string;
-  subhead?: string;
-  source?: string;
-}): {
-  type: ActionTypes.SET_TEXT;
-  payload: { headline?: string; subhead?: string; source?: string };
-} {
-  return {
-    type: ActionTypes.SET_TEXT,
-    payload: props,
-  };
-}
-
-export function actionSetFrames(
-  frames: FigmaFramesType
-): { type: ActionTypes.SET_FRAMES; payload: FigmaFramesType } {
-  return { type: ActionTypes.SET_FRAMES, payload: frames };
-}
-
-export function actionSetSelectedFrames(
-  frameIds: string[]
-): { type: ActionTypes.SET_SELECTED_FRAMES; payload: string[] } {
-  return { type: ActionTypes.SET_SELECTED_FRAMES, payload: frameIds };
-}
-
-export function actionSetStatus(
-  status: STATUS
-): { type: ActionTypes.SET_STATUS; payload: STATUS } {
-  return { type: ActionTypes.SET_STATUS, payload: status };
-}
-
-export function actionSetResponsive(
-  responsive: boolean
-): { type: ActionTypes.SET_RESPONSIVE; payload: boolean } {
-  return { type: ActionTypes.SET_RESPONSIVE, payload: responsive };
-}
-
-export function actionSetSvg(
-  svg: string
-): { type: ActionTypes.SET_SVG; payload: string } {
-  return { type: ActionTypes.SET_SVG, payload: svg };
-}
-
-export function actionSetError(
-  error: ERRORS
-): { type: ActionTypes.SET_ERROR; payload: ERRORS } {
-  return { type: ActionTypes.SET_ERROR, payload: error };
-}
-
-export function actionToggleSelectedFrame(
-  id: string
-): { type: ActionTypes.TOGGLE_SELECTED_FRAME; payload: string } {
-  return { type: ActionTypes.TOGGLE_SELECTED_FRAME, payload: id };
-}
-
-export type dispatchType = (action: ReducerProps) => void;
-export const actionStoreData = (
-  dispatch: dispatchType,
-  figmaData: IFrameData
-): Promise<void> => {
-  const { headline, subhead, source, frames } = figmaData;
-
-  console.log("actionStoreData", "actionSetFrames");
-  dispatch(actionSetFrames(frames));
-  console.log("actionStoreData", "actionSetSelectedFrames");
-  dispatch(actionSetSelectedFrames(Object.keys(frames)));
-  console.log("actionStoreData", "actionSetText");
-  dispatch(actionSetText({ headline, subhead, source }));
-  console.log("actionStoreData", "actionSetStatus");
-  dispatch(actionSetStatus(STATUS.READY));
-  return Promise.resolve();
-};
-
-export type ReducerProps =
-  | ReturnType<typeof actionSetText>
-  | ReturnType<typeof actionSetFrames>
-  | ReturnType<typeof actionSetSelectedFrames>
-  | ReturnType<typeof actionSetResponsive>
-  | ReturnType<typeof actionSetSvg>
-  | ReturnType<typeof actionSetStatus>
-  | ReturnType<typeof actionToggleSelectedFrame>
-  | ReturnType<typeof actionSetError>;
 
 export function reducer(
   state: StateInterface,
-  action: ReducerProps
+  action: ActionTypes
 ): StateInterface {
   switch (action.type) {
-    case ActionTypes.SET_TEXT:
+    case ACTIONS.SET_INITIAL_DATA:
       return {
         ...state,
         ...action.payload,
+        selectedFrames: Object.keys(action.payload.frames),
       };
 
-    case ActionTypes.SET_STATUS:
-      return {
-        ...state,
-        status: action.payload,
-      };
+    case ACTIONS.SET_HEADLINE:
+      return { ...state, headline: action.payload };
 
-    case ActionTypes.SET_FRAMES:
-      return {
-        ...state,
-        figmaFrames: action.payload,
-      };
+    case ACTIONS.SET_SUBHEAD:
+      return { ...state, subhead: action.payload };
 
-    case ActionTypes.SET_SELECTED_FRAMES:
-      return {
-        ...state,
-        selectedFrames: action.payload,
-      };
+    case ACTIONS.SET_SOURCE:
+      return { ...state, source: action.payload };
 
-    case ActionTypes.SET_RESPONSIVE:
-      return {
-        ...state,
-        responsive: action.payload,
-      };
-
-    case ActionTypes.SET_SVG:
-      return {
-        ...state,
-        svg: action.payload,
-      };
-
-    case ActionTypes.TOGGLE_SELECTED_FRAME: {
-      let frameIds: string[];
-      const { selectedFrames } = state;
-      const frameIsSelected = selectedFrames.includes(action.payload);
-
-      if (frameIsSelected) {
-        frameIds = selectedFrames.filter((val) => val !== action.payload);
-      } else {
-        frameIds = [...selectedFrames, action.payload];
-      }
+    case ACTIONS.SET_SOURCE_URL: {
+      const validUrl = action.payload === "" || URL_REGEX.test(action.payload);
 
       return {
         ...state,
-        selectedFrames: frameIds,
+        sourceUrl: action.payload,
+        errors: toggleItem(
+          ERRORS.INPUT_INVALID_SOURCE_URL,
+          state.errors,
+          validUrl
+        ),
       };
     }
 
-    case ActionTypes.SET_ERROR:
+    case ACTIONS.SET_EMBED_URL: {
+      const validUrl = action.payload === "" || URL_REGEX.test(action.payload);
+
       return {
         ...state,
-        status: STATUS.ERROR,
-        error: action.payload,
+        embedUrl: action.payload,
+        errors: toggleItem(
+          ERRORS.INPUT_INVALID_EMBED_URL,
+          state.errors,
+          validUrl
+        ),
+      };
+    }
+
+    case ACTIONS.SET_STATUS:
+      return { ...state, status: action.payload };
+
+    case ACTIONS.SET_FRAMES:
+      return { ...state, frames: action.payload };
+
+    case ACTIONS.SET_SELECTED_FRAMES:
+      return { ...state, selectedFrames: action.payload };
+
+    case ACTIONS.SET_RESPONSIVE:
+      return { ...state, responsive: action.payload };
+
+    case ACTIONS.SET_SVG:
+      return { ...state, svg: action.payload };
+
+    case ACTIONS.TOGGLE_SELECTED_FRAME: {
+      const newSelection = toggleItem(action.payload, state.selectedFrames);
+      const validSelection = newSelection.length > 0;
+
+      return {
+        ...state,
+        selectedFrames: newSelection,
+        errors: toggleItem(
+          ERRORS.NO_FRAMES_SELECTED,
+          state.errors,
+          validSelection
+        ),
+      };
+    }
+
+    case ACTIONS.SET_ERROR:
+      return {
+        ...state,
+        errors: toggleItem(
+          action.payload.error,
+          state.errors,
+          action.payload.force ?? state.errors.includes(action.payload.error)
+        ),
+        errorInfo: {
+          ...state.errorInfo,
+          [action.payload.error]: action.payload.message,
+        },
+      };
+
+    case ACTIONS.CLEAR_ERROR:
+      return {
+        ...state,
+        errors: toggleItem(action.payload, state.errors, true),
+        errorInfo: { ...state.errorInfo, [action.payload]: "" },
       };
 
     default:

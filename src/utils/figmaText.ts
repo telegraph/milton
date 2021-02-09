@@ -104,21 +104,15 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       strokes,
       strokeWeight,
       id,
+      name,
     } = textNode;
 
-    let strokeDetails = {};
-
-    const strokeColour = strokes.find(
-      (paint) => paint.type === "SOLID"
-    ) as SolidPaint;
-
-    if (strokeColour) {
-      strokeDetails = {
-        strokeWeight: strokeWeight,
-        strokeColour: `rgb(${Object.values(strokeColour.color)
-          .map((val) => val * 255)
-          .join(",")})`,
-      };
+    let strokeColour: RGB | undefined;
+    for (const stroke of strokes) {
+      if (stroke.type === "SOLID") {
+        strokeColour = stroke.color;
+        break;
+      }
     }
 
     // NOTE: Figma node x, y are relative to first parent, we want them
@@ -138,7 +132,9 @@ export function getTextNodesFromFrame(frame: FrameNode): textData[] {
       constraints,
       rangeStyles: getRangeStyles(textNode),
       id,
-      ...strokeDetails,
+      name,
+      strokeColour,
+      strokeWeight,
     });
   }
 

@@ -1,12 +1,12 @@
 import { h, JSX } from "preact";
 import { FigmaFramesType } from "types";
 
-import { actionToggleSelectedFrame, ReducerProps } from "../store";
+import { actionToggleSelectedFrame, ActionTypes } from "../actions";
 
 interface FramesProps {
   figmaFrames: FigmaFramesType;
   selectedFrames: string[];
-  handleChange: (action: ReducerProps) => void;
+  handleChange: (action: ActionTypes) => void;
 }
 
 export function Frames({

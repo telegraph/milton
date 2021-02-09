@@ -4,13 +4,13 @@ import { postMan } from "utils/messages";
 import {
   getRootFrames,
   renderFrames,
-  setHeadlinesAndSource,
+  setEmbedProperties,
 } from "backend/figmaUtils";
 
 // Register messenger event functions
 postMan.registerWorker(MSG_EVENTS.GET_ROOT_FRAMES, getRootFrames);
 postMan.registerWorker(MSG_EVENTS.RENDER, renderFrames);
-postMan.registerWorker(MSG_EVENTS.UPDATE_HEADLINES, setHeadlinesAndSource);
+postMan.registerWorker(MSG_EVENTS.UPDATE_HEADLINES, setEmbedProperties);
 
 // Render the DOM
 const { ui_html } = __uiFiles__;

@@ -1,4 +1,28 @@
-import { FontStyle } from "types";
+import { FontStyle, FrameDataInterface } from "types";
+
+// Extract unique font styles from range styles nested deep in frame info
+// frames[] -> textNodes[] -> rangeStyles[] -> { style }
+export function generateFontStyles(frames: FrameDataInterface[]): FontStyle[] {
+  // @TODO: Extracting font styles is messy. Could we collect this info
+  // from the backend when building up the text style ranges?
+  const fontStyles = frames
+    .flatMap(({ textNodes }) => textNodes)
+    .flatMap(({ rangeStyles }) => rangeStyles)
+    .flatMap(({ family, italic, weight }) => ({ family, italic, weight }))
+    .reduce((acc, style): FontStyle[] => {
+      // De-dupe styles by searching for a match in the accumulator
+      return acc.some(
+        ({ family, weight, italic }) =>
+          family === style.family &&
+          italic === style.italic &&
+          weight === style.weight
+      )
+        ? acc
+        : [...acc, style];
+    }, [] as FontStyle[]);
+
+  return fontStyles;
+}
 
 type FontsType = {
   [id: string]: {
@@ -6,6 +30,19 @@ type FontsType = {
     italic?: { [weight: number]: string };
   };
 };
+
+const CORE_WEB_FONTS = [
+  "arial",
+  "helvetica",
+  "times",
+  "times new roman",
+  "georgia",
+  "courier",
+  "courier mew",
+  "sans-serif",
+  "serif",
+  "monospace",
+];
 
 const fonts: FontsType = {
   "Austin News Deck": {
@@ -95,4 +132,48 @@ export function buildFontFaceCss(styles: FontStyle[]): string {
   }
 
   return fontFaces;
+}
+
+interface MissingFontInfo {
+  family: string;
+  text: string;
+  frame: string;
+  layerName: string;
+}
+export function findMissingFonts(
+  frames: FrameDataInterface[]
+): MissingFontInfo[] {
+  const missingFonts: MissingFontInfo[] = [];
+
+  for (const frame of frames) {
+    for (const textNode of frame.textNodes) {
+      for (const rangeStyle of textNode.rangeStyles) {
+        if (!rangeStyle.family) {
+          missingFonts.push({
+            family: "Unknown",
+            frame: frame.name.substr(0, 10),
+            layerName: textNode.name.substr(0, 10),
+            text: rangeStyle.text.substr(0, 10),
+          });
+          continue;
+        }
+
+        if (CORE_WEB_FONTS.includes(rangeStyle.family.toLowerCase())) {
+          continue;
+        }
+
+        if (!fonts[rangeStyle.family]) {
+          missingFonts.push({
+            family: rangeStyle.family,
+            frame: frame.name.substr(0, 10),
+            layerName: textNode.name.substr(0, 10),
+            text: rangeStyle.text.substr(0, 10),
+          });
+          continue;
+        }
+      }
+    }
+  }
+
+  return missingFonts;
 }

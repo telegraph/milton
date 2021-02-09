@@ -23,6 +23,8 @@ export type IFrameData = {
   headline: string;
   subhead: string;
   source: string;
+  sourceUrl: string;
+  embedUrl: string;
 };
 
 export type MsgFramesType = IFrameData & {
@@ -56,14 +58,16 @@ export type AppPropsInterface = {
 };
 
 export type AppState = {
-  readonly error: string | undefined;
+  readonly error: string;
   readonly ready: boolean;
   readonly frames: FigmaFramesType;
   readonly stage: STAGES;
   readonly responsive: boolean;
-  readonly headline: string | undefined;
-  readonly subhead: string | undefined;
-  readonly source: string | undefined;
+  readonly headline: string;
+  readonly subhead: string;
+  readonly source: string;
+  readonly sourceLink: string;
+
   readonly selectedFrames: string[];
   readonly svgMarkup: string;
   readonly loading: boolean;
@@ -78,25 +82,22 @@ type textNodeSelectedProps = Pick<
   | "textAlignHorizontal"
   | "textAlignVertical"
   | "constraints"
-  | "strokeWeight"
 >;
 
 export type textData = textNodeSelectedProps & {
   rangeStyles: TextRange[];
   id: string;
-  strokeColour: string;
+  name: string;
+  strokeColour?: RGB;
+  strokeWeight?: number;
 };
 
-export type setHeadlinesAndSourceProps = {
+export type setExportProperties = {
   headline: string;
   subhead: string;
   source: string;
-};
-
-export type HeadlinesInterface = {
-  headline: string | undefined;
-  subhead: string | undefined;
-  source: string | undefined;
+  sourceUrl: string;
+  embedUrl: string;
 };
 
 export interface UiPostMessageEvent extends MessageEvent {

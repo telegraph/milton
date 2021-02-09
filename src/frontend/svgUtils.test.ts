@@ -1,11 +1,7 @@
 import { suite } from "uvu";
 import * as assert from "uvu/assert";
 import { parse } from "node-html-parser";
-import {
-  transformToValidId,
-  replaceHttpWithHttps,
-  reducePathPrecision,
-} from "./svgUtils";
+import { replaceHttpWithHttps, reducePathPrecision } from "./svgUtils";
 
 export const svgSample = `
   <svg
@@ -28,21 +24,21 @@ export const svgSample = `
 
 const SvgCleaner = suite("svgUtils.js");
 
-SvgCleaner("transformToValidId", () => {
-  const expectedResult = "abc123";
-  [
-    "abc 123",
-    "abc   123",
-    "abc	123",
-    "abc		123",
-    "abc---123",
-    "abc===123",
-    "abc+++123",
-    "abc```123",
-    "abc...123",
-    "abc{-}123",
-  ].forEach((id) => assert.is(transformToValidId(id), expectedResult));
-});
+// SvgCleaner("transformToValidId", () => {
+//   const expectedResult = "abc123";
+//   [
+//     "abc 123",
+//     "abc   123",
+//     "abc	123",
+//     "abc		123",
+//     "abc---123",
+//     "abc===123",
+//     "abc+++123",
+//     "abc```123",
+//     "abc...123",
+//     "abc{-}123",
+//   ].forEach((id) => assert.is(transformToValidId(id), expectedResult));
+// });
 
 SvgCleaner("replaceHttpWithHttps", () => {
   const inputStr = '<a href="http://example.com"></a>';

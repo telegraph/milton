@@ -1,12 +1,12 @@
-import { h } from "preact";
+import { Fragment, FunctionalComponent, h, JSX } from "preact";
 import render from "preact-render-to-string";
-import { textData, FrameDataInterface, TextRange, FontStyle } from "types";
+import { textData, FrameDataInterface, TextRange } from "types";
 
 // Import CSS file as plain text via esbuild loader option
-
+// @ts-ignore
 import embedCss from "backend/embed.css";
 // import fontsCss from "backend/telegraphFonts.css";
-import { buildFontFaceCss } from "../../backend/fonts";
+import { buildFontFaceCss, generateFontStyles } from "../../backend/fonts";
 
 const PRECISION = 4;
 
@@ -55,11 +55,11 @@ function generateParagraphStyle(
 
   let styleText = "";
 
-  // Strokes
   if (strokeWeight && strokeColour) {
-    styleText += `
-     -webkit-text-stroke-color:  ${strokeColour};
-    `;
+    const rgbValues = Object.values(strokeColour);
+    const rgbScaled = rgbValues.map((colour) => colour * 255);
+    const rgbText = `rgb(${rgbScaled.join(",")})`;
+    styleText += `-webkit-text-stroke-color:  ${rgbText};`;
   }
 
   // TODO: Add sensible logic for vertical alignment in responsive view
@@ -211,43 +211,49 @@ function TextContainer(props: FrameProps) {
   );
 }
 
-// Extract unique font styles from range styles nested deep in frame info
-// frames[] -> textNodes[] -> rangeStyles[] -> { style }
-function generateFontFaces(frames: FrameDataInterface[]): string {
-  // @TODO: Extracting font styles is messy. Could we collect this info
-  // from the backend when building up the text style ranges?
-  const fontStyles = frames
-    .flatMap(({ textNodes }) => textNodes)
-    .flatMap(({ rangeStyles }) => rangeStyles)
-    .flatMap(({ family, italic, weight }) => ({ family, italic, weight }))
-    .reduce((acc, style): FontStyle[] => {
-      // De-dupe styles by searching for a match in the accumulator
-      return acc.some(
-        ({ family, weight, italic }) =>
-          family === style.family &&
-          italic === style.italic &&
-          weight === style.weight
-      )
-        ? acc
-        : [...acc, style];
-    }, [] as FontStyle[]);
+const WrapIf: FunctionalComponent<{
+  condition: boolean;
+  Wrapper: FunctionalComponent;
+  [id: string]: any;
+}> = (props) => {
+  const { condition, Wrapper, children, ...rest } = props;
 
-  return buildFontFaceCss(fontStyles);
-}
+  if (condition) return <Wrapper {...rest}>{children}</Wrapper>;
+  if (children) return <Fragment>{children}</Fragment>;
+  return null;
+};
+
+const LinkWrapper: FunctionalComponent = (props): JSX.Element => {
+  const { children, ...rest } = props;
+
+  return <a {...rest}>{children}</a>;
+};
 
 type renderInlineProps = {
   frames: FrameDataInterface[];
   svg: string;
-  headline?: string;
-  subhead?: string;
-  source?: string;
+  headline: string;
+  subhead: string;
+  source: string;
+  sourceUrl: string;
+  embedUrl: string;
   responsive: boolean;
 };
 export function generateEmbedHtml(props: renderInlineProps): string {
-  const { frames, svg, headline, subhead, source, responsive } = props;
+  const {
+    frames,
+    svg,
+    headline,
+    subhead,
+    source,
+    sourceUrl,
+    responsive,
+    embedUrl,
+  } = props;
 
   const mediaQuery = generateMediaQueries(frames);
-  const fontFaces = generateFontFaces(frames);
+  const fontStyles = generateFontStyles(frames);
+  const fontFaces = buildFontFaceCss(fontStyles);
   const css = fontFaces + embedCss + mediaQuery;
 
   const html = render(
@@ -262,16 +268,20 @@ export function generateEmbedHtml(props: renderInlineProps): string {
       )}
 
       <div className="f2h__wrap" style={`position: relative;`}>
-        <div
-          className="f2h__svg_container"
-          dangerouslySetInnerHTML={{ __html: svg }}
-        />
-        <TextContainer frames={frames} />
+        <WrapIf condition={!!embedUrl} Wrapper={LinkWrapper} href={embedUrl}>
+          <div
+            className="f2h__svg_container"
+            dangerouslySetInnerHTML={{ __html: svg }}
+          />
+          <TextContainer frames={frames} />
+        </WrapIf>
       </div>
 
       {source && (
         <footer>
-          <p className="f2h_source">{source}</p>
+          <p className="f2h_source">
+            Source: {sourceUrl ? <a href={sourceUrl}>{source}</a> : source}
+          </p>
         </footer>
       )}
     </div>,

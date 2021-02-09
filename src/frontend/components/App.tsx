@@ -1,27 +1,29 @@
+import { FrameRender, IFrameData } from "types";
 import { h, JSX } from "preact";
 import { useEffect, useReducer } from "preact/hooks";
 
 import { MSG_EVENTS, ERRORS, STATUS } from "constants";
 import { decodeSvgToString } from "frontend/svgUtils";
 import { postMan } from "utils/messages";
-import { FrameRender, IFrameData } from "types";
 import { generateEmbedHtml } from "./outputRender";
 import { Preview } from "./Preview";
 import { Frames } from "./Frames";
-import { FrameText } from "./FrameText";
+import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
 import { Export } from "./Export";
+import { ErrorNotification } from "./ErrorNotification";
 
 import { containsDuplicate, isEmpty } from "utils/common";
+import { initialState, reducer } from "../store";
 import {
-  initialState,
-  reducer,
   actionSetSvg,
   actionSetStatus,
   actionSetError,
   dispatchType,
   actionStoreData,
-} from "../store";
+  actionClearError,
+} from "../actions";
 import { version } from "../../../package.json";
+import { findMissingFonts } from "backend/fonts";
 
 function handleResponse(dispatch: dispatchType, response: IFrameData): void {
   if (isEmpty(response.frames)) {
@@ -35,7 +37,7 @@ function handleResponse(dispatch: dispatchType, response: IFrameData): void {
     return;
   }
 
-  actionStoreData(dispatch, response).catch(console.error);
+  dispatch(actionStoreData(response));
 }
 
 async function getAndStoreSvgHtml(
@@ -53,7 +55,7 @@ async function getAndStoreSvgHtml(
 
   const svg = await decodeSvgToString(svgData, imageNodeDimensions);
   dispatch(actionSetSvg(svg));
-  dispatch(actionSetStatus(STATUS.READY));
+  dispatch(actionSetStatus(STATUS.IDLE));
 }
 
 export function App(): JSX.Element {
@@ -63,12 +65,15 @@ export function App(): JSX.Element {
     headline,
     subhead,
     source,
+    sourceUrl,
+    embedUrl,
     svg,
     selectedFrames,
     status,
-    error,
-    figmaFrames,
+    errors,
+    frames,
     responsive,
+    errorInfo,
   } = state;
 
   // Load frame data from backend
@@ -85,33 +90,50 @@ export function App(): JSX.Element {
     postMan
       .send({
         workload: MSG_EVENTS.UPDATE_HEADLINES,
-        data: { headline, subhead, source },
+        data: { headline, subhead, source, sourceUrl, embedUrl },
       })
       .catch(() => dispatch(actionSetError(ERRORS.FAILED_TO_SET_HEADINGS)));
-  }, [headline, subhead, source]);
+  }, [headline, subhead, source, sourceUrl, embedUrl]);
 
   // Render SVG and store output when Status changes to Render
   // TODO: Only fetch data once!!
   useEffect(() => {
-    if (selectedFrames.length < 1) {
-      return;
-    }
-
+    if (selectedFrames.length < 1) return;
     getAndStoreSvgHtml(dispatch, selectedFrames).catch(console.error);
   }, [selectedFrames]);
 
-  if (status === STATUS.ERROR) return <p>Error {error}</p>;
+  // if (status === STATUS.LOADING) return <p>LOADING</p>;
 
-  if (status === STATUS.LOADING) return <p>LOADING</p>;
+  useEffect(() => {
+    const missingFonts = findMissingFonts(outputFrames);
 
-  const outputFrames = Object.values(figmaFrames).filter(({ id }) =>
+    console.log(missingFonts);
+
+    if (missingFonts.length > 0) {
+      const missingFontInfo = missingFonts.map(
+        (missingInfo) =>
+          `family=["${missingInfo.family}"] text=["${missingInfo.text}…"] frame=["${missingInfo.frame}"] layer["${missingInfo.layerName}"]`
+      );
+      dispatch(
+        actionSetError(ERRORS.MISSING_FONT, missingFontInfo.join("\n"), false)
+      );
+    }
+
+    if (missingFonts.length === 0 && errors.includes(ERRORS.MISSING_FONT)) {
+      console.log("NO missing frames", missingFonts);
+      dispatch(actionClearError(ERRORS.MISSING_FONT));
+    }
+  }, [selectedFrames]);
+
+  const outputFrames = Object.values(frames).filter(({ id }) =>
     selectedFrames.includes(id)
   );
-
   const breakpoints = outputFrames.map(({ width, height }) => ({
     width,
     height,
   }));
+
+  console.log(state);
 
   const html =
     outputFrames.length > 0
@@ -122,11 +144,16 @@ export function App(): JSX.Element {
           subhead,
           source,
           responsive,
+          sourceUrl,
+          embedUrl,
         })
       : "";
 
   return (
     <div class="app">
+      {errors.length > 0 && (
+        <ErrorNotification errors={errors} errorInfo={errorInfo} />
+      )}
       <Preview
         rendering={status === STATUS.RENDERING}
         html={html}
@@ -137,15 +164,17 @@ export function App(): JSX.Element {
 
       <section class="sidebar">
         <Frames
-          figmaFrames={figmaFrames}
+          figmaFrames={frames}
           selectedFrames={selectedFrames}
           handleChange={dispatch}
         />
 
-        <FrameText
+        <EmbedPropertiesInputs
           headline={headline}
           subhead={subhead}
           source={source}
+          sourceUrl={sourceUrl}
+          embedUrl={embedUrl}
           handleChange={dispatch}
         />
 
@@ -153,10 +182,6 @@ export function App(): JSX.Element {
       </section>
 
       <p class="footer">Version {version}</p>
-
-      {selectedFrames.length === 0 && (
-        <p class="warning">Need to select at least one frame</p>
-      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { actionSetResponsive, ReducerProps } from "frontend/store";
+import { actionSetResponsive, ActionTypes } from "frontend/actions";
 import { FunctionalComponent, h } from "preact";
 import { useEffect, useRef, useReducer, useState } from "preact/hooks";
 
@@ -7,7 +7,7 @@ interface PreviewProps {
   html: string;
   responsive: boolean;
   breakpoint: { width: number; height: number }[];
-  handleChange: (action: ReducerProps) => void;
+  handleChange: (action: ActionTypes) => void;
 }
 
 export const Preview: FunctionalComponent<PreviewProps> = (props) => {
