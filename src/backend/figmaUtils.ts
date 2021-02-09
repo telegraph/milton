@@ -68,6 +68,7 @@ function resizeOutputToMaxSize(frameNode: FrameNode): void {
 function createCloneOfFrames(frames: FrameNode[]): FrameNode {
   const outputNode = figma.createFrame();
   outputNode.name = "output";
+  outputNode.fills = [];
 
   for (const frame of frames) {
     const clone = frame?.clone();
