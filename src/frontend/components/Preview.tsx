@@ -10,6 +10,8 @@ interface PreviewProps {
   handleChange: (action: ActionTypes) => void;
 }
 
+const IFRAME_HEIGHT_MARGIN = 100;
+
 export const Preview: FunctionalComponent<PreviewProps> = (props) => {
   const {
     html,
@@ -21,7 +23,8 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
 
   const [breakpointIndex, setBreakpointIndex] = useState(0);
   const breakpointWidth = breakPoints[breakpointIndex]?.width;
-  const breakpointHeight = breakPoints[breakpointIndex]?.height;
+  const breakpointHeight =
+    breakPoints[breakpointIndex]?.height + IFRAME_HEIGHT_MARGIN;
 
   const [dimensions, setDimensions] = useState([
     breakpointWidth,
@@ -296,6 +299,8 @@ function PreviewIframe({
       },
     });
   }, [breakpointWidth, breakpointHeight]);
+
+  console.log(height);
 
   const iframeStyle = `
     width: ${width}px;
