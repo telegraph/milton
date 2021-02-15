@@ -92,8 +92,6 @@ export function reducer(
       const newError = { ...state.errors };
       delete newError[action.payload];
 
-      console.log(action, newError);
-
       return {
         ...state,
         errors: newError,

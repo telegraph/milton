@@ -133,9 +133,7 @@ export const actionFetchFrameRender = (frameIds: string[]) => {
       .send({ workload: MSG_EVENTS.RENDER, data: frameIds })
       .catch(console.error)) as FrameRender;
 
-    console.log(response, frameIds);
     const { svgData, imageNodeDimensions } = response;
-
     const svg = await decodeSvgToString(svgData, imageNodeDimensions);
     dispatch(actionSetSvg(svg));
     dispatch(actionSetStatus(STATUS.IDLE));
@@ -147,7 +145,6 @@ export const actionUpdateSelectedFrames = (
   frames: FrameDataInterface[]
 ) => {
   return (dispatch: DispatchType) => {
-    console.log("in here", selectedFrames);
     if (selectedFrames.length < 1) {
       return dispatch(actionSetError(ERRORS.NO_FRAMES_SELECTED));
     }
@@ -164,8 +161,6 @@ export const actionCheckFonts = (
 ) => {
   const missingFonts = findMissingFonts(outputFrames);
 
-  console.log(missingFonts);
-
   if (missingFonts.length > 0) {
     const missingFontInfo = missingFonts.map(
       (missingInfo) =>
@@ -175,7 +170,6 @@ export const actionCheckFonts = (
   }
   // && errors?.includes(ERRORS.MISSING_FONT)
   if (missingFonts.length === 0) {
-    console.log("NO missing frames", missingFonts);
     dispatch(actionClearError(ERRORS.MISSING_FONT));
   }
 };

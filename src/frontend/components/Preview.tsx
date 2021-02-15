@@ -300,8 +300,6 @@ function PreviewIframe({
     });
   }, [breakpointWidth, breakpointHeight]);
 
-  console.log(height);
-
   const iframeStyle = `
     width: ${width}px;
     height: ${height}px;
