@@ -5,6 +5,7 @@ import {
   actionUpdateEmbedProps,
   actionSetError,
   ActionTypes,
+  actionClearError,
 } from "../actions";
 
 interface EmbedPropertiesInputs {
@@ -34,13 +35,16 @@ export function EmbedPropertiesInputs({
 
     actionUpdateEmbedProps(id as EMBED_PROPERTIES, cleanValue)(handleChange);
 
-    if (
-      id === EMBED_PROPERTIES.EMBED_URL ||
-      id === EMBED_PROPERTIES.SOURCE_URL
-    ) {
-      if (!isValidURLValue(cleanValue)) {
-        handleChange(actionSetError(ERRORS.INPUT_INVALID_URL));
-      }
+    if (id === EMBED_PROPERTIES.EMBED_URL) {
+      !isValidURLValue(cleanValue)
+        ? handleChange(actionSetError(ERRORS.INPUT_EMBED_INVALID_URL))
+        : handleChange(actionClearError(ERRORS.INPUT_EMBED_INVALID_URL));
+    }
+
+    if (id === EMBED_PROPERTIES.SOURCE_URL) {
+      !isValidURLValue(cleanValue)
+        ? handleChange(actionSetError(ERRORS.INPUT_SOURCE_INVALID_URL))
+        : handleChange(actionClearError(ERRORS.INPUT_SOURCE_INVALID_URL));
     }
   };
 
