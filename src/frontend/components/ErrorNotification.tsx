@@ -11,9 +11,9 @@ export const ErrorNotification: FunctionComponent<{
     <section class="error_notification">
       <h2 class="error_notification__heading">Warning</h2>
       <ol class="error_notification__list">
-        {Object.entries(errors).map(([errorKey, errorMessage]) => (
-          <li key={errorKey}>
-            {UI_TEXT.ERRORS[errorKey]}
+        {Object.entries(errors).map(([errorType, errorMessage]) => (
+          <li key={errorType}>
+            {UI_TEXT.ERRORS[errorType as keyof typeof ERRORS]}
             {errorMessage && <pre>{errorMessage}</pre>}
           </li>
         ))}

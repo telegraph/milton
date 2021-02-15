@@ -207,7 +207,9 @@ export const actionUpdateEmbedProps = (
           value,
         },
       })
-      .catch(() => dispatch(actionSetError(ERRORS.FAILED_TO_SET_HEADINGS)));
+      .catch(() =>
+        dispatch(actionSetError(ERRORS.FAILED_TO_SET_EMBED_SETTINGS))
+      );
   };
 };
 
