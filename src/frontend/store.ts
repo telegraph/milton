@@ -1,36 +1,40 @@
 import { ERRORS, STATUS } from "constants";
 import { FigmaFramesType } from "types";
-import { toggleItem, URL_REGEX } from "utils/common";
+import { toggleItem } from "utils/common";
 import { ACTIONS, ActionTypes } from "./actions";
 
-interface StateInterface {
-  status: STATUS;
-  selectedFrames: string[];
-  frames: FigmaFramesType;
+export interface EmbedProperties {
   headline: string;
   subhead: string;
   source: string;
   sourceUrl: string;
   embedUrl: string;
+}
+
+export interface StateInterface {
+  status: STATUS;
+  selectedFrames: string[];
+  frames: FigmaFramesType;
+  embedProperties: EmbedProperties;
   responsive: boolean;
   svg: string;
-  errors: ERRORS[];
-  errorInfo: { [key in ERRORS]?: string };
+  errors: { [key in ERRORS]?: string };
 }
 
 export const initialState: StateInterface = {
   status: STATUS.LOADING,
   frames: {},
   selectedFrames: [],
-  headline: "",
-  subhead: "",
-  source: "",
-  sourceUrl: "",
-  embedUrl: "",
+  embedProperties: {
+    headline: "",
+    subhead: "",
+    source: "",
+    sourceUrl: "",
+    embedUrl: "",
+  },
   responsive: true,
   svg: "",
-  errors: [],
-  errorInfo: {},
+  errors: {},
 };
 
 export function reducer(
@@ -42,45 +46,14 @@ export function reducer(
       return {
         ...state,
         ...action.payload,
-        selectedFrames: Object.keys(action.payload.frames),
+        status: STATUS.IDLE,
       };
 
-    case ACTIONS.SET_HEADLINE:
-      return { ...state, headline: action.payload };
-
-    case ACTIONS.SET_SUBHEAD:
-      return { ...state, subhead: action.payload };
-
-    case ACTIONS.SET_SOURCE:
-      return { ...state, source: action.payload };
-
-    case ACTIONS.SET_SOURCE_URL: {
-      const validUrl = action.payload === "" || URL_REGEX.test(action.payload);
-
+    case ACTIONS.SET_EMBED_PROPERTY:
       return {
         ...state,
-        sourceUrl: action.payload,
-        errors: toggleItem(
-          ERRORS.INPUT_INVALID_SOURCE_URL,
-          state.errors,
-          validUrl
-        ),
+        embedProperties: { ...state.embedProperties, ...action.payload },
       };
-    }
-
-    case ACTIONS.SET_EMBED_URL: {
-      const validUrl = action.payload === "" || URL_REGEX.test(action.payload);
-
-      return {
-        ...state,
-        embedUrl: action.payload,
-        errors: toggleItem(
-          ERRORS.INPUT_INVALID_EMBED_URL,
-          state.errors,
-          validUrl
-        ),
-      };
-    }
 
     case ACTIONS.SET_STATUS:
       return { ...state, status: action.payload };
@@ -99,38 +72,31 @@ export function reducer(
 
     case ACTIONS.TOGGLE_SELECTED_FRAME: {
       const newSelection = toggleItem(action.payload, state.selectedFrames);
-      const validSelection = newSelection.length > 0;
 
       return {
         ...state,
         selectedFrames: newSelection,
-        errors: toggleItem(
-          ERRORS.NO_FRAMES_SELECTED,
-          state.errors,
-          validSelection
-        ),
       };
     }
 
     case ACTIONS.SET_ERROR:
       return {
         ...state,
-        errors: toggleItem(
-          action.payload.error,
-          state.errors,
-          action.payload.force ?? state.errors.includes(action.payload.error)
-        ),
-        errorInfo: {
-          ...state.errorInfo,
+        errors: {
+          ...state.errors,
           [action.payload.error]: action.payload.message,
         },
       };
 
     case ACTIONS.CLEAR_ERROR:
+      const newError = { ...state.errors };
+      delete newError[action.payload];
+
+      console.log(action, newError);
+
       return {
         ...state,
-        errors: toggleItem(action.payload, state.errors, true),
-        errorInfo: { ...state.errorInfo, [action.payload]: "" },
+        errors: newError,
       };
 
     default:

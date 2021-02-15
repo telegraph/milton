@@ -1,11 +1,9 @@
 import { h, JSX } from "preact";
-import { EMBED_PROPERTIES } from "../../constants";
+import { URL_REGEX } from "utils/common";
+import { EMBED_PROPERTIES, ERRORS } from "../../constants";
 import {
-  actionSetHeadlineText,
-  actionSetSubheadText,
-  actionSetSourceText,
-  actionSetSourceUrl,
-  actionSetEmbedUrl,
+  actionUpdateEmbedProps,
+  actionSetError,
   ActionTypes,
 } from "../actions";
 
@@ -18,6 +16,10 @@ interface EmbedPropertiesInputs {
   handleChange: (action: ActionTypes) => void;
 }
 
+function isValidURLValue(url: string) {
+  return url === "" || URL_REGEX.test(url);
+}
+
 export function EmbedPropertiesInputs({
   headline,
   subhead,
@@ -26,31 +28,19 @@ export function EmbedPropertiesInputs({
   embedUrl,
   handleChange,
 }: EmbedPropertiesInputs): JSX.Element {
-  const handleInputUpdate = (
-    event: JSX.TargetedEvent<HTMLInputElement>
-  ): void => {
+  const inputChange = (event: JSX.TargetedEvent<HTMLInputElement>): void => {
     const { id, value } = event.currentTarget;
+    const cleanValue = value.trim();
 
-    switch (id) {
-      case EMBED_PROPERTIES.HEADLINE:
-        handleChange(actionSetHeadlineText(value));
-        break;
+    actionUpdateEmbedProps(id as EMBED_PROPERTIES, cleanValue)(handleChange);
 
-      case EMBED_PROPERTIES.SUBHEAD:
-        handleChange(actionSetSubheadText(value));
-        break;
-
-      case EMBED_PROPERTIES.SOURCE:
-        handleChange(actionSetSourceText(value));
-        break;
-
-      case EMBED_PROPERTIES.SOURCE_URL:
-        handleChange(actionSetSourceUrl(value));
-        break;
-
-      case EMBED_PROPERTIES.EMBED_URL:
-        handleChange(actionSetEmbedUrl(value));
-        break;
+    if (
+      id === EMBED_PROPERTIES.EMBED_URL ||
+      id === EMBED_PROPERTIES.SOURCE_URL
+    ) {
+      if (!isValidURLValue(cleanValue)) {
+        handleChange(actionSetError(ERRORS.INPUT_INVALID_URL));
+      }
     }
   };
 
@@ -63,7 +53,7 @@ export function EmbedPropertiesInputs({
           type="text"
           id={EMBED_PROPERTIES.HEADLINE}
           value={headline}
-          onChange={handleInputUpdate}
+          onChange={inputChange}
         />
       </label>
 
@@ -73,7 +63,7 @@ export function EmbedPropertiesInputs({
           type="text"
           value={subhead}
           id={EMBED_PROPERTIES.SUBHEAD}
-          onChange={handleInputUpdate}
+          onChange={inputChange}
         />
       </label>
 
@@ -83,7 +73,7 @@ export function EmbedPropertiesInputs({
           type="text"
           value={source}
           id={EMBED_PROPERTIES.SOURCE}
-          onChange={handleInputUpdate}
+          onChange={inputChange}
         />
       </label>
 
@@ -95,7 +85,7 @@ export function EmbedPropertiesInputs({
           placeholder="https://example.com"
           value={sourceUrl}
           id={EMBED_PROPERTIES.SOURCE_URL}
-          onChange={handleInputUpdate}
+          onChange={inputChange}
         />
       </label>
 
@@ -107,7 +97,7 @@ export function EmbedPropertiesInputs({
           value={embedUrl}
           placeholder="https://example.com"
           id={EMBED_PROPERTIES.EMBED_URL}
-          onChange={handleInputUpdate}
+          onChange={inputChange}
         />
       </label>
     </fieldset>

@@ -42,9 +42,8 @@ export enum ERRORS {
   MULTIPLE_SAME_WIDTH = "MULTIPLE_SAME_WIDTH",
   FAILED_TO_FETCH_DATA = "FAILED_TO_FETCH_DATA",
   FAILED_TO_SET_HEADINGS = "FAILED_TO_SET_HEADINGS",
-  NO_FRAMES_SELECTED = "FAILED_TO_SET_HEADINGS",
-  INPUT_INVALID_EMBED_URL = "INPUT_INVALID_EMBED_URL",
-  INPUT_INVALID_SOURCE_URL = "INPUT_INVALID_SOURCE_URL",
+  NO_FRAMES_SELECTED = "NO_FRAMES_SELECTED",
+  INPUT_INVALID_URL = "INPUT_INVALID_URL",
   UNKNOWN = "UNKNOWN",
 }
 
@@ -67,10 +66,7 @@ export const UI_TEXT = {
     [ERRORS.MULTIPLE_SAME_WIDTH]:
       "Some frames have the same width. All frame widths need to be different",
     [ERRORS.FAILED_TO_FETCH_DATA]: "Failed to fetch data",
-    [ERRORS.INPUT_INVALID_EMBED_URL]:
-      "Invalid embed URL. Please check and update the URL.",
-    [ERRORS.INPUT_INVALID_SOURCE_URL]:
-      "Invalid source URL. Please check and update the URL.",
+    [ERRORS.INPUT_INVALID_URL]: "Invalid URL. Please check and update the URL.",
     [ERRORS.NO_FRAMES_SELECTED]: "Need to select at least one frame.",
     [ERRORS.MISSING_FONT]: "Unknown font",
     [ERRORS.UNKNOWN]: "Unknown error",

@@ -1,5 +1,4 @@
 import {
-  setExportProperties,
   IFrameData,
   FrameRender,
   FrameDataInterface,
@@ -8,6 +7,7 @@ import {
 import { EMBED_PROPERTIES } from "constants";
 import { URL_REGEX } from "utils/common";
 import { getTextNodesFromFrame } from "utils/figmaText";
+import { EmbedProperties } from "frontend/store";
 
 /**
  * Test if Figma node supports fill property type
@@ -140,15 +140,11 @@ export async function renderFrames(frameIds: string[]): Promise<FrameRender> {
  *
  * @context figma
  */
-export function setEmbedProperties(props: setExportProperties): void {
-  const { headline, subhead, source, sourceUrl, embedUrl } = props;
-  console.log(props);
-
-  figma.currentPage.setPluginData(EMBED_PROPERTIES.HEADLINE, headline);
-  figma.currentPage.setPluginData(EMBED_PROPERTIES.SUBHEAD, subhead);
-  figma.currentPage.setPluginData(EMBED_PROPERTIES.SOURCE, source);
-  figma.currentPage.setPluginData(EMBED_PROPERTIES.SOURCE_URL, sourceUrl);
-  figma.currentPage.setPluginData(EMBED_PROPERTIES.EMBED_URL, embedUrl);
+export function setEmbedProperties(props: {
+  propName: keyof EmbedProperties;
+  value: string;
+}): void {
+  figma.currentPage.setPluginData(props.propName, props.value);
 }
 
 export function createFrameData(node: FrameNode): FrameDataInterface {

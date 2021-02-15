@@ -1,13 +1,18 @@
-import { ERRORS, STATUS } from "constants";
-import { FigmaFramesType, IFrameData } from "types";
+import { findMissingFonts } from "backend/fonts";
+import {
+  FigmaFramesType,
+  FrameDataInterface,
+  FrameRender,
+  IFrameData,
+} from "types";
+import { ERRORS, MSG_EVENTS, STATUS } from "constants";
+import { containsDuplicate, isEmpty } from "utils/common";
+import { postMan } from "utils/messages";
+import { EmbedProperties, StateInterface } from "./store";
+import { decodeSvgToString } from "./svgUtils";
 
 export enum ACTIONS {
-  SET_TEXT,
-  SET_HEADLINE,
-  SET_SUBHEAD,
-  SET_SOURCE,
-  SET_SOURCE_URL,
-  SET_EMBED_URL,
+  SET_EMBED_PROPERTY,
   SET_STATUS,
   SET_ERROR,
   SET_FRAMES,
@@ -17,51 +22,6 @@ export enum ACTIONS {
   SET_INITIAL_DATA,
   CLEAR_ERROR,
   TOGGLE_SELECTED_FRAME,
-}
-
-export function actionSetHeadlineText(
-  headlineText: string
-): { type: ACTIONS.SET_HEADLINE; payload: string } {
-  return {
-    type: ACTIONS.SET_HEADLINE,
-    payload: headlineText,
-  };
-}
-
-export function actionSetSubheadText(
-  subheadText: string
-): { type: ACTIONS.SET_SUBHEAD; payload: string } {
-  return {
-    type: ACTIONS.SET_SUBHEAD,
-    payload: subheadText,
-  };
-}
-
-export function actionSetSourceText(
-  sourceText: string
-): { type: ACTIONS.SET_SOURCE; payload: string } {
-  return {
-    type: ACTIONS.SET_SOURCE,
-    payload: sourceText,
-  };
-}
-
-export function actionSetSourceUrl(
-  url: string
-): { type: ACTIONS.SET_SOURCE_URL; payload: string } {
-  return {
-    type: ACTIONS.SET_SOURCE_URL,
-    payload: url.trim(),
-  };
-}
-
-export function actionSetEmbedUrl(
-  url: string
-): { type: ACTIONS.SET_EMBED_URL; payload: string } {
-  return {
-    type: ACTIONS.SET_EMBED_URL,
-    payload: url.trim(),
-  };
 }
 
 export function actionSetFrames(
@@ -96,13 +56,12 @@ export function actionSetSvg(
 
 export function actionSetError(
   error: ERRORS,
-  message?: string,
-  force?: boolean
+  message = ""
 ): {
   type: ACTIONS.SET_ERROR;
-  payload: { error: ERRORS; message?: string; force?: boolean };
+  payload: { error: ERRORS; message: string };
 } {
-  return { type: ACTIONS.SET_ERROR, payload: { error, message, force } };
+  return { type: ACTIONS.SET_ERROR, payload: { error, message } };
 }
 
 export function actionClearError(
@@ -117,26 +76,151 @@ export function actionToggleSelectedFrame(
   return { type: ACTIONS.TOGGLE_SELECTED_FRAME, payload: id };
 }
 
-export const actionStoreData = (
-  figmaData: IFrameData
-): { type: ACTIONS.SET_INITIAL_DATA; payload: IFrameData } => {
+type InitialData = Pick<
+  StateInterface,
+  "embedProperties" | "frames" | "selectedFrames"
+>;
+export const actionStoreInitialData = (
+  figmaData: InitialData
+): { type: ACTIONS.SET_INITIAL_DATA; payload: InitialData } => {
   return { type: ACTIONS.SET_INITIAL_DATA, payload: figmaData };
 };
 
+export const actionGetFrameData = () => {
+  return (dispatch: DispatchType) => {
+    dispatch(actionSetStatus(STATUS.LOADING));
+
+    postMan
+      .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
+      .then((response: IFrameData) => {
+        if (isEmpty(response.frames)) {
+          dispatch(actionSetError(ERRORS.MISSING_FRAMES));
+          return;
+        }
+
+        const widths = Object.values(response.frames).map(({ width }) => width);
+        if (containsDuplicate(widths)) {
+          dispatch(actionSetError(ERRORS.MULTIPLE_SAME_WIDTH));
+          return;
+        }
+
+        const selectedFrames = Object.keys(response.frames);
+        const embedProperties: EmbedProperties = {
+          headline: response.headline,
+          subhead: response.subhead,
+          source: response.source,
+          sourceUrl: response.sourceUrl,
+          embedUrl: response.embedUrl,
+        };
+
+        dispatch(
+          actionStoreInitialData({
+            frames: response.frames,
+            embedProperties,
+            selectedFrames,
+          })
+        );
+      })
+      .catch(() => dispatch(actionSetError(ERRORS.FAILED_TO_FETCH_DATA)));
+  };
+};
+
+export const actionFetchFrameRender = (frameIds: string[]) => {
+  return async (dispatch: DispatchType) => {
+    dispatch(actionSetStatus(STATUS.RENDERING));
+
+    const response = (await postMan
+      .send({ workload: MSG_EVENTS.RENDER, data: frameIds })
+      .catch(console.error)) as FrameRender;
+
+    console.log(response, frameIds);
+    const { svgData, imageNodeDimensions } = response;
+
+    const svg = await decodeSvgToString(svgData, imageNodeDimensions);
+    dispatch(actionSetSvg(svg));
+    dispatch(actionSetStatus(STATUS.IDLE));
+  };
+};
+
+export const actionUpdateSelectedFrames = (
+  selectedFrames: string[],
+  frames: FrameDataInterface[]
+) => {
+  return (dispatch: DispatchType) => {
+    console.log("in here", selectedFrames);
+    if (selectedFrames.length < 1) {
+      return dispatch(actionSetError(ERRORS.NO_FRAMES_SELECTED));
+    }
+
+    actionCheckFonts(frames, dispatch);
+    actionFetchFrameRender(selectedFrames)(dispatch);
+    dispatch(actionClearError(ERRORS.NO_FRAMES_SELECTED));
+  };
+};
+
+export const actionCheckFonts = (
+  outputFrames: FrameDataInterface[],
+  dispatch: DispatchType
+) => {
+  const missingFonts = findMissingFonts(outputFrames);
+
+  console.log(missingFonts);
+
+  if (missingFonts.length > 0) {
+    const missingFontInfo = missingFonts.map(
+      (missingInfo) =>
+        `family=["${missingInfo.family}"] text=["${missingInfo.text}…"] frame=["${missingInfo.frame}"] layer["${missingInfo.layerName}"]`
+    );
+    dispatch(actionSetError(ERRORS.MISSING_FONT, missingFontInfo.join("\n")));
+  }
+  // && errors?.includes(ERRORS.MISSING_FONT)
+  if (missingFonts.length === 0) {
+    console.log("NO missing frames", missingFonts);
+    dispatch(actionClearError(ERRORS.MISSING_FONT));
+  }
+};
+
+export const actionStoreEmbedProperty = (
+  propName: keyof EmbedProperties,
+  value: string
+): {
+  type: ACTIONS.SET_EMBED_PROPERTY;
+  payload: { [ID in keyof EmbedProperties]?: string };
+} => {
+  return {
+    type: ACTIONS.SET_EMBED_PROPERTY,
+    payload: { [propName]: value },
+  };
+};
+
+export const actionUpdateEmbedProps = (
+  propName: keyof EmbedProperties,
+  value: string
+) => {
+  return (dispatch: DispatchType) => {
+    dispatch(actionStoreEmbedProperty(propName, value));
+    postMan
+      .send({
+        workload: MSG_EVENTS.UPDATE_HEADLINES,
+        data: {
+          propName,
+          value,
+        },
+      })
+      .catch(() => dispatch(actionSetError(ERRORS.FAILED_TO_SET_HEADINGS)));
+  };
+};
+
 export type ActionTypes =
-  | ReturnType<typeof actionSetHeadlineText>
-  | ReturnType<typeof actionSetSubheadText>
-  | ReturnType<typeof actionSetSourceText>
-  | ReturnType<typeof actionSetSourceUrl>
-  | ReturnType<typeof actionSetEmbedUrl>
+  | ReturnType<typeof actionStoreEmbedProperty>
   | ReturnType<typeof actionSetFrames>
   | ReturnType<typeof actionSetSelectedFrames>
   | ReturnType<typeof actionSetResponsive>
   | ReturnType<typeof actionSetSvg>
   | ReturnType<typeof actionSetStatus>
   | ReturnType<typeof actionToggleSelectedFrame>
-  | ReturnType<typeof actionStoreData>
+  | ReturnType<typeof actionStoreInitialData>
   | ReturnType<typeof actionSetError>
   | ReturnType<typeof actionClearError>;
 
-export type dispatchType = (action: ActionTypes) => void;
+export type DispatchType = (action: ActionTypes) => void;
