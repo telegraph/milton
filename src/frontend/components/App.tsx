@@ -1,133 +1,39 @@
-import { FrameRender, IFrameData } from "types";
 import { h, JSX } from "preact";
 import { useEffect, useReducer } from "preact/hooks";
-
-import { MSG_EVENTS, ERRORS, STATUS } from "constants";
-import { decodeSvgToString } from "frontend/svgUtils";
-import { postMan } from "utils/messages";
+import { STATUS } from "constants";
 import { generateEmbedHtml } from "./outputRender";
+import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
 import { Preview } from "./Preview";
 import { Frames } from "./Frames";
-import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
 import { Export } from "./Export";
 import { ErrorNotification } from "./ErrorNotification";
-
-import { containsDuplicate, isEmpty } from "utils/common";
 import { initialState, reducer } from "../store";
-import {
-  actionSetSvg,
-  actionSetStatus,
-  actionSetError,
-  dispatchType,
-  actionStoreData,
-  actionClearError,
-} from "../actions";
+import { actionGetFrameData, actionUpdateSelectedFrames } from "../actions";
 import { version } from "../../../package.json";
-import { findMissingFonts } from "backend/fonts";
-
-function handleResponse(dispatch: dispatchType, response: IFrameData): void {
-  if (isEmpty(response.frames)) {
-    dispatch(actionSetError(ERRORS.MISSING_FRAMES));
-    return;
-  }
-
-  const widths = Object.values(response.frames).map(({ width }) => width);
-  if (containsDuplicate(widths)) {
-    dispatch(actionSetError(ERRORS.MULTIPLE_SAME_WIDTH));
-    return;
-  }
-
-  dispatch(actionStoreData(response));
-}
-
-async function getAndStoreSvgHtml(
-  dispatch: dispatchType,
-  frames: string[]
-): Promise<void> {
-  dispatch(actionSetStatus(STATUS.RENDERING));
-
-  const response = (await postMan
-    .send({ workload: MSG_EVENTS.RENDER, data: frames })
-    .catch(console.error)) as FrameRender;
-
-  console.log(response, frames);
-  const { svgData, imageNodeDimensions } = response;
-
-  const svg = await decodeSvgToString(svgData, imageNodeDimensions);
-  dispatch(actionSetSvg(svg));
-  dispatch(actionSetStatus(STATUS.IDLE));
-}
 
 export function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const {
-    headline,
-    subhead,
-    source,
-    sourceUrl,
-    embedUrl,
+    embedProperties,
     svg,
     selectedFrames,
     status,
     errors,
     frames,
     responsive,
-    errorInfo,
   } = state;
-
-  // Load frame data from backend
-  // TODO: Only fetch data once!!
-  useEffect(() => {
-    postMan
-      .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
-      .then((response: IFrameData) => handleResponse(dispatch, response))
-      .catch(() => dispatch(actionSetError(ERRORS.FAILED_TO_FETCH_DATA)));
-  }, []);
-
-  // Store headings on Figma page when headings change
-  useEffect((): void => {
-    postMan
-      .send({
-        workload: MSG_EVENTS.UPDATE_HEADLINES,
-        data: { headline, subhead, source, sourceUrl, embedUrl },
-      })
-      .catch(() => dispatch(actionSetError(ERRORS.FAILED_TO_SET_HEADINGS)));
-  }, [headline, subhead, source, sourceUrl, embedUrl]);
-
-  // Render SVG and store output when Status changes to Render
-  // TODO: Only fetch data once!!
-  useEffect(() => {
-    if (selectedFrames.length < 1) return;
-    getAndStoreSvgHtml(dispatch, selectedFrames).catch(console.error);
-  }, [selectedFrames]);
-
-  // if (status === STATUS.LOADING) return <p>LOADING</p>;
-
-  useEffect(() => {
-    const missingFonts = findMissingFonts(outputFrames);
-
-    console.log(missingFonts);
-
-    if (missingFonts.length > 0) {
-      const missingFontInfo = missingFonts.map(
-        (missingInfo) =>
-          `family=["${missingInfo.family}"] text=["${missingInfo.text}…"] frame=["${missingInfo.frame}"] layer["${missingInfo.layerName}"]`
-      );
-      dispatch(
-        actionSetError(ERRORS.MISSING_FONT, missingFontInfo.join("\n"), false)
-      );
-    }
-
-    if (missingFonts.length === 0 && errors.includes(ERRORS.MISSING_FONT)) {
-      console.log("NO missing frames", missingFonts);
-      dispatch(actionClearError(ERRORS.MISSING_FONT));
-    }
-  }, [selectedFrames]);
 
   const outputFrames = Object.values(frames).filter(({ id }) =>
     selectedFrames.includes(id)
   );
+
+  useEffect(() => actionGetFrameData()(dispatch), []);
+
+  useEffect(() => {
+    actionUpdateSelectedFrames(selectedFrames, outputFrames)(dispatch);
+  }, [selectedFrames]);
+
   const breakpoints = outputFrames.map(({ width, height }) => ({
     width,
     height,
@@ -138,22 +44,16 @@ export function App(): JSX.Element {
   const html =
     outputFrames.length > 0
       ? generateEmbedHtml({
+          ...embedProperties,
           frames: outputFrames,
-          svg,
-          headline,
-          subhead,
-          source,
           responsive,
-          sourceUrl,
-          embedUrl,
+          svg,
         })
       : "";
 
   return (
     <div class="app">
-      {errors.length > 0 && (
-        <ErrorNotification errors={errors} errorInfo={errorInfo} />
-      )}
+      <ErrorNotification errors={errors} />
       <Preview
         rendering={status === STATUS.RENDERING}
         html={html}
@@ -169,14 +69,7 @@ export function App(): JSX.Element {
           handleChange={dispatch}
         />
 
-        <EmbedPropertiesInputs
-          headline={headline}
-          subhead={subhead}
-          source={source}
-          sourceUrl={sourceUrl}
-          embedUrl={embedUrl}
-          handleChange={dispatch}
-        />
+        <EmbedPropertiesInputs {...embedProperties} handleChange={dispatch} />
 
         <Export svg={svg} html={html} />
       </section>

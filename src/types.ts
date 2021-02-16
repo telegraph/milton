@@ -92,14 +92,6 @@ export type textData = textNodeSelectedProps & {
   strokeWeight?: number;
 };
 
-export type setExportProperties = {
-  headline: string;
-  subhead: string;
-  source: string;
-  sourceUrl: string;
-  embedUrl: string;
-};
-
 export interface UiPostMessageEvent extends MessageEvent {
   data: {
     pluginMessage: MsgEventType;

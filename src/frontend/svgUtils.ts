@@ -1,6 +1,6 @@
 import { resizeAndOptimiseImage } from "./imageHelper";
 import { imageNodeDimensions } from "types";
-import { randomId, URL_REGEX } from "utils/common";
+import { randomId } from "utils/common";
 
 // TODO: Is there a way to identify mapping of image to elements from
 // the @figma context? If so we don't need to look inside the SVG elements
@@ -82,25 +82,25 @@ function cleanUpSvg(svgEl: SVGElement): void {
     .forEach((textNode) => textNode.parentNode?.removeChild(textNode));
 }
 
-function addLinks(svgEl: SVGElement): void {
-  // @ref: https://ihateregex.io/expr/url/
+// function addLinks(svgEl: SVGElement): void {
+//   // @ref: https://ihateregex.io/expr/url/
 
-  const elWithIds = svgEl.querySelectorAll("[id]");
+//   const elWithIds = svgEl.querySelectorAll("[id]");
 
-  for (const el of elWithIds) {
-    const { id } = el;
-    const [match] = URL_REGEX.exec(id) || [];
-    // console.log(match, el);
+//   for (const el of elWithIds) {
+//     const { id } = el;
+//     const [match] = URL_REGEX.exec(id) || [];
+//     // console.log(match, el);
 
-    if (match) {
-      const a = window.document.createElement("a");
-      a.setAttribute("href", match);
-      a.setAttribute("target", "_parent");
-      el.parentNode?.insertBefore(a, el);
-      a.appendChild(el);
-    }
-  }
-}
+//     if (match) {
+//       const a = window.document.createElement("a");
+//       a.setAttribute("href", match);
+//       a.setAttribute("target", "_parent");
+//       el.parentNode?.insertBefore(a, el);
+//       a.appendChild(el);
+//     }
+//   }
+// }
 
 // https://www.w3.org/TR/SVG11/linking.html#processingIRI
 const ID_REF_PROPERTIES = [
@@ -167,7 +167,7 @@ export async function decodeSvgToString(
 
   cleanUpSvg(svgEl);
   reducePathPrecision(svgEl);
-  addLinks(svgEl);
+  // addLinks(svgEl);
   randomiseIds(svgEl);
   await optimizeSvgImages(svgEl, imageNodeDimensions);
 

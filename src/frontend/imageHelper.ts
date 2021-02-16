@@ -20,7 +20,6 @@ async function optimizePng(
   if (!ctx) return canvas.toDataURL();
 
   const imageData = ctx.getImageData(0, 0, width, height);
-  console.log(width, height);
 
   // Quantize palette
   const pngData = UPNG.encode([imageData?.data], width, height, colours);
