@@ -5,5 +5,12 @@
       "url": "https://particles.eip.telegraph.co.uk/particles/edit?type=embed&version=0.0.2"
     }
   ],
+  "supportedFonts": [
+    "Austin News Deck",
+    "Austin News Headline Cond",
+    "Austin News Text",
+    "Telesans Agate",
+    "Telesans Text"
+  ],
   "version": 1
 }

@@ -1,4 +1,5 @@
 import { FontStyle, FrameDataInterface } from "types";
+import { supportedFonts } from "config.json";
 
 // Extract unique font styles from range styles nested deep in frame info
 // frames[] -> textNodes[] -> rangeStyles[] -> { style }
@@ -148,29 +149,16 @@ export function findMissingFonts(
   for (const frame of frames) {
     for (const textNode of frame.textNodes) {
       for (const rangeStyle of textNode.rangeStyles) {
-        if (!rangeStyle.family) {
-          missingFonts.push({
-            family: "Unknown",
-            frame: frame.name.substr(0, 10),
-            layerName: textNode.name.substr(0, 10),
-            text: rangeStyle.text.substr(0, 10),
-          });
+        if (rangeStyle.family && supportedFonts.includes(rangeStyle.family)) {
           continue;
         }
 
-        if (CORE_WEB_FONTS.includes(rangeStyle.family.toLowerCase())) {
-          continue;
-        }
-
-        if (!fonts[rangeStyle.family]) {
-          missingFonts.push({
-            family: rangeStyle.family,
-            frame: frame.name.substr(0, 10),
-            layerName: textNode.name.substr(0, 10),
-            text: rangeStyle.text.substr(0, 10),
-          });
-          continue;
-        }
+        missingFonts.push({
+          family: rangeStyle.family || "UNKNOWN",
+          frame: frame.name.substr(0, 10),
+          layerName: textNode.name.substr(0, 10),
+          text: rangeStyle.text.substr(0, 10),
+        });
       }
     }
   }
