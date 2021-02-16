@@ -1,6 +1,6 @@
 {
   "name": "2020-05-06-figma2html",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "description": "Export frames from Figma to HTML",
   "main": "index.tsx",
   "scripts": {
