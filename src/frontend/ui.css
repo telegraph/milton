@@ -152,6 +152,16 @@ body {
 .export__copy {
   margin: var(--padding-small, 0) 0;
 }
+.export_services__heading {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 300;
+  border-bottom: 1px solid #ccc;
+}
+.export__service {
+  margin: 6px 0;
+  font-size: 12px;
+}
 
 /* [ Clipboard ]  Hidden. Only used to copy output to clipboard.
 -----------------------------------------------------------------  */

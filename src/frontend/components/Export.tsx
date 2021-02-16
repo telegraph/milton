@@ -1,6 +1,7 @@
 import { h, JSX } from "preact";
 import { saveAs } from "file-saver";
 import copy from "clipboard-copy";
+import { shareServices } from "config.json";
 
 function downloadHtml(html: string): void {
   const fileText = `
@@ -37,6 +38,10 @@ export function Export({ svg, html }: ExportProps): JSX.Element {
         <span class="export__filesize">{Math.ceil(svg.length / 1024)}k</span>
       </legend>
 
+      <button class="btn export__download" onClick={() => downloadHtml(html)}>
+        Download
+      </button>
+
       <button
         class="btn export__copy"
         onClick={() => {
@@ -50,9 +55,21 @@ export function Export({ svg, html }: ExportProps): JSX.Element {
         Copy to clipboard
       </button>
 
-      <button class="btn export__download" onClick={() => downloadHtml(html)}>
-        Download
-      </button>
+      <div class="export_services">
+        <h2 class="export_services__heading">Share services</h2>
+        {Array.isArray(shareServices) &&
+          shareServices.map((service) => (
+            <p class="export__service">
+              <a
+                class="export__service_link"
+                href={service.url}
+                target="_blank"
+              >
+                {service.name}↗
+              </a>
+            </p>
+          ))}
+      </div>
     </fieldset>
   );
 }
