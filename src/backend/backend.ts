@@ -13,8 +13,7 @@ postMan.registerWorker(MSG_EVENTS.RENDER, renderFrames);
 postMan.registerWorker(MSG_EVENTS.UPDATE_HEADLINES, setEmbedProperties);
 
 // Render the DOM
-const { ui_html } = __uiFiles__;
-figma.showUI(ui_html);
+figma.showUI(__html__);
 
 // Resize UI to max viewport dimensions
 const { width, height, x } = figma.viewport.bounds;

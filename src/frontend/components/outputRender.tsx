@@ -280,7 +280,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
       {source && (
         <footer>
           <p className="f2h_source">
-            Source: {sourceUrl ? <a href={sourceUrl}>{source}</a> : source}
+            {sourceUrl ? <a href={sourceUrl}>{source}</a> : source}
           </p>
         </footer>
       )}

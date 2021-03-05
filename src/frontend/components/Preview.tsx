@@ -10,7 +10,7 @@ interface PreviewProps {
   handleChange: (action: ActionTypes) => void;
 }
 
-const IFRAME_HEIGHT_MARGIN = 100;
+const IFRAME_HEIGHT_MARGIN = 160;
 
 export const Preview: FunctionalComponent<PreviewProps> = (props) => {
   const {
