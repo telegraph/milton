@@ -32,18 +32,18 @@ type FontsType = {
   };
 };
 
-const CORE_WEB_FONTS = [
-  "arial",
-  "helvetica",
-  "times",
-  "times new roman",
-  "georgia",
-  "courier",
-  "courier mew",
-  "sans-serif",
-  "serif",
-  "monospace",
-];
+// const CORE_WEB_FONTS = [
+//   "arial",
+//   "helvetica",
+//   "times",
+//   "times new roman",
+//   "georgia",
+//   "courier",
+//   "courier mew",
+//   "sans-serif",
+//   "serif",
+//   "monospace",
+// ];
 
 const fonts: FontsType = {
   "Austin News Deck": {

@@ -75,6 +75,10 @@ import esbuild from "esbuild";
   } catch (err) {
     // Handle build failure
     console.error("Build failed with error:", err);
+
+    // Clean-up
+    await fs.remove(tempFolder);
+
     process.exit(1);
   }
 })();

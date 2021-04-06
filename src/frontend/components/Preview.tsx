@@ -251,11 +251,13 @@ function PreviewIframe({
   useEffect(() => {
     const previewRefEl = previewEl.current;
     const iframeElRef = iframeEl.current;
-    const resizeObserver = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      dispatch({ type: "SET_DIMENSIONS", payload: { width, height } });
-      setDimensions([width, height]);
-    });
+    const resizeObserver = new ResizeObserver(
+      (entries: ResizeObserverEntry[]) => {
+        const { width, height } = entries[0].contentRect;
+        dispatch({ type: "SET_DIMENSIONS", payload: { width, height } });
+        setDimensions([width, height]);
+      }
+    );
 
     // Translation
     previewRefEl.addEventListener("mousedown", handleMouseDown);
