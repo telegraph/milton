@@ -8,7 +8,11 @@ import { Frames } from "./Frames";
 import { Export } from "./Export";
 import { ErrorNotification } from "./ErrorNotification";
 import { initialState, reducer } from "../store";
-import { actionGetFrameData, actionUpdateSelectedFrames } from "../actions";
+import {
+  actionGetFrameData,
+  actionUpdateSelectedFrames,
+  actionSetResponsive,
+} from "../actions";
 import { version } from "../../../package.json";
 
 export function App(): JSX.Element {
@@ -53,7 +57,10 @@ export function App(): JSX.Element {
 
   return (
     <div class="app">
+      <Export svg={svg} html={html} />
+
       <ErrorNotification errors={errors} />
+
       <Preview
         rendering={status === STATUS.RENDERING}
         html={html}
@@ -63,6 +70,12 @@ export function App(): JSX.Element {
       />
 
       <section class="sidebar">
+        <nav>
+          <button>Frames</button>
+          <button>Links</button>
+          <button>Compression</button>
+        </nav>
+
         <Frames
           figmaFrames={frames}
           selectedFrames={selectedFrames}
@@ -71,7 +84,16 @@ export function App(): JSX.Element {
 
         <EmbedPropertiesInputs {...embedProperties} handleChange={dispatch} />
 
-        <Export svg={svg} html={html} />
+        <fieldset>
+          <label class="checkbox preview__responsive">
+            <input
+              type="checkbox"
+              checked={responsive}
+              onInput={() => dispatch(actionSetResponsive(!responsive))}
+            />
+            Responsive
+          </label>
+        </fieldset>
       </section>
 
       <p class="footer">Version {version}</p>

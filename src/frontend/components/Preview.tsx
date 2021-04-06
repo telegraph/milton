@@ -1,4 +1,4 @@
-import { actionSetResponsive, ActionTypes } from "frontend/actions";
+import { ActionTypes } from "frontend/actions";
 import { FunctionalComponent, h } from "preact";
 import { useEffect, useRef, useReducer, useState } from "preact/hooks";
 
@@ -13,13 +13,7 @@ interface PreviewProps {
 const IFRAME_HEIGHT_MARGIN = 160;
 
 export const Preview: FunctionalComponent<PreviewProps> = (props) => {
-  const {
-    html,
-    responsive,
-    handleChange,
-    breakpoint: breakPoints,
-    rendering,
-  } = props;
+  const { html, breakpoint: breakPoints, rendering } = props;
 
   const [breakpointIndex, setBreakpointIndex] = useState(0);
   const breakpointWidth = breakPoints[breakpointIndex]?.width;
@@ -35,15 +29,6 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
     <section class="preview">
       {rendering && <div class="preview__rendering">Rendering</div>}
       <div class="preview__settings">
-        <label class="checkbox preview__responsive">
-          <input
-            type="checkbox"
-            checked={responsive}
-            onInput={() => handleChange(actionSetResponsive(!responsive))}
-          />
-          Responsive
-        </label>
-
         <label class="preview__breakpoints">
           Breakpoints
           <select
