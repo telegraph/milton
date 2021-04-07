@@ -29,3 +29,15 @@ export function addOnce(item: any, list: any[]): any[] {
 export function removeItem(item: any, list: any[]): any[] {
   return list.filter((listItem) => listItem !== item);
 }
+
+export function loadScript(url: string): Promise<boolean> {
+  const scriptEl = document.createElement("script");
+  scriptEl.setAttribute("src", url);
+
+  return new Promise((resolve, reject) => {
+    scriptEl.addEventListener("load", () => resolve(true));
+    scriptEl.addEventListener("error", reject);
+
+    document.head.appendChild(scriptEl);
+  });
+}
