@@ -78,7 +78,7 @@ export function actionToggleSelectedFrame(
 
 type InitialData = Pick<
   StateInterface,
-  "embedProperties" | "frames" | "selectedFrames"
+  "embedProperties" | "frames" | "selectedFrames" | "fileKey"
 >;
 export const actionStoreInitialData = (
   figmaData: InitialData
@@ -118,6 +118,7 @@ export const actionGetFrameData = () => {
             frames: response.frames,
             embedProperties,
             selectedFrames,
+            fileKey: response.fileKey,
           })
         );
       })
