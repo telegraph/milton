@@ -4,7 +4,7 @@ import {
   FrameDataInterface,
   imageNodeDimensions,
 } from "types";
-import { EMBED_PROPERTIES } from "constants";
+import { EMBED_PROPERTIES, ERRORS } from "constants";
 import { URL_REGEX } from "utils/common";
 import { getTextNodesFromFrame } from "utils/figmaText";
 import { EmbedProperties } from "frontend/store";
@@ -196,5 +196,6 @@ export function getRootFrames(): IFrameData {
     source: currentPage.getPluginData(EMBED_PROPERTIES.SOURCE),
     sourceUrl: currentPage.getPluginData(EMBED_PROPERTIES.SOURCE_URL),
     embedUrl: currentPage.getPluginData(EMBED_PROPERTIES.EMBED_URL),
+    fileKey: figma.fileKey ?? ERRORS.MISSING_FILE_KEY,
   };
 }

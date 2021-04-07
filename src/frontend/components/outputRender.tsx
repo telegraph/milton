@@ -1,6 +1,7 @@
 import { Fragment, FunctionalComponent, h, JSX } from "preact";
 import render from "preact-render-to-string";
 import { textData, FrameDataInterface, TextRange } from "types";
+import { version } from "../../../package.json";
 
 // Import CSS file as plain text via esbuild loader option
 // @ts-ignore
@@ -238,6 +239,7 @@ type renderInlineProps = {
   sourceUrl: string;
   embedUrl: string;
   responsive: boolean;
+  fileKey: string;
 };
 export function generateEmbedHtml(props: renderInlineProps): string {
   const {
@@ -249,6 +251,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
     sourceUrl,
     responsive,
     embedUrl,
+    fileKey,
   } = props;
 
   const mediaQuery = generateMediaQueries(frames);
@@ -256,7 +259,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
   const fontFaces = buildFontFaceCss(fontStyles);
   const css = fontFaces + embedCss + mediaQuery;
 
-  const html = render(
+  let html = render(
     <div className={`f2h__embed ${responsive ? "f2h--responsive" : ""}`}>
       <style dangerouslySetInnerHTML={{ __html: css }}></style>
 
@@ -289,7 +292,21 @@ export function generateEmbedHtml(props: renderInlineProps): string {
     { pretty: false }
   );
 
-  return minimiseText(html);
+  html = minimiseText(html);
+
+  html = `<!--
+  # [ Figma2HTML Export v${version} ]
+  # 
+  # File: https://www.figma.com/file/${fileKey}
+  # Date: ${Date()}
+  # Key: ${fileKey}
+-->
+
+${html}
+
+`;
+
+  return html;
 }
 
 /**

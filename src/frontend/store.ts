@@ -18,6 +18,7 @@ export interface StateInterface {
   embedProperties: EmbedProperties;
   responsive: boolean;
   svg: string;
+  fileKey: string;
   errors: { [key in ERRORS]?: string };
 }
 
@@ -32,6 +33,7 @@ export const initialState: StateInterface = {
     sourceUrl: "",
     embedUrl: "",
   },
+  fileKey: "",
   responsive: true,
   svg: "",
   errors: {},

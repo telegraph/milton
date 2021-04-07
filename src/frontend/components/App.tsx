@@ -22,6 +22,7 @@ export function App(): JSX.Element {
     errors,
     frames,
     responsive,
+    fileKey,
   } = state;
 
   const outputFrames = Object.values(frames).filter(({ id }) =>
@@ -48,6 +49,7 @@ export function App(): JSX.Element {
           frames: outputFrames,
           responsive,
           svg,
+          fileKey,
         })
       : "";
 
