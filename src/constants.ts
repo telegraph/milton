@@ -61,6 +61,7 @@ export const UI_TEXT = {
   BUTTON_NEXT: "Next",
   BUTTON_DOWNLOAD: "Download",
   BUTTON_PREVIOUS: "Back",
+  ZOOM_TOOLTIP: "Zoom/view options",
   ERRORS: {
     [ERRORS.MISSING_FRAMES]:
       "No frames found. Please add a frame and try again",

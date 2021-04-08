@@ -7,13 +7,14 @@ interface PreviewProps {
   html: string;
   responsive: boolean;
   breakpoint: { width: number; height: number }[];
+  zoom: number;
   handleChange: (action: ActionTypes) => void;
 }
 
 const IFRAME_HEIGHT_MARGIN = 160;
 
 export const Preview: FunctionalComponent<PreviewProps> = (props) => {
-  const { html, breakpoint: breakPoints, rendering } = props;
+  const { html, breakpoint: breakPoints, rendering, zoom } = props;
 
   const [breakpointIndex, setBreakpointIndex] = useState(0);
   const breakpointWidth = breakPoints[breakpointIndex]?.width;
@@ -57,6 +58,7 @@ export const Preview: FunctionalComponent<PreviewProps> = (props) => {
         breakpointWidth={breakpointWidth}
         breakpointHeight={breakpointHeight}
         setDimensions={setDimensions}
+        zoom={zoom}
       />
     </section>
   );
@@ -71,7 +73,6 @@ interface PreviewIframeState {
   translateY: number;
   width: number;
   height: number;
-  zoom: number;
   breakpointIndex: number;
   panning: boolean;
   panningEnabled: boolean;
@@ -79,13 +80,11 @@ interface PreviewIframeState {
 
 type actionType =
   | { type: "ENABLED_PANNING" }
-  | { type: "START_PANNING"; payload: { x: number; y: number } }
-  | { type: "UPDATE_POSITION"; payload: { x: number; y: number } }
+  | { type: "START_PANNING"; payload: { x: number; y: number; zoom: number } }
+  | { type: "UPDATE_POSITION"; payload: { x: number; y: number; zoom: number } }
   | { type: "END_PANNING" }
   | { type: "DISABLE_PANNING" }
   | { type: "RESET"; payload: PreviewIframeState }
-  | { type: "ZOOM_IN" }
-  | { type: "ZOOM_OUT" }
   | {
       type: "SET_DIMENSIONS";
       payload: { width: number; height?: number; zoom?: number };
@@ -95,19 +94,9 @@ function reducer(
   state: PreviewIframeState,
   action: actionType
 ): PreviewIframeState {
-  const ZOOM_INCREMENT = 1.5;
-
   switch (action.type) {
     case "RESET":
       return action.payload;
-
-    case "ZOOM_IN": {
-      const zoom = Math.min(1, state.zoom * ZOOM_INCREMENT);
-      return { ...state, zoom };
-    }
-
-    case "ZOOM_OUT":
-      return { ...state, zoom: state.zoom / ZOOM_INCREMENT };
 
     case "ENABLED_PANNING":
       return { ...state, panningEnabled: true };
@@ -126,10 +115,12 @@ function reducer(
 
     case "UPDATE_POSITION": {
       if (state.panningEnabled && state.panning) {
-        const { translateX, translateY, startX, startY, zoom } = state;
+        const { translateX, translateY, startX, startY } = state;
 
-        const distanceX = translateX + (action.payload.x - startX) / zoom;
-        const distanceY = translateY + (action.payload.y - startY) / zoom;
+        const distanceX =
+          translateX + (action.payload.x - startX) / action.payload.zoom;
+        const distanceY =
+          translateY + (action.payload.y - startY) / action.payload.zoom;
 
         return {
           ...state,
@@ -166,12 +157,14 @@ interface PreviewIframeProps {
   breakpointWidth: number;
   breakpointHeight: number;
   setDimensions: (x: [number, number]) => void;
+  zoom: number;
 }
 
 function PreviewIframe({
   html,
   breakpointWidth,
   breakpointHeight,
+  zoom,
   setDimensions,
 }: PreviewIframeProps) {
   const initialState: PreviewIframeState = {
@@ -183,7 +176,6 @@ function PreviewIframe({
     height: 100,
     translateX: 0,
     translateY: 0,
-    zoom: 1,
     breakpointIndex: 0,
     panning: false,
     panningEnabled: false,
@@ -197,18 +189,18 @@ function PreviewIframe({
     height: breakpointHeight,
   });
 
-  const { x, y, zoom, width, height, panningEnabled, panning } = state;
+  const { x, y, width, height, panningEnabled, panning } = state;
 
   const handleMouseDown = (e: MouseEvent) => {
     if (e.button === 1) {
       dispatch({ type: "ENABLED_PANNING" });
     }
 
-    dispatch({ type: "START_PANNING", payload: { x: e.x, y: e.y } });
+    dispatch({ type: "START_PANNING", payload: { x: e.x, y: e.y, zoom } });
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    dispatch({ type: "UPDATE_POSITION", payload: { x: e.x, y: e.y } });
+    dispatch({ type: "UPDATE_POSITION", payload: { x: e.x, y: e.y, zoom } });
   };
 
   const handleMouseUp = () => {
@@ -218,14 +210,6 @@ function PreviewIframe({
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.code === "Space") {
       dispatch({ type: "ENABLED_PANNING" });
-    }
-
-    if (e.code === "Equal") {
-      dispatch({ type: "ZOOM_IN" });
-    }
-
-    if (e.code === "Minus") {
-      dispatch({ type: "ZOOM_OUT" });
     }
   };
 

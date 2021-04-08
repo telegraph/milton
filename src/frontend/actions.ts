@@ -17,6 +17,7 @@ export enum ACTIONS {
   SET_ERROR,
   SET_FRAMES,
   SET_RESPONSIVE,
+  SET_ZOOM,
   SET_SELECTED_FRAMES,
   SET_SVG,
   SET_INITIAL_DATA,
@@ -46,6 +47,12 @@ export function actionSetResponsive(
   responsive: boolean
 ): { type: ACTIONS.SET_RESPONSIVE; payload: boolean } {
   return { type: ACTIONS.SET_RESPONSIVE, payload: responsive };
+}
+
+export function actionSetZoom(
+  zoom: number
+): { type: ACTIONS.SET_ZOOM; payload: number } {
+  return { type: ACTIONS.SET_ZOOM, payload: zoom };
 }
 
 export function actionSetSvg(
@@ -212,6 +219,7 @@ export type ActionTypes =
   | ReturnType<typeof actionSetFrames>
   | ReturnType<typeof actionSetSelectedFrames>
   | ReturnType<typeof actionSetResponsive>
+  | ReturnType<typeof actionSetZoom>
   | ReturnType<typeof actionSetSvg>
   | ReturnType<typeof actionSetStatus>
   | ReturnType<typeof actionToggleSelectedFrame>

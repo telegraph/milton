@@ -14,6 +14,7 @@ import {
   actionSetResponsive,
 } from "../actions";
 import { version } from "../../../package.json";
+import { Zoom } from "./Zoom";
 
 export function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -26,6 +27,7 @@ export function App(): JSX.Element {
     errors,
     frames,
     responsive,
+    zoom,
   } = state;
 
   const outputFrames = Object.values(frames).filter(({ id }) =>
@@ -57,7 +59,10 @@ export function App(): JSX.Element {
 
   return (
     <div class="app">
-      <Export svg={svg} html={html} />
+      <header class="top_bar">
+        <Zoom zoom={zoom} handleChange={dispatch} />
+        <Export svg={svg} html={html} zoom={zoom} />
+      </header>
 
       <ErrorNotification errors={errors} />
 
@@ -67,6 +72,7 @@ export function App(): JSX.Element {
         responsive={responsive}
         handleChange={dispatch}
         breakpoint={breakpoints}
+        zoom={zoom}
       />
 
       <section class="sidebar">

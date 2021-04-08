@@ -18,6 +18,7 @@ export interface StateInterface {
   embedProperties: EmbedProperties;
   responsive: boolean;
   svg: string;
+  zoom: number;
   errors: { [key in ERRORS]?: string };
 }
 
@@ -32,6 +33,7 @@ export const initialState: StateInterface = {
     sourceUrl: "",
     embedUrl: "",
   },
+  zoom: 1,
   responsive: true,
   svg: "",
   errors: {},
@@ -66,6 +68,9 @@ export function reducer(
 
     case ACTIONS.SET_RESPONSIVE:
       return { ...state, responsive: action.payload };
+
+    case ACTIONS.SET_ZOOM:
+      return { ...state, zoom: action.payload };
 
     case ACTIONS.SET_SVG:
       return { ...state, svg: action.payload };

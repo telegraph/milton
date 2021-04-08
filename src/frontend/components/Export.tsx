@@ -29,6 +29,7 @@ function downloadHtml(html: string): void {
 interface ExportProps {
   svg: string;
   html: string;
+  zoom: number;
 }
 export function Export({ svg, html }: ExportProps): JSX.Element {
   return (
