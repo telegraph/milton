@@ -5,7 +5,7 @@ import { Dropdown } from "frontend/components/dropdown/dropdown";
 
 interface BreakpointsProps {
   breakpointIndex: number;
-  breakpoints: { width: number; height: number }[];
+  breakpoints: { width: number; height: number; default?: boolean }[];
   handleChange: (action: ActionTypes) => void;
 }
 
@@ -15,7 +15,9 @@ export function Breakpoints({
   handleChange,
 }: BreakpointsProps): JSX.Element {
   const breakpointOptions = breakpoints.map((breakpoint, i) => ({
-    text: `${Math.round(breakpoint.width)}px`,
+    text: `${Math.round(breakpoint.width)}px${
+      breakpoint.default ? " default" : ""
+    }`,
     value: i,
   }));
 

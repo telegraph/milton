@@ -72,7 +72,7 @@ export function reducer(
       return { ...state, responsive: action.payload };
 
     case ACTIONS.SET_BREAKPOINT_INDEX:
-      return { ...state, breakpointIndex: action.payload };
+      return { ...state, breakpointIndex: action.payload, zoom: 1 };
 
     case ACTIONS.SET_ZOOM:
       return { ...state, zoom: action.payload };
