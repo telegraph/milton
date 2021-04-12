@@ -18,6 +18,7 @@ export enum ACTIONS {
   SET_FRAMES,
   SET_RESPONSIVE,
   SET_ZOOM,
+  SET_BREAKPOINT_INDEX,
   SET_SELECTED_FRAMES,
   SET_SVG,
   SET_INITIAL_DATA,
@@ -53,6 +54,12 @@ export function actionSetZoom(
   zoom: number
 ): { type: ACTIONS.SET_ZOOM; payload: number } {
   return { type: ACTIONS.SET_ZOOM, payload: zoom };
+}
+
+export function actionSetBreakpointIndex(
+  breakpointIndex: number
+): { type: ACTIONS.SET_BREAKPOINT_INDEX; payload: number } {
+  return { type: ACTIONS.SET_BREAKPOINT_INDEX, payload: breakpointIndex };
 }
 
 export function actionSetSvg(
@@ -220,6 +227,7 @@ export type ActionTypes =
   | ReturnType<typeof actionSetSelectedFrames>
   | ReturnType<typeof actionSetResponsive>
   | ReturnType<typeof actionSetZoom>
+  | ReturnType<typeof actionSetBreakpointIndex>
   | ReturnType<typeof actionSetSvg>
   | ReturnType<typeof actionSetStatus>
   | ReturnType<typeof actionToggleSelectedFrame>

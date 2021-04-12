@@ -1,20 +1,21 @@
 import { h, JSX } from "preact";
-import { useEffect, useReducer } from "preact/hooks";
 import { STATUS } from "constants";
+import { useEffect, useReducer } from "preact/hooks";
+import { initialState, reducer } from "../store";
 import { generateEmbedHtml } from "./outputRender";
-import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
 import { Preview } from "./Preview";
 import { Frames } from "./Frames";
 import { Export } from "./Export";
 import { ErrorNotification } from "./ErrorNotification";
-import { initialState, reducer } from "../store";
+import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
 import {
   actionGetFrameData,
   actionUpdateSelectedFrames,
   actionSetResponsive,
 } from "../actions";
-import { version } from "../../../package.json";
 import { Zoom } from "./Zoom";
+import { Breakpoints } from "./breakpoints";
+import { version } from "../../../package.json";
 
 export function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -28,6 +29,7 @@ export function App(): JSX.Element {
     frames,
     responsive,
     zoom,
+    breakpointIndex,
   } = state;
 
   const outputFrames = Object.values(frames).filter(({ id }) =>
@@ -40,10 +42,23 @@ export function App(): JSX.Element {
     actionUpdateSelectedFrames(selectedFrames, outputFrames)(dispatch);
   }, [selectedFrames]);
 
-  const breakpoints = outputFrames.map(({ width, height }) => ({
-    width,
-    height,
-  }));
+  const DEFAULT_BREAKPOINTS = [
+    { width: 320, height: 320, default: true },
+    { width: 480, height: 480, default: true },
+    { width: 640, height: 480, default: true },
+    { width: 720, height: 480, default: true },
+    { width: 1024, height: 480, default: true },
+    { width: 1200, height: 480, default: true },
+  ];
+
+  const breakpoints = [
+    ...outputFrames.map(({ width, height }) => ({ width, height })),
+    ...DEFAULT_BREAKPOINTS,
+  ];
+
+  const breakpointWidth = breakpoints[breakpointIndex]?.width || 100;
+  const breakpointHeight = breakpoints[breakpointIndex]?.height || 100;
+  console.log(breakpoints[breakpointIndex]);
 
   console.log(state);
 
@@ -61,6 +76,13 @@ export function App(): JSX.Element {
     <div class="app">
       <header class="top_bar">
         <Zoom zoom={zoom} handleChange={dispatch} />
+
+        <Breakpoints
+          breakpoints={breakpoints}
+          breakpointIndex={breakpointIndex}
+          handleChange={dispatch}
+        />
+
         <Export svg={svg} html={html} zoom={zoom} />
       </header>
 
@@ -71,7 +93,8 @@ export function App(): JSX.Element {
         html={html}
         responsive={responsive}
         handleChange={dispatch}
-        breakpoint={breakpoints}
+        breakpointWidth={breakpointWidth}
+        breakpointHeight={breakpointHeight}
         zoom={zoom}
       />
 
