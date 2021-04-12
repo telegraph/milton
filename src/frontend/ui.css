@@ -283,7 +283,7 @@ body {
 }
 .preview__iframe_wrapper {
   position: absolute;
-  min-width: 100px;
+  /* min-width: 100px; */
 }
 .preview__iframe_wrapper:hover {
   outline: 1px solid var(--colours-active, #f0f);
@@ -310,6 +310,7 @@ body {
 }
 .preview__iframe {
   overflow: hidden;
+  transform-origin: 0 0;
   height: 100%;
   width: 100%;
   border: none;

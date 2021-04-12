@@ -196,9 +196,6 @@ export const Preview: FunctionalComponent<PreviewProps> = ({
     resizing,
   } = state;
 
-  console.log("breakpointWidth", breakpointWidth);
-  console.log("preview state", state);
-
   const handleMouseDown = (e: MouseEvent) => {
     if (e.button === 1) {
       dispatch({ type: "ENABLED_PANNING" });
@@ -226,30 +223,8 @@ export const Preview: FunctionalComponent<PreviewProps> = ({
   };
 
   useEffect(() => {
-    // if (!panning) return;
-
+    if (!panning) return;
     const previewRefEl = previewEl.current;
-    const iframeElRef = iframeEl.current;
-    // const resizeObserver = new ResizeObserver(
-    //   (entries: ResizeObserverEntry[]) => {
-    //     const { width, height } = entries[0].contentRect;
-    //     const newOffsetWidth = width - breakpointWidth;
-    //     const newOffsetHeight = height - breakpointHeight;
-
-    //     if (newOffsetWidth === offsetWidth) return;
-    //     if (newOffsetHeight === offsetHeight) return;
-
-    //     console.log("Resizing");
-
-    //     dispatch({
-    //       type: "SET_DIMENSIONS",
-    //       payload: {
-    //         offsetWidth: newOffsetWidth,
-    //         offsetHeight: newOffsetHeight,
-    //       },
-    //     });
-    //   }
-    // );
 
     // Translation
     previewRefEl.addEventListener("mousedown", handleMouseDown);
@@ -261,8 +236,6 @@ export const Preview: FunctionalComponent<PreviewProps> = ({
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
-    // Resize
-    // resizeObserver.observe(iframeElRef);
 
     return () => {
       previewRefEl.removeEventListener("mousedown", handleMouseDown);
@@ -271,7 +244,6 @@ export const Preview: FunctionalComponent<PreviewProps> = ({
       previewRefEl.removeEventListener("mouseleave", handleMouseUp);
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-      // resizeObserver.unobserve(iframeElRef);
     };
   }, []);
 
@@ -291,23 +263,18 @@ export const Preview: FunctionalComponent<PreviewProps> = ({
   }, [breakpointWidth, breakpointHeight]);
 
   const startResize = (e: MouseEvent) => {
+    // Only resize on left mouse button press
     if (e.button !== 0) return;
-
-    console.log(e, "start", e.x);
     dispatch({ type: "ENABLE_RESIZING", payload: { x: e.x, y: e.y } });
   };
 
-  const endResize = (e: MouseEvent) => {
-    console.log(e, "end");
-    dispatch({ type: "DISABLE_RESIZING" });
-  };
+  const endResize = () => dispatch({ type: "DISABLE_RESIZING" });
 
   const updateResize = (e: MouseEvent) => {
     if (!resizing) return;
 
-    console.log("update resize", e.x - prevMouseX, e.y - prevMouseY);
-    const newOffsetWidth = e.x - prevMouseX + prevOffsetWidth;
-    const newOffsetHeight = e.y - prevMouseY + prevOffsetHeight;
+    const newOffsetWidth = (e.x - prevMouseX) / zoom + prevOffsetWidth;
+    const newOffsetHeight = (e.y - prevMouseY) / zoom + prevOffsetHeight;
 
     dispatch({
       type: "UPDATE_RESIZING",
@@ -320,21 +287,20 @@ export const Preview: FunctionalComponent<PreviewProps> = ({
 
   const iframeWidth = breakpointWidth + offsetWidth * 2;
   const iframeHeight = breakpointWidth + offsetHeight * 2;
+  console.log(iframeWidth, iframeWidth * zoom);
 
   const IFRAME_HEIGHT_MARGIN = 160;
-  // @NOTE: resize event on iframe results in recursive resizes when adding height
-  // const iframeStyle = `
-  //   width: ${iframeWidth}px;
-  //   height: ${iframeHeight}px;
-  //   transform: scale(${zoom}) translate(${
-  //   x - (breakpointWidth * zoom) / 2
-  // }px,  ${y - (breakpointHeight * zoom) / 2}px);
-  // `;
 
   const iframeStyle = `
-  width: ${iframeWidth}px;
-  height: ${iframeHeight}px;
-`;
+    width: ${iframeWidth}px;
+    height: ${iframeHeight}px;
+    transform: scale(${zoom});
+  `;
+
+  const iframeWrapperStyle = `
+    width: ${iframeWidth * zoom}px;
+    height: ${iframeHeight * zoom}px;
+  `;
 
   return (
     <section class={`preview ${resizing ? "preview--resizing" : ""}`}>
@@ -354,8 +320,12 @@ export const Preview: FunctionalComponent<PreviewProps> = ({
         onMouseUp={endResize}
         onMouseMove={updateResize}
       >
-        <div class="preview__iframe_wrapper" ref={iframeEl} style={iframeStyle}>
-          <iframe class="preview__iframe" srcDoc={html} />
+        <div
+          class="preview__iframe_wrapper"
+          ref={iframeEl}
+          style={iframeWrapperStyle}
+        >
+          <iframe class="preview__iframe" srcDoc={html} style={iframeStyle} />
           <button class="preview__iframe_resize" onMouseDown={startResize}>
             Resize
           </button>
