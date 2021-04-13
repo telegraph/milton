@@ -3,7 +3,8 @@ import { h, Component } from "preact";
 interface DropdownProps {
   label: string;
   options: { text: string; value: any }[];
-  handleChange: (val: any) => void;
+  onClick: (val: any) => void;
+  onBlur?: (val: any) => void;
   tooltip?: string;
   activeIndex?: number;
   manualInput?: boolean;
@@ -24,7 +25,8 @@ export class Dropdown extends Component<DropdownProps> {
       tooltip,
       manualValue,
       options,
-      handleChange,
+      onClick,
+      onBlur,
       manualInput = false,
       showIcon = true,
     } = this.props;
@@ -48,7 +50,9 @@ export class Dropdown extends Component<DropdownProps> {
                 <input
                   class="dropdown__input"
                   value={manualValue}
-                  onBlur={(event) => handleChange(event.currentTarget.value)}
+                  onBlur={(event) =>
+                    onBlur && onBlur(event.currentTarget.value)
+                  }
                 />
               )}
 
@@ -56,7 +60,7 @@ export class Dropdown extends Component<DropdownProps> {
                 <button
                   key={option.text}
                   class="dropdown__option"
-                  onClick={() => handleChange(option.value)}
+                  onClick={() => onClick(option.value)}
                 >
                   {option.text}
                 </button>

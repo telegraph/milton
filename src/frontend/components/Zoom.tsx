@@ -59,7 +59,7 @@ export class Zoom extends Component<ZoomProps> {
       <div class="zoom">
         <Dropdown
           label={zoomLabel}
-          handleChange={(val: number) => handleChange(actionSetZoom(val))}
+          onClick={(val: number) => handleChange(actionSetZoom(val))}
           options={zoomOptions}
           tooltip={UI_TEXT.ZOOM_TOOLTIP}
         />

@@ -30,9 +30,7 @@ export function Breakpoints({
     <div class="zoom">
       <Dropdown
         label={breakpointLabel}
-        handleChange={(val: number) =>
-          handleChange(actionSetBreakpointIndex(val))
-        }
+        onClick={(val: number) => handleChange(actionSetBreakpointIndex(val))}
         options={breakpointOptions}
         tooltip={UI_TEXT.ZOOM_TOOLTIP}
       />
