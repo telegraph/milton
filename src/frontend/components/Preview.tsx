@@ -31,6 +31,7 @@ interface PreviewStateInterface {
   resizing: boolean;
   prevMouseX: number;
   prevMouseY: number;
+  selected: boolean;
 }
 
 export class Preview extends Component<PreviewProps, PreviewStateInterface> {
@@ -50,6 +51,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     resizing: false,
     prevMouseX: 0,
     prevMouseY: 0,
+    selected: false,
   };
 
   previewEl: RefObject<HTMLDivElement> = createRef();
@@ -104,6 +106,15 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     if (code === "Space" && this.state.panningEnabled) {
       this.setState({ panningEnabled: false, isPanning: false });
     }
+  };
+
+  enableSelection = (e: MouseEvent) => {
+    e.stopPropagation();
+    this.setState({ selected: true });
+  };
+
+  disableSelection = () => {
+    this.setState({ selected: false });
   };
 
   startResize = ({ button, x, y }: MouseEvent) => {
@@ -179,6 +190,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
       translateY,
       resizing,
       panningEnabled,
+      selected,
       x,
       y,
     } = this.state;
@@ -218,8 +230,15 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
           ref={this.previewEl}
           onMouseUp={this.endResize}
           onMouseMove={this.updateResize}
+          onClick={this.disableSelection}
         >
-          <div class="preview__iframe_wrapper" style={iframeWrapperStyle}>
+          <div
+            class={`preview__iframe_wrapper  ${
+              selected ? "preview__iframe_wrapper--selected" : ""
+            }`}
+            style={iframeWrapperStyle}
+            onClick={this.enableSelection}
+          >
             <iframe class="preview__iframe" srcDoc={html} style={iframeStyle} />
             <button
               class="preview__iframe_resize"

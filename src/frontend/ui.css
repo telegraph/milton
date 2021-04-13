@@ -295,7 +295,7 @@ body {
   width: 8px;
   height: 8px;
   background: #fff;
-  border: 2px solid var(--colours-active, #f0f);
+  border: 1px solid var(--colours-active, #f0f);
   position: absolute;
   bottom: -4px;
   right: -4px;
@@ -307,10 +307,18 @@ body {
   padding: 4px;
   display: none;
 }
-.preview--resizing .preview__iframe_resize,
-.preview__iframe_wrapper:hover .preview__iframe_resize {
+
+.preview__iframe_wrapper.preview__iframe_wrapper--selected {
+  outline: 1px solid var(--colours-active, #f0f);
+}
+
+.preview__iframe_wrapper--selected .preview__iframe_resize {
   display: block;
 }
+/* .preview--resizing .preview__iframe_resize,
+.preview__iframe_wrapper:hover .preview__iframe_resize {
+  display: block;
+} */
 .preview__iframe {
   overflow: hidden;
   transform-origin: 0 0;
@@ -318,6 +326,7 @@ body {
   width: 100%;
   border: none;
   resize: none;
+  pointer-events: none;
 }
 .preview__iframe::before {
   content: attr(style);
