@@ -1,6 +1,10 @@
 import { h, JSX } from "preact";
 import { UI_TEXT } from "../../constants";
-import { ActionTypes, actionSetBreakpointIndex } from "frontend/actions";
+import {
+  ActionTypes,
+  actionSetBreakpointIndex,
+  actionSetZoom,
+} from "frontend/actions";
 import { Dropdown } from "frontend/components/dropdown/dropdown";
 
 interface BreakpointsProps {
@@ -30,7 +34,10 @@ export function Breakpoints({
     <div class="zoom">
       <Dropdown
         label={breakpointLabel}
-        onSelect={(val: number) => handleChange(actionSetBreakpointIndex(val))}
+        onSelect={(val: number) => {
+          handleChange(actionSetBreakpointIndex(val));
+          handleChange(actionSetZoom(1));
+        }}
         options={breakpointOptions}
         tooltip={UI_TEXT.ZOOM_TOOLTIP}
       />
