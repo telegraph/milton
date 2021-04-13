@@ -14,12 +14,13 @@ export function Breakpoints({
   breakpointIndex,
   handleChange,
 }: BreakpointsProps): JSX.Element {
-  const breakpointOptions = breakpoints.map((breakpoint, i) => ({
-    text: `${Math.round(breakpoint.width)}px${
-      breakpoint.default ? " default" : ""
-    }`,
-    value: i,
-  }));
+  const breakpointOptions = breakpoints.map((breakpoint, index) => {
+    const width = Math.round(breakpoint.width);
+    let text = `${width}px - `;
+    text += breakpoint.default ? "common" : "frame";
+
+    return { text, value: index };
+  });
 
   const width = Math.round(breakpoints[breakpointIndex]?.width || 0);
 

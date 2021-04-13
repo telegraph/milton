@@ -1,5 +1,11 @@
 import { h, Component, RefObject, createRef } from "preact";
 
+enum BUTTONS {
+  LEFT = 0,
+  MIDDLE = 1,
+  RIGHT = 2,
+}
+
 interface PreviewProps {
   rendering: boolean;
   html: string;
@@ -49,8 +55,20 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
   previewEl: RefObject<HTMLDivElement> = createRef();
 
   startPanning = (e: MouseEvent) => {
+    const { button, x, y } = e;
+
     if (this.state.panningEnabled) {
-      this.setState({ startX: e.x, startY: e.y, isPanning: true });
+      this.setState({ startX: x, startY: y, isPanning: true });
+      return;
+    }
+
+    if (button === BUTTONS.MIDDLE && this.state.isPanning === false) {
+      this.setState({
+        startX: x,
+        startY: y,
+        isPanning: true,
+        panningEnabled: true,
+      });
     }
   };
 
@@ -63,64 +81,69 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     }
   };
 
-  stopPanning = () => {
-    if (this.state.panningEnabled) {
-      this.setState({
-        isPanning: false,
-        translateX: this.state.translateX + this.state.x,
-        translateY: this.state.translateY + this.state.y,
-        x: 0,
-        y: 0,
-      });
-    }
+  stopPanning = (e: MouseEvent) => {
+    if (this.state.panningEnabled === false) return;
+
+    this.setState({
+      isPanning: false,
+      panningEnabled: e.button === BUTTONS.LEFT,
+      translateX: this.state.translateX + this.state.x,
+      translateY: this.state.translateY + this.state.y,
+      x: 0,
+      y: 0,
+    });
   };
 
-  enablePanning = (e: KeyboardEvent) => {
-    if (e.code === "Space" && this.state.panningEnabled === false) {
+  enablePanning = ({ code }: KeyboardEvent) => {
+    if (code === "Space" && this.state.panningEnabled === false) {
       this.setState({ panningEnabled: true });
     }
   };
 
-  disablePanning = (e: KeyboardEvent) => {
-    if (e.code === "Space" && this.state.panningEnabled) {
+  disablePanning = ({ code }: KeyboardEvent) => {
+    if (code === "Space" && this.state.panningEnabled) {
       this.setState({ panningEnabled: false, isPanning: false });
     }
   };
 
-  startResize = (e: MouseEvent) => {
-    // Only resize on left mouse button press
-    if (e.button === 0) this.setState({ resizing: true, x: e.x, y: e.y });
-  };
-
-  endResize = () => {
-    if (this.state.resizing) {
-      this.setState({
-        resizing: false,
-        prevMouseX: 0,
-        prevMouseY: 0,
-        prevOffsetWidth: this.state.offsetWidth,
-        prevOffsetHeight: this.state.offsetHeight,
-      });
-    }
+  startResize = ({ button, x, y }: MouseEvent) => {
+    if (button === BUTTONS.LEFT)
+      this.setState({ resizing: true, prevMouseX: x, prevMouseY: y });
   };
 
   updateResize = (e: MouseEvent) => {
-    if (this.state.resizing) {
-      const {
-        prevMouseX,
-        prevMouseY,
-        prevOffsetWidth,
-        prevOffsetHeight,
-      } = this.state;
-      const { zoom } = this.props;
+    if (this.state.resizing === false) return;
 
-      const newOffsetWidth = (e.x - prevMouseX) / zoom + prevOffsetWidth;
-      const newOffsetHeight = (e.y - prevMouseY) / zoom + prevOffsetHeight;
-      this.setState({
-        offsetWidth: newOffsetWidth,
-        offsetHeight: newOffsetHeight,
-      });
-    }
+    const {
+      prevMouseX,
+      prevMouseY,
+      prevOffsetWidth,
+      prevOffsetHeight,
+    } = this.state;
+    const { zoom } = this.props;
+
+    // const newOffsetWidth = (e.x - prevMouseX) / zoom + prevOffsetWidth;
+    // const newOffsetHeight = (e.y - prevMouseY) / zoom + prevOffsetHeight;
+
+    const newOffsetWidth = (e.x - prevMouseX) / zoom + prevOffsetWidth;
+    const newOffsetHeight = (e.y - prevMouseY) / zoom + prevOffsetHeight;
+
+    this.setState({
+      offsetWidth: newOffsetWidth,
+      offsetHeight: newOffsetHeight,
+    });
+  };
+
+  endResize = () => {
+    if (this.state.resizing === false) return;
+
+    this.setState({
+      resizing: false,
+      prevMouseX: 0,
+      prevMouseY: 0,
+      prevOffsetWidth: this.state.offsetWidth,
+      prevOffsetHeight: this.state.offsetHeight,
+    });
   };
 
   componentDidMount() {

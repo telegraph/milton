@@ -32,13 +32,10 @@ interface ExportProps {
   zoom: number;
 }
 export function Export({ svg, html }: ExportProps): JSX.Element {
-  return (
-    <fieldset class="export">
-      <legend>
-        Export{" "}
-        <span class="export__filesize">{Math.ceil(svg.length / 1024)}k</span>
-      </legend>
+  const fileSizeKb = Math.ceil(svg.length / 1024);
 
+  return (
+    <div class="export">
       <button class="btn export__download" onClick={() => downloadHtml(html)}>
         Download
       </button>
@@ -71,6 +68,6 @@ export function Export({ svg, html }: ExportProps): JSX.Element {
             </p>
           ))}
       </div>
-    </fieldset>
+    </div>
   );
 }
