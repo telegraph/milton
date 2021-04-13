@@ -31,7 +31,7 @@ export function Breakpoints({
   const breakpointLabel = `Select breakpoint: ${width}px`;
 
   return (
-    <div class="zoom">
+    <div class="breakpoints">
       <Dropdown
         label={breakpointLabel}
         onSelect={(val: number) => {

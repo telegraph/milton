@@ -1,6 +1,8 @@
-import { h, JSX } from "preact";
+import { h, Component } from "preact";
 import { saveAs } from "file-saver";
 import copy from "clipboard-copy";
+import { UI_TEXT } from "../../constants";
+import { Dropdown } from "frontend/components/dropdown/dropdown";
 import { shareServices } from "config.json";
 
 function downloadHtml(html: string): void {
@@ -31,43 +33,37 @@ interface ExportProps {
   html: string;
   zoom: number;
 }
-export function Export({ svg, html }: ExportProps): JSX.Element {
-  const fileSizeKb = Math.ceil(svg.length / 1024);
+export class Export extends Component<ExportProps> {
+  copyToClipboard = () => {
+    copy(this.props.html)
+      .then(() => {
+        alert("Figma2HTML code copied to clipboard");
+      })
+      .catch(console.error);
+  };
 
-  return (
-    <div class="export">
-      <button class="btn export__download" onClick={() => downloadHtml(html)}>
-        Download
-      </button>
+  render() {
+    const fileSizeKb = Math.ceil(this.props.svg.length / 1024);
 
-      <button
-        class="btn export__copy"
-        onClick={() => {
-          copy(html)
-            .then(() => {
-              alert("Figma2HTML code copied to clipboard");
-            })
-            .catch(console.error);
-        }}
-      >
-        Copy to clipboard
-      </button>
+    const servicesList = shareServices.map((service) => ({
+      text: `${service.name} ›`,
+      value: service.url,
+    }));
 
-      <div class="export_services">
-        <h2 class="export_services__heading">Share services</h2>
-        {Array.isArray(shareServices) &&
-          shareServices.map((service) => (
-            <p class="export__service">
-              <a
-                class="export__service_link"
-                href={service.url}
-                target="_blank"
-              >
-                {service.name}↗
-              </a>
-            </p>
-          ))}
+    return (
+      <div class="export">
+        <button class="btn export__download" onClick={() => downloadHtml(html)}>
+          Download
+        </button>
+
+        <Dropdown
+          className={"clipboard"}
+          onOpen={this.copyToClipboard}
+          options={servicesList}
+          label={UI_TEXT.COPY_TO_CLIPBOARD}
+          onSelect={(val) => console.log(val)}
+        />
       </div>
-    </div>
-  );
+    );
+  }
 }

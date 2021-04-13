@@ -32,6 +32,8 @@
   --font-size--small: 0.7rem;
   --font-size--medium: 0.8rem;
   --font-size--large: 1.6rem;
+
+  --icon-link: url("data:image/svg+xml,%3Csvg width='12' height='13' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M7.88 5.9L8.9 4.51a1.57 1.57 0 00-2.54-1.84L5.34 4.06l-.81-.6 1-1.38A2.57 2.57 0 019.7 5.1l-1 1.39-.82-.59zm-1.2 3.36l-.81-.58-1 1.38a1.57 1.57 0 01-2.55-1.84l1-1.39-.8-.59-1.01 1.4a2.57 2.57 0 004.16 3.01l1-1.39z' fill='%23fff'/%3E%3Cpath d='M7.11 4.29L4.1 8.45' stroke='%23fff'/%3E%3C/svg%3E");
 }
 
 /* [ Root ]
@@ -204,12 +206,13 @@ body {
   font-size: 12px;
 }
 
-/* [ Clipboard ]  Hidden. Only used to copy output to clipboard.
------------------------------------------------------------------  */
-.clipboard {
-  /* NOTE: Element NEEDS DOM flow to enable selection copy */
-  height: 2px;
-  opacity: 0;
+/* [ Export clipboard ]
+----------------------------------------------------------------- */
+.clipboard .dropdown__option {
+  background-image: var(--icon-link);
+  background-position: var(--padding-medium, 0) 50%;
+  background-repeat: no-repeat;
+  text-decoration: underline;
 }
 
 /* [ Preview ]
@@ -442,11 +445,15 @@ body {
 .dropdown__list {
   position: absolute;
   top: 100%;
-  left: -50%;
+  left: 0;
   background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQiIGhlaWdodD0iNyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMCA3bDctNyA3IDdIMHoiIGZpbGw9InJnYigyMiwyMiwyMikiLz48L3N2Zz4K");
   padding-top: 7px;
   background-repeat: no-repeat;
   background-position: top center;
+
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 .dropdown__list_inner {
   background-color: black;
@@ -493,6 +500,7 @@ body {
   background: transparent;
   cursor: pointer;
   display: flex;
+  white-space: nowrap;
 }
 .dropdown__btn:hover,
 .dropdown__btn:active {

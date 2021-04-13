@@ -5,11 +5,14 @@ interface DropdownProps {
   options: { text: string; value: any }[];
   onSelect: (val: any) => void;
   onBlur?: (val: any) => void;
+  onOpen?: () => void;
+  onClose?: () => void;
   tooltip?: string;
   activeIndex?: number;
   manualInput?: boolean;
   manualValue?: any;
   showIcon?: boolean;
+  className?: string;
 }
 
 export class Dropdown extends Component<DropdownProps> {
@@ -17,7 +20,14 @@ export class Dropdown extends Component<DropdownProps> {
     open: false,
   };
 
-  toggleOpen = (): void => this.setState({ open: !this.state.open });
+  toggleOpen = (): void => {
+    const open = !this.state.open;
+
+    if (open && this.props.onOpen) this.props.onOpen();
+    if (open === false && this.props.onClose) this.props.onClose();
+
+    this.setState({ open });
+  };
 
   render() {
     const {
@@ -28,13 +38,14 @@ export class Dropdown extends Component<DropdownProps> {
       onSelect,
       onBlur,
       manualInput = false,
+      className = "",
       showIcon = true,
     } = this.props;
 
     const { open } = this.state;
 
     return (
-      <div class={`dropdown ${open ? "dropdown--open" : ""}`}>
+      <div class={`dropdown ${open ? "dropdown--open" : ""} ${className}`}>
         <button
           class={`dropdown__btn ${open ? "dropdown__btn--active" : ""}`}
           onClick={this.toggleOpen}
