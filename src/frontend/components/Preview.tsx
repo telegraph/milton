@@ -55,6 +55,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
   };
 
   previewEl: RefObject<HTMLDivElement> = createRef();
+  iframeEl: RefObject<HTMLIFrameElement> = createRef();
 
   startPanning = (e: MouseEvent) => {
     const { button, x, y } = e;
@@ -139,11 +140,8 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     } = this.state;
     const { zoom } = this.props;
 
-    // const newOffsetWidth = (e.x - prevMouseX) / zoom + prevOffsetWidth;
-    // const newOffsetHeight = (e.y - prevMouseY) / zoom + prevOffsetHeight;
-
-    const newOffsetWidth = (e.x - prevMouseX) / zoom + prevOffsetWidth;
-    const newOffsetHeight = (e.y - prevMouseY) / zoom + prevOffsetHeight;
+    const newOffsetWidth = ((e.x - prevMouseX) * 2) / zoom + prevOffsetWidth;
+    const newOffsetHeight = ((e.y - prevMouseY) * 2) / zoom + prevOffsetHeight;
 
     this.setState({
       offsetWidth: newOffsetWidth,
@@ -163,8 +161,19 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     });
   };
 
+  updateIframeHeight = () => {
+    if (!this.iframeEl.current) return;
+    const iframe = this.iframeEl.current;
+    const height =
+      iframe.contentDocument?.body?.getBoundingClientRect().height ?? 100;
+    this.setState({
+      offsetHeight: height,
+      prevOffsetHeight: height,
+    });
+  };
+
   componentDidMount() {
-    if (!this.previewEl.current) return;
+    if (!this.previewEl.current || !this.iframeEl.current) return;
 
     const previewRefEl = this.previewEl.current;
     previewRefEl.addEventListener("mousedown", this.startPanning);
@@ -173,10 +182,12 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     previewRefEl.addEventListener("mouseleave", this.stopPanning);
     window.addEventListener("keydown", this.enablePanning);
     window.addEventListener("keyup", this.disablePanning);
+
+    this.iframeEl.current.addEventListener("load", this.updateIframeHeight);
   }
 
   componentWillUnmount() {
-    if (!this.previewEl.current) return;
+    if (!this.previewEl.current || !this.iframeEl.current) return;
 
     const previewRefEl = this.previewEl.current;
     previewRefEl.removeEventListener("mousedown", this.startPanning);
@@ -185,18 +196,25 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     previewRefEl.removeEventListener("mouseleave", this.stopPanning);
     window.removeEventListener("keydown", this.enablePanning);
     window.removeEventListener("keyup", this.disablePanning);
+
+    this.iframeEl.current.removeEventListener("load", this.updateIframeHeight);
   }
 
   componentDidUpdate({ breakpointWidth }: PreviewProps) {
     if (breakpointWidth !== this.props.breakpointWidth) {
-      this.setState({
-        x: 0,
-        y: 0,
-        translateX: 0,
-        translateY: 0,
-        offsetWidth: 0,
-        offsetHeight: 0,
-      });
+      this.setState(
+        {
+          x: 0,
+          y: 0,
+          translateX: 0,
+          translateY: 0,
+          offsetWidth: 0,
+          offsetHeight: 0,
+          prevOffsetHeight: 0,
+          prevOffsetWidth: 0,
+        },
+        this.updateIframeHeight
+      );
     }
   }
 
@@ -214,11 +232,8 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
       y,
     } = this.state;
 
-    console.log(this.state);
-
-    const iframeWidth = breakpointWidth + offsetWidth * 2;
-    const iframeHeight = breakpointWidth + offsetHeight * 2;
-    const IFRAME_HEIGHT_MARGIN = 160;
+    const iframeWidth = breakpointWidth + offsetWidth;
+    const iframeHeight = offsetHeight;
 
     const iframeStyle = `
     width: ${iframeWidth}px;
@@ -258,7 +273,12 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
             style={iframeWrapperStyle}
             onClick={this.enableSelection}
           >
-            <iframe class="preview__iframe" srcDoc={html} style={iframeStyle} />
+            <iframe
+              class="preview__iframe"
+              srcDoc={html}
+              style={iframeStyle}
+              ref={this.iframeEl}
+            />
             <button
               class="preview__iframe_resize"
               onMouseDown={this.startResize}
