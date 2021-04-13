@@ -181,6 +181,19 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     window.removeEventListener("keyup", this.disablePanning);
   }
 
+  componentDidUpdate({ breakpointWidth }: PreviewProps) {
+    if (breakpointWidth !== this.props.breakpointWidth) {
+      this.setState({
+        x: 0,
+        y: 0,
+        translateX: 0,
+        translateY: 0,
+        offsetWidth: 0,
+        offsetHeight: 0,
+      });
+    }
+  }
+
   render() {
     const { breakpointWidth, html, zoom, rendering } = this.props;
     const {
