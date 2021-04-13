@@ -86,9 +86,15 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
   stopPanning = (e: MouseEvent) => {
     if (this.state.panningEnabled === false) return;
 
+    let panningEnabled = true;
+
+    if (e.type === "mouseleave" || e.button === BUTTONS.MIDDLE) {
+      panningEnabled = false;
+    }
+
     this.setState({
       isPanning: false,
-      panningEnabled: e.button === BUTTONS.LEFT,
+      panningEnabled,
       translateX: this.state.translateX + this.state.x,
       translateY: this.state.translateY + this.state.y,
       x: 0,
