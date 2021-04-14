@@ -1,0 +1,95 @@
+/* [ Loading ]
+----------------------------------------------------------------- */
+.loading {
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  z-index: 10;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.loading[data-active] {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* [ Crash ]
+  ----------------------------------------------------------------- */
+.crash {
+  text-align: center;
+  height: 100%;
+  display: flex;
+  padding: var(--padding-large, 0);
+  background-color: var(--colours-warning);
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex-direction: column;
+}
+
+/* [ Errors ]
+  ----------------------------------------------------------------- */
+.error {
+  background-color: rgba(213, 213, 213, 0.87);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(213, 213, 213, 0.87);
+  z-index: 10;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+.error h2 {
+  margin: 0;
+  font-size: var(--font-size--small, 1rem);
+  color: var(--colours-grey-0, #f0f);
+  font-weight: 200;
+}
+.error p {
+  font-size: var(--font-size--medium, 1rem);
+  color: rgb(52, 45, 22);
+  background: rgb(255, 229, 146);
+  padding: var(--padding-medium, 0);
+  margin: var(--padding-small, 0) 0;
+  border-radius: var(--border-radius-medium, 0);
+}
+
+.error_notification {
+  grid-column: 1/2;
+  grid-row: 3/2;
+  background: #fff084;
+  z-index: 2;
+  text-align: center;
+  border-bottom: 1px solid #e28108;
+}
+.error_notification__heading {
+  margin: 0;
+  background: #e28108;
+  font-size: 12px;
+  color: white;
+  padding: 2px 0;
+}
+.error_notification__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+.error_notification__list li {
+  margin: 4px 0;
+  color: #6d3005;
+}

@@ -20,6 +20,7 @@ export interface StateInterface {
   svg: string;
   zoom: number;
   breakpointIndex: number;
+  breakpointWidth: number;
   errors: { [key in ERRORS]?: string };
 }
 
@@ -37,6 +38,7 @@ export const initialState: StateInterface = {
   zoom: 1,
   breakpointIndex: 0,
   responsive: true,
+  breakpointWidth: 100,
   svg: "",
   errors: {},
 };
@@ -71,8 +73,13 @@ export function reducer(
     case ACTIONS.SET_RESPONSIVE:
       return { ...state, responsive: action.payload };
 
-    case ACTIONS.SET_BREAKPOINT_INDEX:
-      return { ...state, breakpointIndex: action.payload };
+    case ACTIONS.SET_BREAKPOINT:
+      return {
+        ...state,
+        breakpointIndex: action.payload.index,
+        breakpointWidth: action.payload.width,
+        zoom: 1,
+      };
 
     case ACTIONS.SET_ZOOM:
       return { ...state, zoom: action.payload };

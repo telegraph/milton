@@ -1,0 +1,33 @@
+/* [ Style variables ]
+----------------------------------------------------------------- */
+:root {
+  --padding-small: 6px;
+  --padding-medium: 12px;
+  --padding-large: 24px;
+  --padding-huge: 48px;
+
+  --border-radius-small: 2px;
+  --border-radius-medium: 6px;
+  --border-radius-large: 12px;
+
+  --colours-light-background: rgb(255, 255, 255);
+  --colours-light-background-hover: rgb(243, 243, 243);
+  --colours-dark-background: #222222;
+  --colours-light-border: #dfdfdf;
+  --colours-dark-border: #383838;
+  --colours-active: #18a0fb;
+  --colours-text: #222222;
+  --colours-text-disabled: rgb(184, 184, 184);
+  --colours-preview-background: #c4c4c4;
+
+  --colours-main: rgb(72, 202, 126);
+  --colours-main-light: rgb(208, 242, 222);
+  --colours-main-dark: rgb(44, 75, 57);
+  --colours-warning: rgb(255, 242, 175);
+
+  --font-family: "Inter var", Arial, Helvetica, sans-serif;
+
+  --font-size--small: 0.7rem;
+  --font-size--medium: 0.8rem;
+  --font-size--large: 1.6rem;
+}

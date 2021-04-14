@@ -11,7 +11,6 @@ interface PreviewProps {
   html: string;
   responsive: boolean;
   breakpointWidth: number;
-  breakpointHeight: number;
   zoom: number;
 }
 

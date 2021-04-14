@@ -53,7 +53,7 @@ import esbuild from "esbuild";
     });
 
     const uiCss = esbuild.build({
-      entryPoints: [path.join("src", "frontend", "ui.css")],
+      entryPoints: [path.join("src", "static", "css", "ui.css")],
       platform: "browser",
       loader: { ".svg": "dataurl" },
       bundle: true,

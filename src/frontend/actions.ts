@@ -12,18 +12,18 @@ import { EmbedProperties, StateInterface } from "./store";
 import { decodeSvgToString } from "./svgUtils";
 
 export enum ACTIONS {
-  SET_EMBED_PROPERTY,
-  SET_STATUS,
-  SET_ERROR,
-  SET_FRAMES,
-  SET_RESPONSIVE,
-  SET_ZOOM,
-  SET_BREAKPOINT_INDEX,
-  SET_SELECTED_FRAMES,
-  SET_SVG,
-  SET_INITIAL_DATA,
-  CLEAR_ERROR,
-  TOGGLE_SELECTED_FRAME,
+  SET_EMBED_PROPERTY = "SET_EMBED_PROPERTY",
+  SET_STATUS = "SET_STATUS",
+  SET_ERROR = "SET_ERROR",
+  SET_FRAMES = "SET_FRAMES",
+  SET_RESPONSIVE = "SET_RESPONSIVE",
+  SET_ZOOM = "SET_ZOOM",
+  SET_BREAKPOINT = "SET_BREAKPOINT",
+  SET_SELECTED_FRAMES = "SET_SELECTED_FRAMES",
+  SET_SVG = "SET_SVG",
+  SET_INITIAL_DATA = "SET_INITIAL_DATA",
+  CLEAR_ERROR = "CLEAR_ERROR",
+  TOGGLE_SELECTED_FRAME = "TOGGLE_SELECTED_FRAME",
 }
 
 export function actionSetFrames(
@@ -56,10 +56,14 @@ export function actionSetZoom(
   return { type: ACTIONS.SET_ZOOM, payload: zoom };
 }
 
-export function actionSetBreakpointIndex(
-  breakpointIndex: number
-): { type: ACTIONS.SET_BREAKPOINT_INDEX; payload: number } {
-  return { type: ACTIONS.SET_BREAKPOINT_INDEX, payload: breakpointIndex };
+export function actionSetBreakpoint(
+  index: number,
+  width: number
+): {
+  type: ACTIONS.SET_BREAKPOINT;
+  payload: { index: number; width: number };
+} {
+  return { type: ACTIONS.SET_BREAKPOINT, payload: { index, width } };
 }
 
 export function actionSetSvg(
@@ -227,7 +231,7 @@ export type ActionTypes =
   | ReturnType<typeof actionSetSelectedFrames>
   | ReturnType<typeof actionSetResponsive>
   | ReturnType<typeof actionSetZoom>
-  | ReturnType<typeof actionSetBreakpointIndex>
+  | ReturnType<typeof actionSetBreakpoint>
   | ReturnType<typeof actionSetSvg>
   | ReturnType<typeof actionSetStatus>
   | ReturnType<typeof actionToggleSelectedFrame>

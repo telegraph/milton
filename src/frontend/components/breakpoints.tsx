@@ -1,23 +1,29 @@
+import { FrameDataInterface } from "types";
 import { h, JSX } from "preact";
-import { UI_TEXT } from "../../constants";
-import {
-  ActionTypes,
-  actionSetBreakpointIndex,
-  actionSetZoom,
-} from "frontend/actions";
+import { UI_TEXT, DEFAULT_BREAKPOINTS } from "../../constants";
 import { Dropdown } from "frontend/components/dropdown/dropdown";
+import { ActionTypes, actionSetBreakpoint } from "frontend/actions";
 
 interface BreakpointsProps {
   breakpointIndex: number;
-  breakpoints: { width: number; height: number; default?: boolean }[];
+  outputFrames: FrameDataInterface[];
   handleChange: (action: ActionTypes) => void;
 }
 
 export function Breakpoints({
-  breakpoints,
+  outputFrames,
   breakpointIndex,
   handleChange,
 }: BreakpointsProps): JSX.Element {
+  const breakpoints = [
+    ...outputFrames.map(({ width, height }) => ({
+      width,
+      height,
+      default: false,
+    })),
+    ...DEFAULT_BREAKPOINTS,
+  ];
+
   const breakpointOptions = breakpoints.map((breakpoint, index) => {
     const width = Math.round(breakpoint.width);
     let text = `${width}px - `;
@@ -27,7 +33,6 @@ export function Breakpoints({
   });
 
   const width = Math.round(breakpoints[breakpointIndex]?.width || 0);
-
   const breakpointLabel = `Select breakpoint: ${width}px`;
 
   return (
@@ -35,8 +40,7 @@ export function Breakpoints({
       <Dropdown
         label={breakpointLabel}
         onSelect={(val: number) => {
-          handleChange(actionSetBreakpointIndex(val));
-          handleChange(actionSetZoom(1));
+          handleChange(actionSetBreakpoint(val, breakpoints[val].width));
         }}
         options={breakpointOptions}
         tooltip={UI_TEXT.ZOOM_TOOLTIP}

@@ -1,0 +1,57 @@
+/* Figma-2-HTML plugin CSS styles */
+
+@import url(./variables.css);
+@import url(./dropdown.css);
+@import url(./status.css);
+@import url(./action_bar.css);
+@import url(./preview.css);
+@import url(./controls.css);
+@import url("https://rsms.me/inter/inter.css");
+
+/* [ Root ]
+----------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+  font-family: var(--font-family, arial);
+}
+html,
+body {
+  font-family: var(--font-family, arial);
+  font-size: 16px;
+  margin: 0;
+}
+
+::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 4px solid #c3c3c3;
+}
+
+/* [ App ]
+----------------------------------------------------------------- */
+.app {
+  display: grid;
+  grid-template-columns: 240px auto;
+  grid-template-rows: min-content auto;
+  background: #fff;
+  height: 100%;
+}
+
+/* [ Footer ]
+----------------------------------------------------------------- */
+.footer {
+  bottom: var(--padding-small, 0);
+  right: var(--padding-small, 0);
+  font-size: var(--font-size--small);
+  text-align: right;
+  color: var(--colours-grey-3, #f0f);
+  position: absolute;
+  margin: 0;
+}

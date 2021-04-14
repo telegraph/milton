@@ -88,3 +88,12 @@ export enum HEADLINE_NODE_NAMES {
   SUBHEAD = "subhead",
   SOURCE = "source",
 }
+
+export const DEFAULT_BREAKPOINTS = [
+  { width: 320, height: 320, default: true },
+  { width: 480, height: 480, default: true },
+  { width: 640, height: 480, default: true },
+  { width: 720, height: 480, default: true },
+  { width: 1024, height: 480, default: true },
+  { width: 1200, height: 480, default: true },
+];

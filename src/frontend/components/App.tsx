@@ -30,6 +30,7 @@ export function App(): JSX.Element {
     responsive,
     zoom,
     breakpointIndex,
+    breakpointWidth,
   } = state;
 
   const outputFrames = Object.values(frames).filter(({ id }) =>
@@ -41,26 +42,6 @@ export function App(): JSX.Element {
   useEffect(() => {
     actionUpdateSelectedFrames(selectedFrames, outputFrames)(dispatch);
   }, [selectedFrames]);
-
-  const DEFAULT_BREAKPOINTS = [
-    { width: 320, height: 320, default: true },
-    { width: 480, height: 480, default: true },
-    { width: 640, height: 480, default: true },
-    { width: 720, height: 480, default: true },
-    { width: 1024, height: 480, default: true },
-    { width: 1200, height: 480, default: true },
-  ];
-
-  const breakpoints = [
-    ...outputFrames.map(({ width, height }) => ({ width, height })),
-    ...DEFAULT_BREAKPOINTS,
-  ];
-
-  const breakpointWidth = breakpoints[breakpointIndex]?.width || 100;
-  const breakpointHeight = breakpoints[breakpointIndex]?.height || 100;
-  console.log(breakpoints[breakpointIndex]);
-
-  console.log(state);
 
   const html =
     outputFrames.length > 0
@@ -74,11 +55,11 @@ export function App(): JSX.Element {
 
   return (
     <div class="app">
-      <header class="top_bar">
+      <header class="action_bar">
         <Zoom zoom={zoom} handleChange={dispatch} />
 
         <Breakpoints
-          breakpoints={breakpoints}
+          outputFrames={outputFrames}
           breakpointIndex={breakpointIndex}
           handleChange={dispatch}
         />
@@ -92,14 +73,12 @@ export function App(): JSX.Element {
         rendering={status === STATUS.RENDERING}
         html={html}
         responsive={responsive}
-        handleChange={dispatch}
         breakpointWidth={breakpointWidth}
-        breakpointHeight={breakpointHeight}
         zoom={zoom}
       />
 
-      <section class="sidebar">
-        <nav>
+      <section class="controls">
+        <nav class="controls__navigation">
           <button>Frames</button>
           <button>Links</button>
           <button>Compression</button>

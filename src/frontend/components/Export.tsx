@@ -52,10 +52,6 @@ export class Export extends Component<ExportProps> {
 
     return (
       <div class="export">
-        <button class="btn export__download" onClick={() => downloadHtml(html)}>
-          Download
-        </button>
-
         <Dropdown
           className={"clipboard"}
           onOpen={this.copyToClipboard}
@@ -63,6 +59,13 @@ export class Export extends Component<ExportProps> {
           label={UI_TEXT.COPY_TO_CLIPBOARD}
           onSelect={(val) => console.log(val)}
         />
+
+        <button
+          class="export__download"
+          onClick={() => downloadHtml(this.props.html)}
+        >
+          {`Download ${fileSizeKb}Kb`}
+        </button>
       </div>
     );
   }
