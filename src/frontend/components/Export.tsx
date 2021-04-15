@@ -61,7 +61,7 @@ export class Export extends Component<ExportProps> {
         />
 
         <button
-          class="export__download"
+          class="export__download btn btn--clean"
           onClick={() => downloadHtml(this.props.html)}
         >
           {`Download ${fileSizeKb}Kb`}

@@ -1,6 +1,7 @@
 /* Figma-2-HTML plugin CSS styles */
 
 @import url(./variables.css);
+@import url(./common.css);
 @import url(./dropdown.css);
 @import url(./status.css);
 @import url(./action_bar.css);

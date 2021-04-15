@@ -250,12 +250,6 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
       <section class={`preview ${resizing ? "preview--resizing" : ""}`}>
         {rendering && <div class="preview__rendering">Rendering</div>}
 
-        <div class="preview__settings">
-          <p>
-            {Math.round(iframeWidth)} x {Math.round(iframeHeight)}
-          </p>
-        </div>
-
         <div
           class={`preview__container ${
             panningEnabled ? "preview__container--drag" : ""
@@ -284,6 +278,10 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
             >
               Resize
             </button>
+
+            <p class="preview__dimensions">
+              {Math.round(iframeWidth)} x {Math.round(iframeHeight)}
+            </p>
           </div>
         </div>
       </section>

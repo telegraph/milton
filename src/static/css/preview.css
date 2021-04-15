@@ -138,6 +138,25 @@
 .preview__help p span {
   min-width: 7ch;
 }
+
+.preview__dimensions {
+  min-width: 10ch;
+  background: var(--colours-active, #f0f);
+  color: var(--colours-light-background, #f0f);
+  margin: var(--padding-medium, 0) auto;
+  font-size: 10px;
+  padding: var(--padding-small, 0);
+  border-radius: var(--border-radius-small, 0);
+  text-align: center;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+}
+.preview__iframe_wrapper--selected .preview__dimensions {
+  display: inline-block;
+}
+
 .warning {
   font-size: var(--font-size--small, 1rem);
   padding: var(--padding-small, 0);

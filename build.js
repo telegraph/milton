@@ -49,6 +49,7 @@ import esbuild from "esbuild";
       bundle: true,
       sourcemap: "inline",
       minify: false,
+      treeShaking: true,
       write: false,
     });
 
