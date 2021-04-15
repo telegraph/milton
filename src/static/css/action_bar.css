@@ -44,11 +44,17 @@
   font-size: 12px;
 }
 
-/* [ Export clipboard ]
+/* [ Export - clipboard ]
 ----------------------------------------------------------------- */
 .clipboard .dropdown__option {
   background-image: url(../images/icon-link.svg);
   background-position: var(--padding-medium, 0) 50%;
   background-repeat: no-repeat;
   text-decoration: underline;
+}
+
+/* [ Export - Download ]
+----------------------------------------------------------------- */
+.export__download {
+  border-left: 1px solid var(--colours-light-border, #f0f);
 }

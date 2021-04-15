@@ -53,6 +53,7 @@ export function App(): JSX.Element {
         })
       : "";
 
+  console.log(state);
   return (
     <div class="app">
       <header class="action_bar">
