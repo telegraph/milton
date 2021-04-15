@@ -8,6 +8,7 @@
   color: var(--colours-dark-background, #f0f);
   background-color: var(--colours-light-background, #f0f);
   cursor: pointer;
+  padding: var(--padding-medium, 0);
 }
 .btn--clean:hover {
   background-color: var(--colours-light-background-hover, #f0f);

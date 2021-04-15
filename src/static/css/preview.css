@@ -143,15 +143,16 @@
   min-width: 10ch;
   background: var(--colours-active, #f0f);
   color: var(--colours-light-background, #f0f);
-  margin: var(--padding-medium, 0) auto;
   font-size: 10px;
   padding: var(--padding-small, 0);
   border-radius: var(--border-radius-small, 0);
   text-align: center;
-  position: relative;
+  position: absolute;
   left: 50%;
   transform: translateX(-50%);
   display: none;
+  bottom: -30px;
+  margin: 0;
 }
 .preview__iframe_wrapper--selected .preview__dimensions {
   display: inline-block;

@@ -80,9 +80,9 @@ export function App(): JSX.Element {
 
       <section class="controls">
         <nav class="controls__navigation">
-          <button>Frames</button>
-          <button>Links</button>
-          <button>Compression</button>
+          <button class="btn btn--clean">Frames</button>
+          <button class="btn btn--clean">Links</button>
+          <button class="btn btn--clean">Compression</button>
         </nav>
 
         <Frames

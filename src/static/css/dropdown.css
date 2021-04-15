@@ -12,10 +12,10 @@
   padding-top: 7px;
   background-repeat: no-repeat;
   background-position: top center;
-
   width: 100%;
   display: flex;
   justify-content: center;
+  z-index: 1;
 }
 .dropdown__list_inner {
   background-color: black;
@@ -26,7 +26,7 @@
   min-width: 140px;
   padding: var(--padding-small, 0) 0;
   border-radius: var(--border-radius-small, 0);
-  box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.15), 0px 5px 17px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.15), 0 5px 17px rgba(0, 0, 0, 0.2);
 }
 
 .dropdown__list_modal {
@@ -58,11 +58,12 @@
 .dropdown__btn {
   border: none;
   outline: none;
-  padding: var(--padding-small, 0) var(--padding-medium);
+  padding: var(--padding-medium);
   background: transparent;
   cursor: pointer;
   display: flex;
   white-space: nowrap;
+  align-items: center;
 }
 .dropdown__btn:hover,
 .dropdown__btn:active {
