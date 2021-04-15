@@ -74,7 +74,8 @@ export const UI_TEXT = {
       "Invalid embed URL. Please check and update the URL.",
     [ERRORS.INPUT_SOURCE_INVALID_URL]:
       "Invalid source URL. Please check and update the URL.",
-    [ERRORS.NO_FRAMES_SELECTED]: "Need to select at least one frame.",
+    [ERRORS.NO_FRAMES_SELECTED]:
+      "👎 No frames selected | You must select at least one frame to ‘copy to clipboard’ or ‘download’",
     [ERRORS.FAILED_TO_SET_EMBED_SETTINGS]: "Failed to save embed setting",
     [ERRORS.MISSING_FONT]: "Unknown font",
     [ERRORS.UNKNOWN]: "Unknown error",

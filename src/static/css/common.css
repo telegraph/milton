@@ -3,6 +3,8 @@
 .btn {
   outline: none;
   border: none;
+  margin: 0;
+  padding: 0;
 }
 .btn--clean {
   color: var(--colours-dark-background, #f0f);
@@ -15,4 +17,22 @@
 }
 .btn--clean:active {
   background-color: var(--colours-active, #f0f);
+}
+.btn--clean:disabled {
+  color: var(--colours-text-disabled, #f0f);
+  cursor: default;
+}
+.btn--clean:disabled:hover {
+  background-color: var(--colours-light-background, #f0f);
+}
+
+.btn__close {
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  padding: var(--padding-medium, 0) var(--padding-large, 0);
+  cursor: pointer;
+  background-color: transparent;
+}
+.btn__close--white {
+  background-image: url(../images/icon-close.svg);
 }

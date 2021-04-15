@@ -23,7 +23,10 @@
   --colours-main: rgb(72, 202, 126);
   --colours-main-light: rgb(208, 242, 222);
   --colours-main-dark: rgb(44, 75, 57);
-  --colours-warning: rgb(255, 242, 175);
+
+  --colours-info: #1bc47d;
+  --colours-warn: #ff781e;
+  --colours-error: #f24822;
 
   --font-family: "Inter var", Arial, Helvetica, sans-serif;
 

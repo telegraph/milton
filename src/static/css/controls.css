@@ -26,6 +26,16 @@
 
 /* [ Controls - Section ]
 ----------------------------------------------------------------- */
+.controls__navigation {
+  border-bottom: 1px solid var(--colours-light-border, #f0f);
+  display: flex;
+}
+.controls__navigation .btn {
+  flex: 1;
+}
+
+/* [ Controls - Section ]
+----------------------------------------------------------------- */
 .selection {
   display: flex;
   flex-direction: column;

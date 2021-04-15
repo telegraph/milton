@@ -78,11 +78,23 @@ export function App(): JSX.Element {
         zoom={zoom}
       />
 
+      <div class="notification_bar notification_bar--error">
+        <p class="notification_bar__text">
+          No frames selected | You must select at least one frame to ‘copy to
+          clipboard’ or ‘download’
+        </p>
+        <button class="btn btn__close btn__close--white" title="Close" />
+      </div>
+
       <section class="controls">
         <nav class="controls__navigation">
           <button class="btn btn--clean">Frames</button>
-          <button class="btn btn--clean">Links</button>
-          <button class="btn btn--clean">Compression</button>
+          <button class="btn btn--clean" disabled>
+            Links
+          </button>
+          <button class="btn btn--clean" disabled>
+            Compression
+          </button>
         </nav>
 
         <Frames
