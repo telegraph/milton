@@ -55,11 +55,6 @@ export enum ERRORS {
 }
 
 export const UI_TEXT = {
-  ERROR_UNEXPECTED: "👎 Unexpected error",
-  ERROR_MISSING_FRAMES:
-    "👎 No frames found on page. Please add some frames and run again",
-  WARN_NO_TARGETS: "Standard frames not found. Please select target frames",
-  WARN_TOO_MANY_TARGETS: "Please select three target frames",
   INFO_PREVIEW: "Preview each frame output",
   TITLE_CHOOSE_FRAME: "Choose which frames to export",
   TITLE_PREVIEW: "Preview",
@@ -119,7 +114,7 @@ export const NOTIFICATIONS = {
     text: "😬 Failed to save embed setting",
   },
   [NOTIFICATIONS_IDS.ERROR_MISSING_FONT]: {
-    type: NOTIFICATION_TYPE.ERROR,
+    type: NOTIFICATION_TYPE.WARN,
     text: "😬 Unknown font",
   },
   [NOTIFICATIONS_IDS.ERROR_UNKNOWN]: {

@@ -184,7 +184,6 @@ export const actionUpdateSelectedFrames = (
 
     actionCheckFonts(frames, dispatch);
     actionFetchFrameRender(selectedFrames)(dispatch);
-    dispatch(actionClearNotification());
   };
 };
 
@@ -197,7 +196,7 @@ export const actionCheckFonts = (
   if (missingFonts.length > 0) {
     const missingFontInfo = missingFonts.map(
       (missingInfo) =>
-        `family=["${missingInfo.family}"] text=["${missingInfo.text}…"] frame=["${missingInfo.frame}"] layer["${missingInfo.layerName}"]`
+        `"${missingInfo.family}" in "${missingInfo.frame}" > "${missingInfo.layerName}" > "${missingInfo.text}…"`
     );
     dispatch(
       actionSetNotification(

@@ -31,6 +31,12 @@ export class NotificationBar extends Component<
   componentDidUpdate(oldProps: NotificationBarProps) {
     if (this.props.id === undefined) return;
     if (this.props.id === oldProps.id) return;
+
+    if (NOTIFICATIONS[this.props.id].type !== NOTIFICATION_TYPE.INFO) {
+      clearTimeout(this.state.timerId);
+      return;
+    }
+
     if (NOTIFICATIONS[this.props.id].type === NOTIFICATION_TYPE.INFO) {
       const timerId = setTimeout(this.removeNotification, this.TIMEOUT_LENGTH);
       this.setState({ timerId });
@@ -51,7 +57,8 @@ export class NotificationBar extends Component<
         class={`notification_bar notification_bar--${NOTIFICATIONS[id].type}`}
       >
         <p class="notification_bar__text">
-          {NOTIFICATIONS[id].text} {message}
+          {NOTIFICATIONS[id].text}
+          <span class="notification_bar__message">{message}</span>
         </p>
         <button
           class="btn btn__close btn__close--white"

@@ -155,8 +155,8 @@ export function findMissingFonts(
 
         missingFonts.push({
           family: rangeStyle.family || "UNKNOWN",
-          frame: frame.name.substr(0, 10),
-          layerName: textNode.name.substr(0, 10),
+          frame: frame.name.substr(0, 20),
+          layerName: textNode.name.substr(0, 20),
           text: rangeStyle.text.substr(0, 10),
         });
       }

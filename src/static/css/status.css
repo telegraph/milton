@@ -94,4 +94,12 @@
   font-size: var(--font-size--medium, 1rem);
   flex: 1;
   margin-left: var(--padding-large, 0);
+  display: flex;
+  flex-direction: column;
+}
+.notification_bar__message {
+  font-size: var(--font-size--small, 1rem);
+  display: block;
+  white-space: pre-line;
+  margin-top: var(--padding-small, 0);
 }
