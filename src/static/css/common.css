@@ -42,6 +42,7 @@
 .sidebar {
   grid-column: 1/2;
   grid-row: 2/4;
+  overflow-y: auto;
 }
 
 .side_panel {
@@ -67,7 +68,10 @@
 }
 .side_panel__row--title {
   font-weight: 600;
-  margin: var(--padding-medium, 0);
+  padding: var(--padding-medium, 0);
+  position: sticky;
+  top: 0;
+  background-color: var(--colours-light-background);
 }
 .side_panel__row--input {
   display: flex;
@@ -99,6 +103,7 @@
 /* [ inputs ]  */
 .input__label {
   flex: 1;
+  word-break: break-word;
 }
 .input--textbox {
   resize: none;

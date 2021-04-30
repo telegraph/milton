@@ -153,7 +153,7 @@
 }
 
 .preview__dimensions {
-  min-width: 10ch;
+  min-width: 12ch;
   background: var(--colours-active, #f0f);
   color: var(--colours-light-background, #f0f);
   font-size: 10px;

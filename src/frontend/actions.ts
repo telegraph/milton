@@ -196,7 +196,7 @@ export const actionCheckFonts = (
   if (missingFonts.length > 0) {
     const missingFontInfo = missingFonts.map(
       (missingInfo) =>
-        `"${missingInfo.family}" in "${missingInfo.frame}" > "${missingInfo.layerName}" > "${missingInfo.text}…"`
+        `"${missingInfo.family}" in '${missingInfo.frame}' > '${missingInfo.layerName}' > "${missingInfo.text}…"`
     );
     dispatch(
       actionSetNotification(
