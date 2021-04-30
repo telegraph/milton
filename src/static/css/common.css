@@ -39,6 +39,11 @@
 }
 
 /* [ Side panel ] */
+.sidebar {
+  grid-column: 1/2;
+  grid-row: 2/4;
+}
+
 .side_panel {
   display: flex;
   flex-direction: column;

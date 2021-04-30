@@ -5,7 +5,7 @@ import {
   FrameRender,
   IFrameData,
 } from "types";
-import { ERRORS, MSG_EVENTS, STATUS } from "constants";
+import { MSG_EVENTS, NOTIFICATIONS_IDS, STATUS } from "constants";
 import { containsDuplicate, isEmpty } from "utils/common";
 import { postMan } from "utils/messages";
 import { EmbedProperties, StateInterface } from "./store";
@@ -14,7 +14,7 @@ import { decodeSvgToString } from "./svgUtils";
 export enum ACTIONS {
   SET_EMBED_PROPERTY = "SET_EMBED_PROPERTY",
   SET_STATUS = "SET_STATUS",
-  SET_ERROR = "SET_ERROR",
+  SET_NOTIFICATION = "SET_NOTIFICATION",
   SET_FRAMES = "SET_FRAMES",
   SET_RESPONSIVE = "SET_RESPONSIVE",
   SET_ZOOM = "SET_ZOOM",
@@ -22,7 +22,7 @@ export enum ACTIONS {
   SET_SELECTED_FRAMES = "SET_SELECTED_FRAMES",
   SET_SVG = "SET_SVG",
   SET_INITIAL_DATA = "SET_INITIAL_DATA",
-  CLEAR_ERROR = "CLEAR_ERROR",
+  CLEAR_NOTIFICATION = "CLEAR_NOTIFICATION",
   TOGGLE_SELECTED_FRAME = "TOGGLE_SELECTED_FRAME",
 }
 
@@ -72,20 +72,23 @@ export function actionSetSvg(
   return { type: ACTIONS.SET_SVG, payload: svg };
 }
 
-export function actionSetError(
-  error: ERRORS,
-  message = ""
+export function actionSetNotification(
+  notificationId: NOTIFICATIONS_IDS,
+  message?: string
 ): {
-  type: ACTIONS.SET_ERROR;
-  payload: { error: ERRORS; message: string };
+  type: ACTIONS.SET_NOTIFICATION;
+  payload: { id: NOTIFICATIONS_IDS; message?: string };
 } {
-  return { type: ACTIONS.SET_ERROR, payload: { error, message } };
+  return {
+    type: ACTIONS.SET_NOTIFICATION,
+    payload: { id: notificationId, message },
+  };
 }
 
-export function actionClearError(
-  error: ERRORS
-): { type: ACTIONS.CLEAR_ERROR; payload: ERRORS } {
-  return { type: ACTIONS.CLEAR_ERROR, payload: error };
+export function actionClearNotification(): {
+  type: ACTIONS.CLEAR_NOTIFICATION;
+} {
+  return { type: ACTIONS.CLEAR_NOTIFICATION };
 }
 
 export function actionToggleSelectedFrame(
@@ -112,13 +115,17 @@ export const actionGetFrameData = () => {
       .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
       .then((response: IFrameData) => {
         if (isEmpty(response.frames)) {
-          dispatch(actionSetError(ERRORS.MISSING_FRAMES));
+          dispatch(
+            actionSetNotification(NOTIFICATIONS_IDS.ERROR_MISSING_FRAMES)
+          );
           return;
         }
 
         const widths = Object.values(response.frames).map(({ width }) => width);
         if (containsDuplicate(widths)) {
-          dispatch(actionSetError(ERRORS.MULTIPLE_SAME_WIDTH));
+          dispatch(
+            actionSetNotification(NOTIFICATIONS_IDS.ERROR_MULTIPLE_SAME_WIDTH)
+          );
           return;
         }
 
@@ -140,7 +147,11 @@ export const actionGetFrameData = () => {
           })
         );
       })
-      .catch(() => dispatch(actionSetError(ERRORS.FAILED_TO_FETCH_DATA)));
+      .catch(() =>
+        dispatch(
+          actionSetNotification(NOTIFICATIONS_IDS.ERROR_FAILED_TO_FETCH_DATA)
+        )
+      );
   };
 };
 
@@ -164,13 +175,16 @@ export const actionUpdateSelectedFrames = (
   frames: FrameDataInterface[]
 ) => {
   return (dispatch: DispatchType) => {
+    console.log("IN HERE");
     if (selectedFrames.length < 1) {
-      return dispatch(actionSetError(ERRORS.NO_FRAMES_SELECTED));
+      return dispatch(
+        actionSetNotification(NOTIFICATIONS_IDS.ERROR_NO_FRAMES_SELECTED)
+      );
     }
 
     actionCheckFonts(frames, dispatch);
     actionFetchFrameRender(selectedFrames)(dispatch);
-    dispatch(actionClearError(ERRORS.NO_FRAMES_SELECTED));
+    dispatch(actionClearNotification());
   };
 };
 
@@ -185,11 +199,16 @@ export const actionCheckFonts = (
       (missingInfo) =>
         `family=["${missingInfo.family}"] text=["${missingInfo.text}…"] frame=["${missingInfo.frame}"] layer["${missingInfo.layerName}"]`
     );
-    dispatch(actionSetError(ERRORS.MISSING_FONT, missingFontInfo.join("\n")));
+    dispatch(
+      actionSetNotification(
+        NOTIFICATIONS_IDS.ERROR_MISSING_FONT,
+        missingFontInfo.join("\n")
+      )
+    );
   }
   // && errors?.includes(ERRORS.MISSING_FONT)
   if (missingFonts.length === 0) {
-    dispatch(actionClearError(ERRORS.MISSING_FONT));
+    actionSetNotification(NOTIFICATIONS_IDS.ERROR_MISSING_FONT);
   }
 };
 
@@ -221,7 +240,11 @@ export const actionUpdateEmbedProps = (
         },
       })
       .catch(() =>
-        dispatch(actionSetError(ERRORS.FAILED_TO_SET_EMBED_SETTINGS))
+        dispatch(
+          actionSetNotification(
+            NOTIFICATIONS_IDS.ERROR_FAILED_TO_SET_EMBED_SETTINGS
+          )
+        )
       );
   };
 };
@@ -237,7 +260,7 @@ export type ActionTypes =
   | ReturnType<typeof actionSetStatus>
   | ReturnType<typeof actionToggleSelectedFrame>
   | ReturnType<typeof actionStoreInitialData>
-  | ReturnType<typeof actionSetError>
-  | ReturnType<typeof actionClearError>;
+  | ReturnType<typeof actionSetNotification>
+  | ReturnType<typeof actionClearNotification>;
 
 export type DispatchType = (action: ActionTypes) => void;

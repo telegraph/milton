@@ -1,6 +1,6 @@
 import { Fragment, h, JSX } from "preact";
 import { STATUS } from "constants";
-import { useEffect, useReducer } from "preact/hooks";
+import { useEffect, useReducer, useRef } from "preact/hooks";
 import { initialState, reducer } from "../store";
 import { generateEmbedHtml } from "./outputRender";
 import { Preview } from "./Preview";
@@ -16,7 +16,6 @@ import {
 import { Zoom } from "./Zoom";
 import { Breakpoints } from "./breakpoints";
 import { Sidebar } from "./Sidebar";
-import { version } from "../../../package.json";
 import { LinksInput } from "./links_input";
 
 export function App(): JSX.Element {
@@ -27,7 +26,8 @@ export function App(): JSX.Element {
     svg,
     selectedFrames,
     status,
-    notifications,
+    notificationId,
+    notificationMessage,
     frames,
     responsive,
     zoom,
@@ -41,7 +41,15 @@ export function App(): JSX.Element {
 
   useEffect(() => actionGetFrameData()(dispatch), []);
 
+  // fixme: Ugly hack to check if effect is running on first mount
+  const mountRef = useRef(true);
+
   useEffect(() => {
+    if (mountRef.current) {
+      mountRef.current = false;
+      return;
+    }
+
     actionUpdateSelectedFrames(selectedFrames, outputFrames)(dispatch);
   }, [selectedFrames]);
 
@@ -67,10 +75,14 @@ export function App(): JSX.Element {
           handleChange={dispatch}
         />
 
-        <Export svg={svg} html={html} zoom={zoom} />
+        <Export svg={svg} html={html} zoom={zoom} dispatch={dispatch} />
       </header>
 
-      <NotificationBar notifications={notifications} />
+      <NotificationBar
+        id={notificationId}
+        message={notificationMessage}
+        dispatch={dispatch}
+      />
 
       <Preview
         rendering={status === STATUS.RENDERING}

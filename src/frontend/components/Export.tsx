@@ -1,9 +1,10 @@
 import { h, Component } from "preact";
 import { saveAs } from "file-saver";
 import copy from "clipboard-copy";
-import { UI_TEXT } from "../../constants";
+import { NOTIFICATIONS_IDS, UI_TEXT } from "../../constants";
 import { Dropdown } from "frontend/components/dropdown/dropdown";
 import { shareServices } from "config.json";
+import { actionSetNotification, ActionTypes } from "frontend/actions";
 
 function downloadHtml(html: string): void {
   const fileText = `
@@ -32,13 +33,16 @@ interface ExportProps {
   svg: string;
   html: string;
   zoom: number;
+  dispatch: (action: ActionTypes) => void;
 }
 export class Export extends Component<ExportProps> {
   copyToClipboard = () => {
     copy(this.props.html)
-      .then(() => {
-        alert("Figma2HTML code copied to clipboard");
-      })
+      .then(() =>
+        this.props.dispatch(
+          actionSetNotification(NOTIFICATIONS_IDS.INFO_CLIPBOARD_COPIED)
+        )
+      )
       .catch(console.error);
   };
 

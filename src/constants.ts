@@ -37,9 +37,9 @@ export enum OUTPUT_FORMATS {
 }
 
 export enum NOTIFICATION_TYPE {
-  INFO,
-  WARN,
-  ERROR,
+  INFO = "INFO",
+  WARN = "WARN",
+  ERROR = "ERROR",
 }
 
 export enum ERRORS {
@@ -55,8 +55,9 @@ export enum ERRORS {
 }
 
 export const UI_TEXT = {
-  ERROR_UNEXPECTED: "Unexpected error",
-  ERROR_MISSING_FRAMES: "No frames found. Please add some frames to the page",
+  ERROR_UNEXPECTED: "👎 Unexpected error",
+  ERROR_MISSING_FRAMES:
+    "👎 No frames found on page. Please add some frames and run again",
   WARN_NO_TARGETS: "Standard frames not found. Please select target frames",
   WARN_TOO_MANY_TARGETS: "Please select three target frames",
   INFO_PREVIEW: "Preview each frame output",
@@ -79,48 +80,51 @@ export const UI_TEXT = {
   EMBED_PROPS_INVALID_URL: "Enter a valid link",
 };
 
+export enum NOTIFICATIONS_IDS {
+  INFO_CLIPBOARD_COPIED,
+  ERROR_MISSING_FRAMES,
+  ERROR_MULTIPLE_SAME_WIDTH,
+  ERROR_FAILED_TO_FETCH_DATA,
+  ERROR_NO_FRAMES_SELECTED,
+  ERROR_FAILED_TO_SET_EMBED_SETTINGS,
+  ERROR_MISSING_FONT,
+  ERROR_UNKNOWN,
+}
+
 export const NOTIFICATIONS = {
-  WARN_CLIPBOARD_COPIED: {
+  [NOTIFICATIONS_IDS.INFO_CLIPBOARD_COPIED]: {
     type: NOTIFICATION_TYPE.INFO,
     text: "👍 Success! Code copied to clipboard!",
   },
-  ERROR_MISSING_FRAMES: {
+  [NOTIFICATIONS_IDS.ERROR_MISSING_FRAMES]: {
     type: NOTIFICATION_TYPE.ERROR,
-    text: "No frames found. Please add a frame and try again",
+    text: "👎 No frames found. Please add a frame and try again",
   },
-  ERROR_MULTIPLE_SAME_WIDTH: {
+  [NOTIFICATIONS_IDS.ERROR_MULTIPLE_SAME_WIDTH]: {
     type: NOTIFICATION_TYPE.ERROR,
     text:
-      "Some frames have the same width. All frame widths need to be different",
+      "👎 All frames widths need to be different. Please resize frames and try again",
   },
-  ERROR_FAILED_TO_FETCH_DATA: {
+  [NOTIFICATIONS_IDS.ERROR_FAILED_TO_FETCH_DATA]: {
     type: NOTIFICATION_TYPE.ERROR,
-    text: "Failed to fetch data",
+    text: "😬 Failed to fetch data",
   },
-  ERROR_INPUT_EMBED_INVALID_URL: {
-    type: NOTIFICATION_TYPE.ERROR,
-    text: "Invalid embed URL. Please check and update the URL",
-  },
-  ERROR_INPUT_SOURCE_INVALID_URL: {
-    type: NOTIFICATION_TYPE.ERROR,
-    text: "Invalid source URL. Please check and update the URL",
-  },
-  ERROR_NO_FRAMES_SELECTED: {
+  [NOTIFICATIONS_IDS.ERROR_NO_FRAMES_SELECTED]: {
     type: NOTIFICATION_TYPE.ERROR,
     text:
       "👎 No frames selected | You must select at least one frame to ‘copy to clipboard’ or ‘download’",
   },
-  ERROR_FAILED_TO_SET_EMBED_SETTINGS: {
+  [NOTIFICATIONS_IDS.ERROR_FAILED_TO_SET_EMBED_SETTINGS]: {
     type: NOTIFICATION_TYPE.ERROR,
-    text: "Failed to save embed setting",
+    text: "😬 Failed to save embed setting",
   },
-  ERROR_MISSING_FONT: {
+  [NOTIFICATIONS_IDS.ERROR_MISSING_FONT]: {
     type: NOTIFICATION_TYPE.ERROR,
-    text: "Unknown font",
+    text: "😬 Unknown font",
   },
-  ERROR_UNKNOWN: {
+  [NOTIFICATIONS_IDS.ERROR_UNKNOWN]: {
     type: NOTIFICATION_TYPE.ERROR,
-    text: "Unknown error",
+    text: "😬 Unknown error",
   },
 };
 
