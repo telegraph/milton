@@ -75,37 +75,3 @@
 .selection__width {
   color: var(--colours-grey-2, #f0f);
 }
-
-/* [ Controls - Headlines ]
-  ----------------------------------------------------------------- */
-.embed_properties {
-  display: flex;
-  flex-direction: column;
-}
-.embed_properties label {
-  font-size: var(--font-size--small, 1rem);
-
-  display: flex;
-}
-.embed_properties label span {
-  min-width: 12ch;
-}
-.embed_properties label input {
-  width: 100%;
-  font-size: var(--font-size--small, 1rem);
-  flex: 1;
-}
-
-.embed_properties label input:invalid {
-  border: 1px solid #e8a417;
-  background: #ffe6af;
-  border-radius: 2px;
-}
-
-.preview__responsive {
-  font-size: var(--font-size--small, 1em);
-  display: flex;
-}
-.preview__responsive span {
-  flex: 1;
-}

@@ -64,6 +64,7 @@ export const UI_TEXT = {
   TITLE_PREVIEW: "Preview",
   TITLE_RESPONSIVE_PREVIEW: "Responsive preview",
   TILE_OUTPUT: "Export",
+  TITLE_LINKS: "Add links to all frames",
   BUTTON_NEXT: "Next",
   BUTTON_DOWNLOAD: "Download",
   BUTTON_PREVIOUS: "Back",
@@ -75,6 +76,7 @@ export const UI_TEXT = {
   EMBED_PROPS_SOURCE_PLACEHOLDER: "Source",
   EMBED_PROPS_URL_PLACEHOLDER: "Embed URL",
   EMBED_PROPS_SOURCE_URL_PLACEHOLDER: "Source URL",
+  EMBED_PROPS_INVALID_URL: "Enter a valid link",
 };
 
 export const NOTIFICATIONS = {

@@ -45,22 +45,28 @@ export const LinksInput: FunctionComponent<LinkInputProps> = (
   };
 
   return (
-    <fieldset class="links">
-      <label class="label label--url">
+    <div class="side_panel links">
+      <div class="side_panel__row side_panel__row--title">
+        {UI_TEXT.TITLE_LINKS}
+      </div>
+
+      <div class="side_panel__row side_panel__row--vertical">
         <input
           type="url"
           pattern="https?://.*"
-          class="input input__url"
+          class="input input--text input--url"
           value={embedUrl}
           placeholder={UI_TEXT.EMBED_PROPS_URL_PLACEHOLDER}
           id={EMBED_PROPERTIES.EMBED_URL}
           onChange={inputChange}
+          data-error-text={UI_TEXT.EMBED_PROPS_INVALID_URL}
         />
-      </label>
+        <span class="input__error">{UI_TEXT.EMBED_PROPS_INVALID_URL}</span>
+      </div>
 
-      <label class="label label--url">
+      <div class="side_panel__row side_panel__row--vertical">
         <input
-          class="input input__url"
+          class="input input--text input--url"
           type="url"
           pattern="https?://.*"
           placeholder={UI_TEXT.EMBED_PROPS_SOURCE_URL_PLACEHOLDER}
@@ -68,7 +74,8 @@ export const LinksInput: FunctionComponent<LinkInputProps> = (
           id={EMBED_PROPERTIES.SOURCE_URL}
           onChange={inputChange}
         />
-      </label>
-    </fieldset>
+        <span class="input__error">{UI_TEXT.EMBED_PROPS_INVALID_URL}</span>
+      </div>
+    </div>
   );
 };
