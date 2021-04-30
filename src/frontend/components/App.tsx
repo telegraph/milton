@@ -1,4 +1,4 @@
-import { h, JSX } from "preact";
+import { Fragment, h, JSX } from "preact";
 import { STATUS } from "constants";
 import { useEffect, useReducer } from "preact/hooks";
 import { initialState, reducer } from "../store";
@@ -6,7 +6,7 @@ import { generateEmbedHtml } from "./outputRender";
 import { Preview } from "./Preview";
 import { Frames } from "./Frames";
 import { Export } from "./Export";
-import { ErrorNotification } from "./ErrorNotification";
+import { NotificationBar } from "./NotificationBar";
 import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
 import {
   actionGetFrameData,
@@ -15,7 +15,9 @@ import {
 } from "../actions";
 import { Zoom } from "./Zoom";
 import { Breakpoints } from "./breakpoints";
+import { Sidebar } from "./Sidebar";
 import { version } from "../../../package.json";
+import { LinksInput } from "./links_input";
 
 export function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -25,7 +27,7 @@ export function App(): JSX.Element {
     svg,
     selectedFrames,
     status,
-    errors,
+    notifications,
     frames,
     responsive,
     zoom,
@@ -68,7 +70,7 @@ export function App(): JSX.Element {
         <Export svg={svg} html={html} zoom={zoom} />
       </header>
 
-      <ErrorNotification errors={errors} />
+      <NotificationBar notifications={notifications} />
 
       <Preview
         rendering={status === STATUS.RENDERING}
@@ -78,46 +80,48 @@ export function App(): JSX.Element {
         zoom={zoom}
       />
 
-      <div class="notification_bar notification_bar--error">
-        <p class="notification_bar__text">
-          No frames selected | You must select at least one frame to ‘copy to
-          clipboard’ or ‘download’
-        </p>
-        <button class="btn btn__close btn__close--white" title="Close" />
-      </div>
+      <Sidebar
+        sections={{
+          Frames: () => (
+            <Fragment>
+              <Frames
+                figmaFrames={frames}
+                selectedFrames={selectedFrames}
+                handleChange={dispatch}
+              />
 
-      <section class="controls">
-        <nav class="controls__navigation">
-          <button class="btn btn--clean">Frames</button>
-          <button class="btn btn--clean" disabled>
-            Links
-          </button>
-          <button class="btn btn--clean" disabled>
-            Compression
-          </button>
-        </nav>
+              <EmbedPropertiesInputs
+                {...embedProperties}
+                handleChange={dispatch}
+              />
 
-        <Frames
-          figmaFrames={frames}
-          selectedFrames={selectedFrames}
-          handleChange={dispatch}
-        />
+              <div class="side_panel">
+                <div class="side_panel__row side_panel__row--input">
+                  <input
+                    id="responsive"
+                    class="input__checkbox"
+                    type="checkbox"
+                    checked={responsive}
+                    onInput={() => dispatch(actionSetResponsive(!responsive))}
+                  />
 
-        <EmbedPropertiesInputs {...embedProperties} handleChange={dispatch} />
+                  <label class="input__label" for="responsive">
+                    Responsive
+                  </label>
+                </div>
+              </div>
+            </Fragment>
+          ),
 
-        <fieldset>
-          <label class="checkbox preview__responsive">
-            <input
-              type="checkbox"
-              checked={responsive}
-              onInput={() => dispatch(actionSetResponsive(!responsive))}
+          Links: () => (
+            <LinksInput
+              handleChange={dispatch}
+              embedUrl={embedProperties.embedUrl}
+              sourceUrl={embedProperties.sourceUrl}
             />
-            Responsive
-          </label>
-        </fieldset>
-      </section>
-
-      <p class="footer">Version {version}</p>
+          ),
+        }}
+      />
     </div>
   );
 }

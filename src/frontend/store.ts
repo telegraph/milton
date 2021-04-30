@@ -1,4 +1,4 @@
-import { ERRORS, STATUS } from "constants";
+import { ERRORS, STATUS, NOTIFICATIONS } from "constants";
 import { FigmaFramesType } from "types";
 import { toggleItem } from "utils/common";
 import { ACTIONS, ActionTypes } from "./actions";
@@ -21,7 +21,7 @@ export interface StateInterface {
   zoom: number;
   breakpointIndex: number;
   breakpointWidth: number;
-  errors: { [key in ERRORS]?: string };
+  notifications: (keyof typeof NOTIFICATIONS)[];
 }
 
 export const initialState: StateInterface = {
@@ -40,7 +40,7 @@ export const initialState: StateInterface = {
   responsive: true,
   breakpointWidth: 100,
   svg: "",
-  errors: {},
+  notifications: [],
 };
 
 export function reducer(

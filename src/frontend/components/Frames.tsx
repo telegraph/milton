@@ -19,27 +19,32 @@ export function Frames({
   );
 
   return (
-    <fieldset class="selection">
-      <legend>Frames</legend>
+    <div class="side_panel selection">
+      <div class="side_panel__row side_panel__row--title">Frames selected</div>
 
-      <div class="selection_inner">
-        {sizeSortedFrames.map(({ name, id, width, height }) => (
-          <label key={id} class="selection__item">
-            <input
-              class="selection__input"
-              type="checkbox"
-              checked={selectedFrames.includes(id)}
-              onInput={() => handleChange(actionToggleSelectedFrame(id))}
-            />
-
-            <span class="selection__name">{name}</span>
-
-            <span class="selection__width">
-              {Math.round(width)}x{Math.round(height)}
-            </span>
+      {sizeSortedFrames.map(({ name, id }) => (
+        <div
+          class="side_panel__row  selection__item"
+          data-active={selectedFrames.includes(id)}
+        >
+          <label
+            key={id}
+            for={id}
+            class="input__label"
+            data-active={selectedFrames.includes(id)}
+          >
+            {name}
           </label>
-        ))}
-      </div>
-    </fieldset>
+
+          <input
+            id={id}
+            class="input__checkbox"
+            type="checkbox"
+            checked={selectedFrames.includes(id)}
+            onInput={() => handleChange(actionToggleSelectedFrame(id))}
+          />
+        </div>
+      ))}
+    </div>
   );
 }

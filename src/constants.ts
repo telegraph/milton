@@ -36,16 +36,22 @@ export enum OUTPUT_FORMATS {
   IFRAME,
 }
 
+export enum NOTIFICATION_TYPE {
+  INFO,
+  WARN,
+  ERROR,
+}
+
 export enum ERRORS {
-  MISSING_FRAMES = "MISSING_FRAMES",
-  MISSING_FONT = "MISSING_FONT",
-  MULTIPLE_SAME_WIDTH = "MULTIPLE_SAME_WIDTH",
-  FAILED_TO_FETCH_DATA = "FAILED_TO_FETCH_DATA",
-  FAILED_TO_SET_EMBED_SETTINGS = "FAILED_TO_SET_EMBED_SETTINGS",
-  NO_FRAMES_SELECTED = "NO_FRAMES_SELECTED",
-  INPUT_EMBED_INVALID_URL = "INPUT_EMBED_INVALID_URL",
-  INPUT_SOURCE_INVALID_URL = "INPUT_SOURCE_INVALID_URL",
-  UNKNOWN = "UNKNOWN",
+  MISSING_FRAMES,
+  MISSING_FONT,
+  MULTIPLE_SAME_WIDTH,
+  FAILED_TO_FETCH_DATA,
+  FAILED_TO_SET_EMBED_SETTINGS,
+  NO_FRAMES_SELECTED,
+  INPUT_EMBED_INVALID_URL,
+  INPUT_SOURCE_INVALID_URL,
+  UNKNOWN,
 }
 
 export const UI_TEXT = {
@@ -64,21 +70,55 @@ export const UI_TEXT = {
   ZOOM_TOOLTIP: "Zoom/view options",
   COPY_TO_CLIPBOARD: "Copy to clipboard",
   DOWNLOAD: "Download",
-  ERRORS: {
-    [ERRORS.MISSING_FRAMES]:
-      "No frames found. Please add a frame and try again",
-    [ERRORS.MULTIPLE_SAME_WIDTH]:
+  EMBED_PROPS_HEADLINE_PLACEHOLDER: "Headline",
+  EMBED_PROPS_SUB_HEAD_PLACEHOLDER: "Sub headline",
+  EMBED_PROPS_SOURCE_PLACEHOLDER: "Source",
+  EMBED_PROPS_URL_PLACEHOLDER: "Embed URL",
+  EMBED_PROPS_SOURCE_URL_PLACEHOLDER: "Source URL",
+};
+
+export const NOTIFICATIONS = {
+  WARN_CLIPBOARD_COPIED: {
+    type: NOTIFICATION_TYPE.INFO,
+    text: "👍 Success! Code copied to clipboard!",
+  },
+  ERROR_MISSING_FRAMES: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "No frames found. Please add a frame and try again",
+  },
+  ERROR_MULTIPLE_SAME_WIDTH: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text:
       "Some frames have the same width. All frame widths need to be different",
-    [ERRORS.FAILED_TO_FETCH_DATA]: "Failed to fetch data",
-    [ERRORS.INPUT_EMBED_INVALID_URL]:
-      "Invalid embed URL. Please check and update the URL.",
-    [ERRORS.INPUT_SOURCE_INVALID_URL]:
-      "Invalid source URL. Please check and update the URL.",
-    [ERRORS.NO_FRAMES_SELECTED]:
+  },
+  ERROR_FAILED_TO_FETCH_DATA: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "Failed to fetch data",
+  },
+  ERROR_INPUT_EMBED_INVALID_URL: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "Invalid embed URL. Please check and update the URL",
+  },
+  ERROR_INPUT_SOURCE_INVALID_URL: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "Invalid source URL. Please check and update the URL",
+  },
+  ERROR_NO_FRAMES_SELECTED: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text:
       "👎 No frames selected | You must select at least one frame to ‘copy to clipboard’ or ‘download’",
-    [ERRORS.FAILED_TO_SET_EMBED_SETTINGS]: "Failed to save embed setting",
-    [ERRORS.MISSING_FONT]: "Unknown font",
-    [ERRORS.UNKNOWN]: "Unknown error",
+  },
+  ERROR_FAILED_TO_SET_EMBED_SETTINGS: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "Failed to save embed setting",
+  },
+  ERROR_MISSING_FONT: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "Unknown font",
+  },
+  ERROR_UNKNOWN: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "Unknown error",
   },
 };
 

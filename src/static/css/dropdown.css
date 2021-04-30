@@ -64,6 +64,7 @@
   display: flex;
   white-space: nowrap;
   align-items: center;
+  font-size: var(--font-size--small, 1rem);
 }
 .dropdown__btn:hover,
 .dropdown__btn:active {

@@ -8,6 +8,19 @@
   grid-column: 2/3;
   position: relative;
 }
+.preview::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+.preview::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+.preview::-webkit-scrollbar-thumb {
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 4px solid #c3c3c3;
+}
+
 .preview__rendering {
   display: flex;
   position: absolute;
