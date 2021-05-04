@@ -47,11 +47,8 @@
 
 /* [ Export - clipboard ]
 ----------------------------------------------------------------- */
-.clipboard .dropdown__option {
-  background-image: url(../images/icon-link.svg);
-  background-position: var(--padding-medium, 0) 50%;
-  background-repeat: no-repeat;
-  text-decoration: underline;
+.export__clipboard {
+  white-space: nowrap;
 }
 
 /* [ Export - Download ]

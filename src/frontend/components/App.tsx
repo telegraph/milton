@@ -79,6 +79,10 @@ export function App(): JSX.Element {
         />
 
         <Export svg={svg} html={html} zoom={zoom} dispatch={dispatch} />
+
+        <a href="https://example.com" target="_blank" class="btn btn--clean">
+          Open Particle CMS ↗
+        </a>
       </header>
 
       <NotificationBar

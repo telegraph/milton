@@ -38,7 +38,7 @@ export function EmbedPropertiesInputs({
           id={EMBED_PROPERTIES.HEADLINE}
           value={headline}
           placeholder={UI_TEXT.EMBED_PROPS_HEADLINE_PLACEHOLDER}
-          onChange={inputChange}
+          onBlur={inputChange}
           spellcheck
         />
       </div>
@@ -53,7 +53,7 @@ export function EmbedPropertiesInputs({
           value={subhead}
           id={EMBED_PROPERTIES.SUBHEAD}
           placeholder={UI_TEXT.EMBED_PROPS_SUB_HEAD_PLACEHOLDER}
-          onChange={inputChange}
+          onBlur={inputChange}
           spellcheck
         />
       </div>
@@ -68,7 +68,7 @@ export function EmbedPropertiesInputs({
           class="input input--textbox input--headline"
           id={EMBED_PROPERTIES.SOURCE}
           placeholder={UI_TEXT.EMBED_PROPS_SOURCE_PLACEHOLDER}
-          onChange={inputChange}
+          onBlur={inputChange}
           spellcheck
         />
       </div>
