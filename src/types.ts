@@ -5,6 +5,7 @@ export type FrameDataInterface = {
   width: number;
   height: number;
   id: string;
+  backgroundColour: string;
   textNodes: textData[];
   fixedPositionNodes: string[];
 };

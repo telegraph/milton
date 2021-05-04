@@ -298,7 +298,12 @@ export function generateEmbedHtml(props: renderInlineProps): string {
 function generateMediaQueries(frames: FrameDataInterface[]) {
   // Sort frames by ascending height. Small > big
   const sortedFrames = Object.values(frames)
-    .map(({ width, height, id }) => ({ width, height, id }))
+    .map(({ width, height, backgroundColour, id }) => ({
+      width,
+      height,
+      backgroundColour,
+      id,
+    }))
     .sort((a, b) => (a.width < b.width ? -1 : 1));
 
   const largestWidth = Math.max(...sortedFrames.map(({ width }) => width));
@@ -316,6 +321,10 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
     if (i === 0) {
       // Wrapper widths
       cssText += `
+
+        body {
+          background-color: ${sortedFrames[i].backgroundColour};
+        }
    
         .f2h__svg_container,
         .f2h__wrap {
@@ -336,7 +345,10 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
       cssText += `
       
       @media (min-width: ${width}px) {
-    
+
+        body {
+          background-color: ${sortedFrames[i].backgroundColour};
+        }    
 
         .f2h__svg_container,
         .f2h__wrap {

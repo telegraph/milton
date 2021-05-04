@@ -147,8 +147,29 @@ export function setEmbedProperties(props: {
   figma.currentPage.setPluginData(props.propName, props.value);
 }
 
+function figmaColourValueToCSS(colourValue: number): string {
+  return Math.round(colourValue * 255).toString(10);
+}
+
+function getBackgroundColour(
+  fills: readonly Paint[] | PluginAPI["mixed"]
+): string {
+  const DEFAULT_COLOUR = "transparent";
+  if (fills === figma.mixed || !fills[0] || fills[0].type !== "SOLID") {
+    return DEFAULT_COLOUR;
+  }
+
+  const { r, g, b } = fills[0].color;
+  const red = figmaColourValueToCSS(r);
+  const green = figmaColourValueToCSS(g);
+  const blue = figmaColourValueToCSS(b);
+
+  return `rgb(${red}, ${green}, ${blue})`;
+}
+
 export function createFrameData(node: FrameNode): FrameDataInterface {
-  const { name, width, height, id } = node;
+  const { name, width, height, id, fills } = node;
+  const backgroundColour = getBackgroundColour(fills);
   const textNodes = getTextNodesFromFrame(node);
 
   const fixedPositionNodes = node.children
@@ -160,6 +181,7 @@ export function createFrameData(node: FrameNode): FrameDataInterface {
     name,
     width,
     height,
+    backgroundColour,
     textNodes,
     fixedPositionNodes,
   };
