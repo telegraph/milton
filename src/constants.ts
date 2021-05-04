@@ -61,6 +61,7 @@ export const UI_TEXT = {
   TITLE_RESPONSIVE_PREVIEW: "Responsive preview",
   TILE_OUTPUT: "Export",
   TITLE_LINKS: "Add links to all frames",
+  TITLE_BACKGROUND_COLOUR: "Preview background",
   BUTTON_NEXT: "Next",
   BUTTON_DOWNLOAD: "Download",
   BUTTON_PREVIOUS: "Back",

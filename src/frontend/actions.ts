@@ -22,6 +22,7 @@ export enum ACTIONS {
   SET_SELECTED_FRAMES = "SET_SELECTED_FRAMES",
   SET_SVG = "SET_SVG",
   SET_INITIAL_DATA = "SET_INITIAL_DATA",
+  SET_BACKGROUND_COLOUR = "SET_BACKGROUND_COLOUR",
   CLEAR_NOTIFICATION = "CLEAR_NOTIFICATION",
   TOGGLE_SELECTED_FRAME = "TOGGLE_SELECTED_FRAME",
 }
@@ -248,6 +249,12 @@ export const actionUpdateEmbedProps = (
   };
 };
 
+export function actionSetBackgroundColour(
+  colour: string
+): { type: ACTIONS.SET_BACKGROUND_COLOUR; payload: string } {
+  return { type: ACTIONS.SET_BACKGROUND_COLOUR, payload: colour };
+}
+
 export type ActionTypes =
   | ReturnType<typeof actionStoreEmbedProperty>
   | ReturnType<typeof actionSetFrames>
@@ -260,6 +267,7 @@ export type ActionTypes =
   | ReturnType<typeof actionToggleSelectedFrame>
   | ReturnType<typeof actionStoreInitialData>
   | ReturnType<typeof actionSetNotification>
-  | ReturnType<typeof actionClearNotification>;
+  | ReturnType<typeof actionClearNotification>
+  | ReturnType<typeof actionSetBackgroundColour>;
 
 export type DispatchType = (action: ActionTypes) => void;

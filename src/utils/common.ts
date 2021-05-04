@@ -29,3 +29,20 @@ export function addOnce(item: any, list: any[]): any[] {
 export function removeItem(item: any, list: any[]): any[] {
   return list.filter((listItem) => listItem !== item);
 }
+
+// https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940#gistcomment-3062135
+export const debounce = <F extends (...args: any[]) => any>(
+  func: F,
+  waitFor: number
+) => {
+  let timeout: number;
+
+  return (...args: Parameters<F>): Promise<ReturnType<F>> =>
+    new Promise((resolve) => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
+      timeout = setTimeout(() => resolve(func(...args)), waitFor);
+    });
+};

@@ -17,7 +17,8 @@
     "pica": "^6.1.1",
     "points-on-path": "^0.2.1",
     "preact": "^10.5.13",
-    "preact-render-to-string": "^5.1.19"
+    "preact-render-to-string": "^5.1.19",
+    "react-colorful": "^5.1.4"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.23.0",

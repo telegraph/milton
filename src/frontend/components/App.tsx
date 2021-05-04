@@ -8,10 +8,12 @@ import { Frames } from "./Frames";
 import { Export } from "./Export";
 import { NotificationBar } from "./NotificationBar";
 import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
+import { BackgroundInput } from "./background_input";
 import {
   actionGetFrameData,
   actionUpdateSelectedFrames,
   actionSetResponsive,
+  actionSetBackgroundColour,
 } from "../actions";
 import { Zoom } from "./Zoom";
 import { Breakpoints } from "./breakpoints";
@@ -33,6 +35,7 @@ export function App(): JSX.Element {
     zoom,
     breakpointIndex,
     breakpointWidth,
+    backgroundColour,
   } = state;
 
   const outputFrames = Object.values(frames).filter(({ id }) =>
@@ -89,6 +92,7 @@ export function App(): JSX.Element {
         html={html}
         responsive={responsive}
         breakpointWidth={breakpointWidth}
+        backgroundColour={backgroundColour}
         zoom={zoom}
       />
 
@@ -122,6 +126,13 @@ export function App(): JSX.Element {
                   </label>
                 </div>
               </div>
+
+              <BackgroundInput
+                colour={backgroundColour}
+                handleChange={(colour: string) =>
+                  dispatch(actionSetBackgroundColour(colour))
+                }
+              />
             </Fragment>
           ),
 

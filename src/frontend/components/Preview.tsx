@@ -11,6 +11,7 @@ interface PreviewProps {
   html: string;
   responsive: boolean;
   breakpointWidth: number;
+  backgroundColour: string;
   zoom: number;
 }
 
@@ -218,7 +219,13 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
   }
 
   render() {
-    const { breakpointWidth, html, zoom, rendering } = this.props;
+    const {
+      breakpointWidth,
+      html,
+      zoom,
+      rendering,
+      backgroundColour,
+    } = this.props;
     const {
       offsetWidth,
       offsetHeight,
@@ -258,6 +265,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
           onMouseUp={this.endResize}
           onMouseMove={this.updateResize}
           onClick={this.disableSelection}
+          style={`background-color: ${backgroundColour}`}
         >
           <div
             class={`preview__iframe_wrapper  ${

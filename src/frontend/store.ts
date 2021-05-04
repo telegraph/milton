@@ -21,6 +21,7 @@ export interface StateInterface {
   zoom: number;
   breakpointIndex: number;
   breakpointWidth: number;
+  backgroundColour: string;
   notificationId?: NOTIFICATIONS_IDS;
   notificationMessage?: string;
 }
@@ -40,6 +41,7 @@ export const initialState: StateInterface = {
   breakpointIndex: 0,
   responsive: true,
   breakpointWidth: 100,
+  backgroundColour: "#C4C4C4",
   svg: "",
   notificationId: undefined,
   notificationMessage: "",
@@ -98,6 +100,9 @@ export function reducer(
         selectedFrames: newSelection,
       };
     }
+
+    case ACTIONS.SET_BACKGROUND_COLOUR:
+      return { ...state, backgroundColour: action.payload };
 
     case ACTIONS.SET_NOTIFICATION:
       return {
