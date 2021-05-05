@@ -1,0 +1,79 @@
+/* [ Controls ]
+----------------------------------------------------------------- */
+.controls {
+  grid-row: 2/3;
+  grid-column: 1/2;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 960px;
+}
+
+.controls fieldset {
+  margin: 0;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  padding: 0;
+}
+.controls legend {
+  font-size: var(--font-size--small, 1rem);
+  margin: 0;
+  font-weight: bold;
+  padding: var(--padding-medium, 0);
+  display: block;
+}
+.controls button:enabled {
+  cursor: pointer;
+}
+
+/* [ Controls - Section ]
+----------------------------------------------------------------- */
+.controls__navigation {
+  border-bottom: 1px solid var(--colours-light-border, #f0f);
+  display: flex;
+}
+.controls__navigation .btn {
+  flex: 1;
+}
+
+/* [ Controls - Section ]
+----------------------------------------------------------------- */
+.selection {
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-width: 100px;
+  max-height: 260px;
+}
+.selection_inner {
+  overflow-y: auto;
+  max-height: 14ch;
+  height: 100%;
+  margin: 0;
+}
+.selection__item {
+  font-size: var(--font-size--small, 1rem);
+  display: flex;
+  align-items: center;
+  padding: var(--padding-small, 0) var(--padding-small, 0)
+    var(--padding-small, 0) 32px;
+}
+.selection__item[data-active] {
+  background-image: url(../images/icon-tick.svg);
+  background-position: var(--padding-medium, 0) center;
+  background-repeat: no-repeat;
+  background-size: 8px;
+}
+.selection__input {
+  margin: 0;
+}
+.selection__label {
+  flex: 1;
+  margin: 0;
+  word-break: break-word;
+}
+.selection__width {
+  color: var(--colours-grey-2, #f0f);
+}

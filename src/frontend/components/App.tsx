@@ -1,15 +1,24 @@
-import { h, JSX } from "preact";
-import { useEffect, useReducer } from "preact/hooks";
+import { Fragment, h, JSX } from "preact";
 import { STATUS } from "constants";
+import { useEffect, useReducer, useRef } from "preact/hooks";
+import { initialState, reducer } from "../store";
 import { generateEmbedHtml } from "./outputRender";
-import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
 import { Preview } from "./Preview";
 import { Frames } from "./Frames";
 import { Export } from "./Export";
-import { ErrorNotification } from "./ErrorNotification";
-import { initialState, reducer } from "../store";
-import { actionGetFrameData, actionUpdateSelectedFrames } from "../actions";
-import { version } from "../../../package.json";
+import { NotificationBar } from "./NotificationBar";
+import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
+import { BackgroundInput } from "./background_input";
+import {
+  actionGetFrameData,
+  actionUpdateSelectedFrames,
+  actionSetResponsive,
+  actionSetBackgroundColour,
+} from "../actions";
+import { Zoom } from "./Zoom";
+import { Breakpoints } from "./breakpoints";
+import { Sidebar } from "./Sidebar";
+import { LinksInput } from "./links_input";
 
 export function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -19,9 +28,14 @@ export function App(): JSX.Element {
     svg,
     selectedFrames,
     status,
-    errors,
+    notificationId,
+    notificationMessage,
     frames,
     responsive,
+    zoom,
+    breakpointIndex,
+    breakpointWidth,
+    backgroundColour,
     fileKey,
   } = state;
 
@@ -31,16 +45,17 @@ export function App(): JSX.Element {
 
   useEffect(() => actionGetFrameData()(dispatch), []);
 
+  // fixme: Ugly hack to check if effect is running on first mount
+  const mountRef = useRef(true);
+
   useEffect(() => {
+    if (mountRef.current) {
+      mountRef.current = false;
+      return;
+    }
+
     actionUpdateSelectedFrames(selectedFrames, outputFrames)(dispatch);
   }, [selectedFrames]);
-
-  const breakpoints = outputFrames.map(({ width, height }) => ({
-    width,
-    height,
-  }));
-
-  console.log(state);
 
   const html =
     outputFrames.length > 0
@@ -53,30 +68,89 @@ export function App(): JSX.Element {
         })
       : "";
 
+  console.log(state);
   return (
     <div class="app">
-      <ErrorNotification errors={errors} />
+      <header class="action_bar">
+        <Zoom zoom={zoom} handleChange={dispatch} />
+
+        <Breakpoints
+          outputFrames={outputFrames}
+          breakpointIndex={breakpointIndex}
+          handleChange={dispatch}
+        />
+
+        <Export svg={svg} html={html} zoom={zoom} dispatch={dispatch} />
+
+        <a href="https://example.com" target="_blank" class="btn btn--clean">
+          Open Particle CMS ↗
+        </a>
+      </header>
+
+      <NotificationBar
+        id={notificationId}
+        message={notificationMessage}
+        dispatch={dispatch}
+      />
+
       <Preview
         rendering={status === STATUS.RENDERING}
         html={html}
         responsive={responsive}
-        handleChange={dispatch}
-        breakpoint={breakpoints}
+        breakpointWidth={breakpointWidth}
+        backgroundColour={backgroundColour}
+        zoom={zoom}
       />
 
-      <section class="sidebar">
-        <Frames
-          figmaFrames={frames}
-          selectedFrames={selectedFrames}
-          handleChange={dispatch}
-        />
+      <Sidebar
+        sections={{
+          Frames: () => (
+            <Fragment>
+              <Frames
+                figmaFrames={frames}
+                selectedFrames={selectedFrames}
+                handleChange={dispatch}
+              />
 
-        <EmbedPropertiesInputs {...embedProperties} handleChange={dispatch} />
+              <EmbedPropertiesInputs
+                {...embedProperties}
+                handleChange={dispatch}
+              />
 
-        <Export svg={svg} html={html} />
-      </section>
+              <div class="side_panel">
+                <div class="side_panel__row side_panel__row--input">
+                  <input
+                    id="responsive"
+                    class="input__checkbox"
+                    type="checkbox"
+                    checked={responsive}
+                    onInput={() => dispatch(actionSetResponsive(!responsive))}
+                  />
 
-      <p class="footer">Version {version}</p>
+                  <label class="input__label" for="responsive">
+                    Responsive
+                  </label>
+                </div>
+              </div>
+
+              <BackgroundInput
+                colour={backgroundColour}
+                handleChange={(colour: string) =>
+                  dispatch(actionSetBackgroundColour(colour))
+                }
+              />
+            </Fragment>
+          ),
+
+          Links: () => (
+            <LinksInput
+              handleChange={dispatch}
+              embedUrl={embedProperties.embedUrl}
+              sourceUrl={embedProperties.sourceUrl}
+            />
+          ),
+        }}
+      />
     </div>
   );
 }

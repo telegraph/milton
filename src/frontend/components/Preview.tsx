@@ -1,335 +1,298 @@
-import { actionSetResponsive, ActionTypes } from "frontend/actions";
-import { FunctionalComponent, h } from "preact";
-import { useEffect, useRef, useReducer, useState } from "preact/hooks";
+import { h, Component, RefObject, createRef } from "preact";
+
+enum BUTTONS {
+  LEFT = 0,
+  MIDDLE = 1,
+  RIGHT = 2,
+}
 
 interface PreviewProps {
   rendering: boolean;
   html: string;
   responsive: boolean;
-  breakpoint: { width: number; height: number }[];
-  handleChange: (action: ActionTypes) => void;
+  breakpointWidth: number;
+  backgroundColour: string;
+  zoom: number;
 }
 
-const IFRAME_HEIGHT_MARGIN = 160;
-
-export const Preview: FunctionalComponent<PreviewProps> = (props) => {
-  const {
-    html,
-    responsive,
-    handleChange,
-    breakpoint: breakPoints,
-    rendering,
-  } = props;
-
-  const [breakpointIndex, setBreakpointIndex] = useState(0);
-  const breakpointWidth = breakPoints[breakpointIndex]?.width;
-  const breakpointHeight =
-    breakPoints[breakpointIndex]?.height + IFRAME_HEIGHT_MARGIN;
-
-  const [dimensions, setDimensions] = useState([
-    breakpointWidth,
-    breakpointHeight,
-  ]);
-
-  return (
-    <section class="preview">
-      {rendering && <div class="preview__rendering">Rendering</div>}
-      <div class="preview__settings">
-        <label class="checkbox preview__responsive">
-          <input
-            type="checkbox"
-            checked={responsive}
-            onInput={() => handleChange(actionSetResponsive(!responsive))}
-          />
-          Responsive
-        </label>
-
-        <label class="preview__breakpoints">
-          Breakpoints
-          <select
-            class="breakpoints"
-            onInput={(e) => setBreakpointIndex(e.currentTarget.selectedIndex)}
-          >
-            {breakPoints.map(({ width }, i) => (
-              <option
-                key={width}
-                class="breakpoints__option"
-                selected={breakpointIndex === i}
-              >
-                {width}px
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <p>
-          {dimensions[0]} x {dimensions[1]}
-        </p>
-      </div>
-
-      <PreviewIframe
-        html={html}
-        breakpointWidth={breakpointWidth}
-        breakpointHeight={breakpointHeight}
-        setDimensions={setDimensions}
-      />
-    </section>
-  );
-};
-
-interface PreviewIframeState {
+interface PreviewStateInterface {
   x: number;
   y: number;
   startX: number;
   startY: number;
   translateX: number;
   translateY: number;
-  width: number;
-  height: number;
-  zoom: number;
-  breakpointIndex: number;
-  panning: boolean;
+  offsetWidth: number;
+  offsetHeight: number;
+  prevOffsetWidth: number;
+  prevOffsetHeight: number;
   panningEnabled: boolean;
+  isPanning: boolean;
+  resizing: boolean;
+  prevMouseX: number;
+  prevMouseY: number;
+  selected: boolean;
 }
 
-type actionType =
-  | { type: "ENABLED_PANNING" }
-  | { type: "START_PANNING"; payload: { x: number; y: number } }
-  | { type: "UPDATE_POSITION"; payload: { x: number; y: number } }
-  | { type: "END_PANNING" }
-  | { type: "DISABLE_PANNING" }
-  | { type: "RESET"; payload: PreviewIframeState }
-  | { type: "ZOOM_IN" }
-  | { type: "ZOOM_OUT" }
-  | {
-      type: "SET_DIMENSIONS";
-      payload: { width: number; height?: number; zoom?: number };
-    };
-
-function reducer(
-  state: PreviewIframeState,
-  action: actionType
-): PreviewIframeState {
-  const ZOOM_INCREMENT = 1.5;
-
-  switch (action.type) {
-    case "RESET":
-      return action.payload;
-
-    case "ZOOM_IN": {
-      const zoom = Math.min(1, state.zoom * ZOOM_INCREMENT);
-      return { ...state, zoom };
-    }
-
-    case "ZOOM_OUT":
-      return { ...state, zoom: state.zoom / ZOOM_INCREMENT };
-
-    case "ENABLED_PANNING":
-      return { ...state, panningEnabled: true };
-
-    case "START_PANNING":
-      if (state.panningEnabled) {
-        return {
-          ...state,
-          panning: true,
-          startX: action.payload.x,
-          startY: action.payload.y,
-        };
-      } else {
-        return state;
-      }
-
-    case "UPDATE_POSITION": {
-      if (state.panningEnabled && state.panning) {
-        const { translateX, translateY, startX, startY, zoom } = state;
-
-        const distanceX = translateX + (action.payload.x - startX) / zoom;
-        const distanceY = translateY + (action.payload.y - startY) / zoom;
-
-        return {
-          ...state,
-          x: distanceX,
-          y: distanceY,
-        };
-      } else {
-        return state;
-      }
-    }
-
-    case "END_PANNING":
-      return {
-        ...state,
-        translateX: state.x,
-        translateY: state.y,
-        panning: false,
-        panningEnabled: false,
-      };
-
-    case "DISABLE_PANNING":
-      return { ...state, panningEnabled: state.panning };
-
-    case "SET_DIMENSIONS":
-      return { ...state, ...action.payload };
-
-    default:
-      throw new Error("Unknown action") as never;
-  }
-}
-
-interface PreviewIframeProps {
-  html: string;
-  breakpointWidth: number;
-  breakpointHeight: number;
-  setDimensions: (x: [number, number]) => void;
-}
-
-function PreviewIframe({
-  html,
-  breakpointWidth,
-  breakpointHeight,
-  setDimensions,
-}: PreviewIframeProps) {
-  const initialState: PreviewIframeState = {
+export class Preview extends Component<PreviewProps, PreviewStateInterface> {
+  state: PreviewStateInterface = {
     x: 0,
     y: 0,
     startX: 0,
     startY: 0,
-    width: 100,
-    height: 100,
+    offsetWidth: 0,
+    offsetHeight: 0,
+    prevOffsetWidth: 0,
+    prevOffsetHeight: 0,
     translateX: 0,
     translateY: 0,
-    zoom: 1,
-    breakpointIndex: 0,
-    panning: false,
     panningEnabled: false,
+    isPanning: false,
+    resizing: false,
+    prevMouseX: 0,
+    prevMouseY: 0,
+    selected: false,
   };
 
-  const previewEl = useRef<HTMLDivElement>(null);
-  const iframeEl = useRef<HTMLIFrameElement>(null);
-  const [state, dispatch] = useReducer(reducer, {
-    ...initialState,
-    width: breakpointWidth,
-    height: breakpointHeight,
-  });
+  previewEl: RefObject<HTMLDivElement> = createRef();
+  iframeEl: RefObject<HTMLIFrameElement> = createRef();
 
-  const { x, y, zoom, width, height, panningEnabled, panning } = state;
+  startPanning = (e: MouseEvent) => {
+    const { button, x, y } = e;
 
-  const handleMouseDown = (e: MouseEvent) => {
-    if (e.button === 1) {
-      dispatch({ type: "ENABLED_PANNING" });
+    if (this.state.panningEnabled) {
+      this.setState({ startX: x, startY: y, isPanning: true });
+      return;
     }
 
-    dispatch({ type: "START_PANNING", payload: { x: e.x, y: e.y } });
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    dispatch({ type: "UPDATE_POSITION", payload: { x: e.x, y: e.y } });
-  };
-
-  const handleMouseUp = () => {
-    dispatch({ type: "END_PANNING" });
-  };
-
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.code === "Space") {
-      dispatch({ type: "ENABLED_PANNING" });
-    }
-
-    if (e.code === "Equal") {
-      dispatch({ type: "ZOOM_IN" });
-    }
-
-    if (e.code === "Minus") {
-      dispatch({ type: "ZOOM_OUT" });
+    if (button === BUTTONS.MIDDLE && this.state.isPanning === false) {
+      this.setState({
+        startX: x,
+        startY: y,
+        isPanning: true,
+        panningEnabled: true,
+      });
     }
   };
 
-  const handleKeyUp = () => {
-    dispatch({ type: "DISABLE_PANNING" });
+  panPreview = (e: MouseEvent) => {
+    if (this.state.panningEnabled && this.state.isPanning) {
+      const distanceX = e.x - this.state.startX;
+      const distanceY = e.y - this.state.startY;
+
+      this.setState({ x: distanceX, y: distanceY });
+    }
   };
 
-  useEffect(() => {
-    const previewRefEl = previewEl.current;
-    const iframeElRef = iframeEl.current;
-    const resizeObserver = new ResizeObserver(
-      (entries: ResizeObserverEntry[]) => {
-        const { width, height } = entries[0].contentRect;
-        dispatch({ type: "SET_DIMENSIONS", payload: { width, height } });
-        setDimensions([width, height]);
-      }
-    );
+  stopPanning = (e: MouseEvent) => {
+    if (this.state.panningEnabled === false) return;
 
-    // Translation
-    previewRefEl.addEventListener("mousedown", handleMouseDown);
-    if (panning) {
-      previewRefEl.addEventListener("mousemove", handleMouseMove);
-      previewRefEl.addEventListener("mouseup", handleMouseUp);
-      previewRefEl.addEventListener("mouseleave", handleMouseUp);
+    let panningEnabled = true;
+
+    if (e.type === "mouseleave" || e.button === BUTTONS.MIDDLE) {
+      panningEnabled = false;
     }
 
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    // Resize
-    resizeObserver.observe(iframeElRef);
-
-    return () => {
-      previewRefEl.removeEventListener("mousedown", handleMouseDown);
-      previewRefEl.removeEventListener("mousemove", handleMouseMove);
-      previewRefEl.removeEventListener("mouseup", handleMouseUp);
-      previewRefEl.removeEventListener("mouseleave", handleMouseUp);
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-      resizeObserver.unobserve(iframeElRef);
-    };
-  }, [setDimensions, panning]);
-
-  useEffect(() => {
-    const previewRect = previewEl.current.getBoundingClientRect();
-    const zoom = Math.min(
-      1,
-      previewRect.width / breakpointWidth,
-      previewRect.height / breakpointHeight
-    );
-
-    dispatch({
-      type: "SET_DIMENSIONS",
-      payload: {
-        ...initialState,
-        width: breakpointWidth,
-        height: breakpointHeight,
-        zoom,
-      },
+    this.setState({
+      isPanning: false,
+      panningEnabled,
+      translateX: this.state.translateX + this.state.x,
+      translateY: this.state.translateY + this.state.y,
+      x: 0,
+      y: 0,
     });
-  }, [breakpointWidth, breakpointHeight]);
+  };
 
-  const iframeStyle = `
-    width: ${width}px;
-    height: ${height}px;
-    transform: scale(${zoom}) translate(${x}px,  ${y}px);
+  enablePanning = ({ code }: KeyboardEvent) => {
+    if (code === "Space" && this.state.panningEnabled === false) {
+      this.setState({ panningEnabled: true });
+    }
+  };
+
+  disablePanning = ({ code }: KeyboardEvent) => {
+    if (code === "Space" && this.state.panningEnabled) {
+      this.setState({ panningEnabled: false, isPanning: false });
+    }
+  };
+
+  enableSelection = (e: MouseEvent) => {
+    e.stopPropagation();
+    this.setState({ selected: true });
+  };
+
+  disableSelection = () => {
+    this.setState({ selected: false });
+  };
+
+  startResize = ({ button, x, y }: MouseEvent) => {
+    if (button === BUTTONS.LEFT)
+      this.setState({ resizing: true, prevMouseX: x, prevMouseY: y });
+  };
+
+  updateResize = (e: MouseEvent) => {
+    if (this.state.resizing === false) return;
+
+    const {
+      prevMouseX,
+      prevMouseY,
+      prevOffsetWidth,
+      prevOffsetHeight,
+    } = this.state;
+    const { zoom } = this.props;
+
+    const newOffsetWidth = ((e.x - prevMouseX) * 2) / zoom + prevOffsetWidth;
+    const newOffsetHeight = ((e.y - prevMouseY) * 2) / zoom + prevOffsetHeight;
+
+    this.setState({
+      offsetWidth: newOffsetWidth,
+      offsetHeight: newOffsetHeight,
+    });
+  };
+
+  endResize = () => {
+    if (this.state.resizing === false) return;
+
+    this.setState({
+      resizing: false,
+      prevMouseX: 0,
+      prevMouseY: 0,
+      prevOffsetWidth: this.state.offsetWidth,
+      prevOffsetHeight: this.state.offsetHeight,
+    });
+  };
+
+  updateIframeHeight = () => {
+    if (!this.iframeEl.current) return;
+    const iframe = this.iframeEl.current;
+    const height =
+      iframe.contentDocument?.body?.getBoundingClientRect().height ?? 100;
+    this.setState({
+      offsetHeight: height,
+      prevOffsetHeight: height,
+    });
+  };
+
+  componentDidMount() {
+    if (!this.previewEl.current || !this.iframeEl.current) return;
+
+    const previewRefEl = this.previewEl.current;
+    previewRefEl.addEventListener("mousedown", this.startPanning);
+    previewRefEl.addEventListener("mousemove", this.panPreview);
+    previewRefEl.addEventListener("mouseup", this.stopPanning);
+    previewRefEl.addEventListener("mouseleave", this.stopPanning);
+    window.addEventListener("keydown", this.enablePanning);
+    window.addEventListener("keyup", this.disablePanning);
+
+    this.iframeEl.current.addEventListener("load", this.updateIframeHeight);
+  }
+
+  componentWillUnmount() {
+    if (!this.previewEl.current || !this.iframeEl.current) return;
+
+    const previewRefEl = this.previewEl.current;
+    previewRefEl.removeEventListener("mousedown", this.startPanning);
+    previewRefEl.removeEventListener("mousemove", this.panPreview);
+    previewRefEl.removeEventListener("mouseup", this.stopPanning);
+    previewRefEl.removeEventListener("mouseleave", this.stopPanning);
+    window.removeEventListener("keydown", this.enablePanning);
+    window.removeEventListener("keyup", this.disablePanning);
+
+    this.iframeEl.current.removeEventListener("load", this.updateIframeHeight);
+  }
+
+  componentDidUpdate({ breakpointWidth }: PreviewProps) {
+    if (breakpointWidth !== this.props.breakpointWidth) {
+      this.setState(
+        {
+          x: 0,
+          y: 0,
+          translateX: 0,
+          translateY: 0,
+          offsetWidth: 0,
+          offsetHeight: 0,
+          prevOffsetHeight: 0,
+          prevOffsetWidth: 0,
+        },
+        this.updateIframeHeight
+      );
+    }
+  }
+
+  render() {
+    const {
+      breakpointWidth,
+      html,
+      zoom,
+      rendering,
+      backgroundColour,
+    } = this.props;
+    const {
+      offsetWidth,
+      offsetHeight,
+      translateX,
+      translateY,
+      resizing,
+      panningEnabled,
+      selected,
+      x,
+      y,
+    } = this.state;
+
+    const iframeWidth = breakpointWidth + offsetWidth;
+    const iframeHeight = offsetHeight;
+
+    const iframeStyle = `
+    width: ${iframeWidth}px;
+    height: ${iframeHeight}px;
+    transform: scale(${zoom});
   `;
 
-  return (
-    <div
-      class={`preview__container ${
-        panningEnabled ? "preview__container--drag" : ""
-      }`}
-      ref={previewEl}
-    >
-      <iframe
-        ref={iframeEl}
-        class="preview__iframe"
-        srcDoc={html}
-        style={iframeStyle}
-      />
+    const iframeWrapperStyle = `
+    width: ${iframeWidth * zoom}px;
+    height: ${iframeHeight * zoom}px;
+    transform:  translateX(${translateX + x}px) translateY(${translateY + y}px);
+  `;
 
-      <div class="preview__help">
-        <p>
-          <span>Zoom</span> + / -
-        </p>
-        <p>
-          <span>Pan</span> Space-bar and drag
-        </p>
-      </div>
-    </div>
-  );
+    return (
+      <section class={`preview ${resizing ? "preview--resizing" : ""}`}>
+        {rendering && <div class="preview__rendering">Rendering</div>}
+
+        <div
+          class={`preview__container ${
+            panningEnabled ? "preview__container--drag" : ""
+          }`}
+          ref={this.previewEl}
+          onMouseUp={this.endResize}
+          onMouseMove={this.updateResize}
+          onClick={this.disableSelection}
+          style={`background-color: ${backgroundColour}`}
+        >
+          <div
+            class={`preview__iframe_wrapper  ${
+              selected ? "preview__iframe_wrapper--selected" : ""
+            }`}
+            style={iframeWrapperStyle}
+            onClick={this.enableSelection}
+          >
+            <iframe
+              class="preview__iframe"
+              srcDoc={html}
+              style={iframeStyle}
+              ref={this.iframeEl}
+            />
+            <button
+              class="preview__iframe_resize"
+              onMouseDown={this.startResize}
+            >
+              Resize
+            </button>
+
+            <p class="preview__dimensions">
+              {Math.round(iframeWidth)} x {Math.round(iframeHeight)}
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 }

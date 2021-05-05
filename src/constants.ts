@@ -36,46 +36,91 @@ export enum OUTPUT_FORMATS {
   IFRAME,
 }
 
+export enum NOTIFICATION_TYPE {
+  INFO = "INFO",
+  WARN = "WARN",
+  ERROR = "ERROR",
+}
+
 export enum ERRORS {
-  MISSING_FRAMES = "MISSING_FRAMES",
-  MISSING_FONT = "MISSING_FONT",
-  MISSING_FILE_KEY = "MISSING_FILE_KEY",
-  MULTIPLE_SAME_WIDTH = "MULTIPLE_SAME_WIDTH",
-  FAILED_TO_FETCH_DATA = "FAILED_TO_FETCH_DATA",
-  FAILED_TO_SET_EMBED_SETTINGS = "FAILED_TO_SET_EMBED_SETTINGS",
-  NO_FRAMES_SELECTED = "NO_FRAMES_SELECTED",
-  INPUT_EMBED_INVALID_URL = "INPUT_EMBED_INVALID_URL",
-  INPUT_SOURCE_INVALID_URL = "INPUT_SOURCE_INVALID_URL",
-  UNKNOWN = "UNKNOWN",
+  MISSING_FRAMES,
+  MISSING_FONT,
+  MULTIPLE_SAME_WIDTH,
+  FAILED_TO_FETCH_DATA,
+  FAILED_TO_SET_EMBED_SETTINGS,
+  NO_FRAMES_SELECTED,
+  INPUT_EMBED_INVALID_URL,
+  INPUT_SOURCE_INVALID_URL,
+  UNKNOWN,
 }
 
 export const UI_TEXT = {
-  ERROR_UNEXPECTED: "Unexpected error",
-  ERROR_MISSING_FRAMES: "No frames found. Please add some frames to the page",
-  WARN_NO_TARGETS: "Standard frames not found. Please select target frames",
-  WARN_TOO_MANY_TARGETS: "Please select three target frames",
   INFO_PREVIEW: "Preview each frame output",
   TITLE_CHOOSE_FRAME: "Choose which frames to export",
   TITLE_PREVIEW: "Preview",
   TITLE_RESPONSIVE_PREVIEW: "Responsive preview",
   TILE_OUTPUT: "Export",
+  TITLE_LINKS: "Add links to all frames",
+  TITLE_BACKGROUND_COLOUR: "Preview background",
   BUTTON_NEXT: "Next",
   BUTTON_DOWNLOAD: "Download",
   BUTTON_PREVIOUS: "Back",
-  ERRORS: {
-    [ERRORS.MISSING_FRAMES]:
-      "No frames found. Please add a frame and try again",
-    [ERRORS.MULTIPLE_SAME_WIDTH]:
-      "Some frames have the same width. All frame widths need to be different",
-    [ERRORS.FAILED_TO_FETCH_DATA]: "Failed to fetch data",
-    [ERRORS.INPUT_EMBED_INVALID_URL]:
-      "Invalid embed URL. Please check and update the URL.",
-    [ERRORS.INPUT_SOURCE_INVALID_URL]:
-      "Invalid source URL. Please check and update the URL.",
-    [ERRORS.NO_FRAMES_SELECTED]: "Need to select at least one frame.",
-    [ERRORS.FAILED_TO_SET_EMBED_SETTINGS]: "Failed to save embed setting",
-    [ERRORS.MISSING_FONT]: "Unknown font",
-    [ERRORS.UNKNOWN]: "Unknown error",
+  ZOOM_TOOLTIP: "Zoom/view options",
+  COPY_TO_CLIPBOARD: "Copy to clipboard",
+  DOWNLOAD: "Download",
+  EMBED_PROPS_HEADLINE_PLACEHOLDER: "Headline",
+  EMBED_PROPS_SUB_HEAD_PLACEHOLDER: "Sub headline",
+  EMBED_PROPS_SOURCE_PLACEHOLDER: "Source",
+  EMBED_PROPS_URL_PLACEHOLDER: "Embed URL: https://...",
+  EMBED_PROPS_SOURCE_URL_PLACEHOLDER: "Source URL: http://...",
+  EMBED_PROPS_INVALID_URL: "Enter a valid link",
+};
+
+export enum NOTIFICATIONS_IDS {
+  INFO_CLIPBOARD_COPIED,
+  ERROR_MISSING_FRAMES,
+  ERROR_MULTIPLE_SAME_WIDTH,
+  ERROR_FAILED_TO_FETCH_DATA,
+  ERROR_NO_FRAMES_SELECTED,
+  ERROR_FAILED_TO_SET_EMBED_SETTINGS,
+  ERROR_MISSING_FONT,
+  ERROR_UNKNOWN,
+}
+
+export const NOTIFICATIONS = {
+  [NOTIFICATIONS_IDS.INFO_CLIPBOARD_COPIED]: {
+    type: NOTIFICATION_TYPE.INFO,
+    text: "👍 Success! Code copied to clipboard!",
+  },
+  [NOTIFICATIONS_IDS.ERROR_MISSING_FRAMES]: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "👎 No frames found. Please add a frame and try again",
+  },
+  [NOTIFICATIONS_IDS.ERROR_MULTIPLE_SAME_WIDTH]: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text:
+      "👎 All frames widths need to be different. Please resize frames and try again",
+  },
+  [NOTIFICATIONS_IDS.ERROR_FAILED_TO_FETCH_DATA]: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "😬 Failed to fetch data",
+  },
+  [NOTIFICATIONS_IDS.ERROR_NO_FRAMES_SELECTED]: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text:
+      "👎 No frames selected | You must select at least one frame to ‘copy to clipboard’ or ‘download’",
+  },
+  [NOTIFICATIONS_IDS.ERROR_FAILED_TO_SET_EMBED_SETTINGS]: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "😬 Failed to save embed setting",
+  },
+  [NOTIFICATIONS_IDS.ERROR_MISSING_FONT]: {
+    type: NOTIFICATION_TYPE.WARN,
+    text: "😬 Unknown font",
+  },
+  [NOTIFICATIONS_IDS.ERROR_UNKNOWN]: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "😬 Unknown error",
   },
 };
 
@@ -86,3 +131,12 @@ export enum HEADLINE_NODE_NAMES {
   SUBHEAD = "subhead",
   SOURCE = "source",
 }
+
+export const DEFAULT_BREAKPOINTS = [
+  { width: 320, height: 320, default: true },
+  { width: 480, height: 480, default: true },
+  { width: 640, height: 480, default: true },
+  { width: 720, height: 480, default: true },
+  { width: 1024, height: 480, default: true },
+  { width: 1200, height: 480, default: true },
+];

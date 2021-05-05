@@ -1,4 +1,4 @@
-import UPNG from "upng-js";
+import UPNG from "../libs/upng";
 import pica from "pica";
 import { imageNodeDimensions } from "types";
 
@@ -20,6 +20,8 @@ async function optimizePng(
   if (!ctx) return canvas.toDataURL();
 
   const imageData = ctx.getImageData(0, 0, width, height);
+
+  console.log(UPNG);
 
   // Quantize palette
   const pngData = UPNG.encode([imageData?.data], width, height, colours);

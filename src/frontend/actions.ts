@@ -5,23 +5,26 @@ import {
   FrameRender,
   IFrameData,
 } from "types";
-import { ERRORS, MSG_EVENTS, STATUS } from "constants";
+import { MSG_EVENTS, NOTIFICATIONS_IDS, STATUS } from "constants";
 import { containsDuplicate, isEmpty } from "utils/common";
 import { postMan } from "utils/messages";
 import { EmbedProperties, StateInterface } from "./store";
 import { decodeSvgToString } from "./svgUtils";
 
 export enum ACTIONS {
-  SET_EMBED_PROPERTY,
-  SET_STATUS,
-  SET_ERROR,
-  SET_FRAMES,
-  SET_RESPONSIVE,
-  SET_SELECTED_FRAMES,
-  SET_SVG,
-  SET_INITIAL_DATA,
-  CLEAR_ERROR,
-  TOGGLE_SELECTED_FRAME,
+  SET_EMBED_PROPERTY = "SET_EMBED_PROPERTY",
+  SET_STATUS = "SET_STATUS",
+  SET_NOTIFICATION = "SET_NOTIFICATION",
+  SET_FRAMES = "SET_FRAMES",
+  SET_RESPONSIVE = "SET_RESPONSIVE",
+  SET_ZOOM = "SET_ZOOM",
+  SET_BREAKPOINT = "SET_BREAKPOINT",
+  SET_SELECTED_FRAMES = "SET_SELECTED_FRAMES",
+  SET_SVG = "SET_SVG",
+  SET_INITIAL_DATA = "SET_INITIAL_DATA",
+  SET_BACKGROUND_COLOUR = "SET_BACKGROUND_COLOUR",
+  CLEAR_NOTIFICATION = "CLEAR_NOTIFICATION",
+  TOGGLE_SELECTED_FRAME = "TOGGLE_SELECTED_FRAME",
 }
 
 export function actionSetFrames(
@@ -48,26 +51,45 @@ export function actionSetResponsive(
   return { type: ACTIONS.SET_RESPONSIVE, payload: responsive };
 }
 
+export function actionSetZoom(
+  zoom: number
+): { type: ACTIONS.SET_ZOOM; payload: number } {
+  return { type: ACTIONS.SET_ZOOM, payload: zoom };
+}
+
+export function actionSetBreakpoint(
+  index: number,
+  width: number
+): {
+  type: ACTIONS.SET_BREAKPOINT;
+  payload: { index: number; width: number };
+} {
+  return { type: ACTIONS.SET_BREAKPOINT, payload: { index, width } };
+}
+
 export function actionSetSvg(
   svg: string
 ): { type: ACTIONS.SET_SVG; payload: string } {
   return { type: ACTIONS.SET_SVG, payload: svg };
 }
 
-export function actionSetError(
-  error: ERRORS,
-  message = ""
+export function actionSetNotification(
+  notificationId: NOTIFICATIONS_IDS,
+  message?: string
 ): {
-  type: ACTIONS.SET_ERROR;
-  payload: { error: ERRORS; message: string };
+  type: ACTIONS.SET_NOTIFICATION;
+  payload: { id: NOTIFICATIONS_IDS; message?: string };
 } {
-  return { type: ACTIONS.SET_ERROR, payload: { error, message } };
+  return {
+    type: ACTIONS.SET_NOTIFICATION,
+    payload: { id: notificationId, message },
+  };
 }
 
-export function actionClearError(
-  error: ERRORS
-): { type: ACTIONS.CLEAR_ERROR; payload: ERRORS } {
-  return { type: ACTIONS.CLEAR_ERROR, payload: error };
+export function actionClearNotification(): {
+  type: ACTIONS.CLEAR_NOTIFICATION;
+} {
+  return { type: ACTIONS.CLEAR_NOTIFICATION };
 }
 
 export function actionToggleSelectedFrame(
@@ -78,7 +100,11 @@ export function actionToggleSelectedFrame(
 
 type InitialData = Pick<
   StateInterface,
-  "embedProperties" | "frames" | "selectedFrames" | "fileKey"
+  | "embedProperties"
+  | "frames"
+  | "selectedFrames"
+  | "breakpointWidth"
+  | "fileKey"
 >;
 export const actionStoreInitialData = (
   figmaData: InitialData
@@ -94,13 +120,17 @@ export const actionGetFrameData = () => {
       .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
       .then((response: IFrameData) => {
         if (isEmpty(response.frames)) {
-          dispatch(actionSetError(ERRORS.MISSING_FRAMES));
+          dispatch(
+            actionSetNotification(NOTIFICATIONS_IDS.ERROR_MISSING_FRAMES)
+          );
           return;
         }
 
         const widths = Object.values(response.frames).map(({ width }) => width);
         if (containsDuplicate(widths)) {
-          dispatch(actionSetError(ERRORS.MULTIPLE_SAME_WIDTH));
+          dispatch(
+            actionSetNotification(NOTIFICATIONS_IDS.ERROR_MULTIPLE_SAME_WIDTH)
+          );
           return;
         }
 
@@ -118,11 +148,16 @@ export const actionGetFrameData = () => {
             frames: response.frames,
             embedProperties,
             selectedFrames,
+            breakpointWidth: widths[0],
             fileKey: response.fileKey,
           })
         );
       })
-      .catch(() => dispatch(actionSetError(ERRORS.FAILED_TO_FETCH_DATA)));
+      .catch(() =>
+        dispatch(
+          actionSetNotification(NOTIFICATIONS_IDS.ERROR_FAILED_TO_FETCH_DATA)
+        )
+      );
   };
 };
 
@@ -146,13 +181,15 @@ export const actionUpdateSelectedFrames = (
   frames: FrameDataInterface[]
 ) => {
   return (dispatch: DispatchType) => {
+    console.log("IN HERE");
     if (selectedFrames.length < 1) {
-      return dispatch(actionSetError(ERRORS.NO_FRAMES_SELECTED));
+      return dispatch(
+        actionSetNotification(NOTIFICATIONS_IDS.ERROR_NO_FRAMES_SELECTED)
+      );
     }
 
     actionCheckFonts(frames, dispatch);
     actionFetchFrameRender(selectedFrames)(dispatch);
-    dispatch(actionClearError(ERRORS.NO_FRAMES_SELECTED));
   };
 };
 
@@ -165,13 +202,18 @@ export const actionCheckFonts = (
   if (missingFonts.length > 0) {
     const missingFontInfo = missingFonts.map(
       (missingInfo) =>
-        `family=["${missingInfo.family}"] text=["${missingInfo.text}…"] frame=["${missingInfo.frame}"] layer["${missingInfo.layerName}"]`
+        `"${missingInfo.family}" in '${missingInfo.frame}' > '${missingInfo.layerName}' > "${missingInfo.text}…"`
     );
-    dispatch(actionSetError(ERRORS.MISSING_FONT, missingFontInfo.join("\n")));
+    dispatch(
+      actionSetNotification(
+        NOTIFICATIONS_IDS.ERROR_MISSING_FONT,
+        missingFontInfo.join("\n")
+      )
+    );
   }
   // && errors?.includes(ERRORS.MISSING_FONT)
   if (missingFonts.length === 0) {
-    dispatch(actionClearError(ERRORS.MISSING_FONT));
+    actionSetNotification(NOTIFICATIONS_IDS.ERROR_MISSING_FONT);
   }
 };
 
@@ -203,21 +245,34 @@ export const actionUpdateEmbedProps = (
         },
       })
       .catch(() =>
-        dispatch(actionSetError(ERRORS.FAILED_TO_SET_EMBED_SETTINGS))
+        dispatch(
+          actionSetNotification(
+            NOTIFICATIONS_IDS.ERROR_FAILED_TO_SET_EMBED_SETTINGS
+          )
+        )
       );
   };
 };
+
+export function actionSetBackgroundColour(
+  colour: string
+): { type: ACTIONS.SET_BACKGROUND_COLOUR; payload: string } {
+  return { type: ACTIONS.SET_BACKGROUND_COLOUR, payload: colour };
+}
 
 export type ActionTypes =
   | ReturnType<typeof actionStoreEmbedProperty>
   | ReturnType<typeof actionSetFrames>
   | ReturnType<typeof actionSetSelectedFrames>
   | ReturnType<typeof actionSetResponsive>
+  | ReturnType<typeof actionSetZoom>
+  | ReturnType<typeof actionSetBreakpoint>
   | ReturnType<typeof actionSetSvg>
   | ReturnType<typeof actionSetStatus>
   | ReturnType<typeof actionToggleSelectedFrame>
   | ReturnType<typeof actionStoreInitialData>
-  | ReturnType<typeof actionSetError>
-  | ReturnType<typeof actionClearError>;
+  | ReturnType<typeof actionSetNotification>
+  | ReturnType<typeof actionClearNotification>
+  | ReturnType<typeof actionSetBackgroundColour>;
 
 export type DispatchType = (action: ActionTypes) => void;

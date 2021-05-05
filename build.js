@@ -1,5 +1,4 @@
 import fs from "fs-extra";
-import os from "os";
 import path from "path";
 import esbuild from "esbuild";
 
@@ -18,7 +17,7 @@ import esbuild from "esbuild";
     );
 
     // Build backend JS
-    await esbuild.build({
+    const backendJs = esbuild.build({
       entryPoints: [path.join("src", "backend", "backend.ts")],
       outfile: path.join(BUILD_FOLDER, "figma2html.js"),
       format: "iife",
@@ -35,12 +34,8 @@ import esbuild from "esbuild";
     });
 
     // Build UI JS
-    const tmpDir = os.tmpdir();
-    const tempFolder = await fs.mkdtemp(`${tmpDir}${path.sep}`);
-
-    await esbuild.build({
+    const uiJs = esbuild.build({
       entryPoints: [path.join("src", "frontend", "ui.tsx")],
-      outdir: tempFolder,
       format: "iife",
       target: "es2017",
       platform: "browser",
@@ -48,36 +43,48 @@ import esbuild from "esbuild";
         "process.env.NODE_ENV": '"development"',
         "process.browser": "true",
       },
-      loader: { [".css"]: "text" },
+      loader: { ".css": "text" },
       jsxFactory: "preact.h",
       jsxFragment: "preact.Fragment",
       bundle: true,
       sourcemap: "inline",
       minify: false,
+      treeShaking: true,
+      write: false,
     });
 
-    // Create Figma UI HTML
-    const uiJs = await fs.readFile(path.join(tempFolder, "ui.js"));
+    const uiCss = esbuild.build({
+      entryPoints: [path.join("src", "static", "css", "ui.css")],
+      platform: "browser",
+      loader: { ".svg": "dataurl" },
+      bundle: true,
+      minify: false,
+      write: false,
+    });
+
+    const uiFiles = await Promise.all([uiJs, uiCss, backendJs]).then(
+      (results) => {
+        return {
+          js: results[0].outputFiles[0].text,
+          css: results[1].outputFiles[0].text,
+        };
+      }
+    );
 
     // Combine JS and CSS into a single HTML block
     const uiHtml = `
       <div id="app"></div>
-      <script>${uiJs}</script>
+      <style>${uiFiles.css}</style>
+      <script>${uiFiles.js}</script>
     `;
 
     // Save HTML
     await fs.writeFile(path.join(BUILD_FOLDER, "ui.html"), uiHtml);
 
-    // Clean-up
-    await fs.remove(tempFolder);
-
     console.timeEnd(buildTitle);
   } catch (err) {
     // Handle build failure
-    console.error("Build failed with error:", err);
-
-    // Clean-up
-    await fs.remove(tempFolder);
+    // console.error("Build failed with error:", err);
 
     process.exit(1);
   }

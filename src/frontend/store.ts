@@ -1,4 +1,4 @@
-import { ERRORS, STATUS } from "constants";
+import { STATUS, NOTIFICATIONS_IDS } from "constants";
 import { FigmaFramesType } from "types";
 import { toggleItem } from "utils/common";
 import { ACTIONS, ActionTypes } from "./actions";
@@ -18,8 +18,13 @@ export interface StateInterface {
   embedProperties: EmbedProperties;
   responsive: boolean;
   svg: string;
+  zoom: number;
+  breakpointIndex: number;
+  breakpointWidth: number;
+  backgroundColour: string;
+  notificationId?: NOTIFICATIONS_IDS;
+  notificationMessage?: string;
   fileKey: string;
-  errors: { [key in ERRORS]?: string };
 }
 
 export const initialState: StateInterface = {
@@ -33,16 +38,23 @@ export const initialState: StateInterface = {
     sourceUrl: "",
     embedUrl: "",
   },
+
+  zoom: 1,
+  breakpointIndex: 0,
   fileKey: "",
   responsive: true,
+  breakpointWidth: 100,
+  backgroundColour: "#C4C4C4",
   svg: "",
-  errors: {},
+  notificationId: undefined,
+  notificationMessage: "",
 };
 
 export function reducer(
   state: StateInterface,
   action: ActionTypes
 ): StateInterface {
+  console.log(action);
   switch (action.type) {
     case ACTIONS.SET_INITIAL_DATA:
       return {
@@ -69,6 +81,17 @@ export function reducer(
     case ACTIONS.SET_RESPONSIVE:
       return { ...state, responsive: action.payload };
 
+    case ACTIONS.SET_BREAKPOINT:
+      return {
+        ...state,
+        breakpointIndex: action.payload.index,
+        breakpointWidth: action.payload.width,
+        zoom: 1,
+      };
+
+    case ACTIONS.SET_ZOOM:
+      return { ...state, zoom: action.payload };
+
     case ACTIONS.SET_SVG:
       return { ...state, svg: action.payload };
 
@@ -81,22 +104,21 @@ export function reducer(
       };
     }
 
-    case ACTIONS.SET_ERROR:
+    case ACTIONS.SET_BACKGROUND_COLOUR:
+      return { ...state, backgroundColour: action.payload };
+
+    case ACTIONS.SET_NOTIFICATION:
       return {
         ...state,
-        errors: {
-          ...state.errors,
-          [action.payload.error]: action.payload.message,
-        },
+        notificationId: action.payload.id,
+        notificationMessage: action.payload.message || "",
       };
 
-    case ACTIONS.CLEAR_ERROR:
-      const newError = { ...state.errors };
-      delete newError[action.payload];
-
+    case ACTIONS.CLEAR_NOTIFICATION:
       return {
         ...state,
-        errors: newError,
+        notificationId: undefined,
+        notificationMessage: "",
       };
 
     default:

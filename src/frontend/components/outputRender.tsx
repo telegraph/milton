@@ -289,10 +289,10 @@ export function generateEmbedHtml(props: renderInlineProps): string {
       )}
     </div>,
     null,
-    { pretty: false }
+    { pretty: true }
   );
 
-  html = minimiseText(html);
+  // html = minimiseText(html);
 
   html = `<!--
   # [ Figma2HTML Export v${version} ]
@@ -315,7 +315,12 @@ ${html}
 function generateMediaQueries(frames: FrameDataInterface[]) {
   // Sort frames by ascending height. Small > big
   const sortedFrames = Object.values(frames)
-    .map(({ width, height, id }) => ({ width, height, id }))
+    .map(({ width, height, backgroundColour, id }) => ({
+      width,
+      height,
+      backgroundColour,
+      id,
+    }))
     .sort((a, b) => (a.width < b.width ? -1 : 1));
 
   const largestWidth = Math.max(...sortedFrames.map(({ width }) => width));
@@ -333,6 +338,10 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
     if (i === 0) {
       // Wrapper widths
       cssText += `
+
+        .f2h__embed {
+          background-color: ${sortedFrames[i].backgroundColour};
+        }
    
         .f2h__svg_container,
         .f2h__wrap {
@@ -340,9 +349,9 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
             height: ${height}px;
           }`;
 
-      cssText += `.f2h--responsive svg { width: ${relSvgWidth}%; }`;
-      cssText += `[data-id="${id}"], [id="textblock-${id}"] { display: block; }`;
-      cssText += `.f2h--responsive .f2h__wrap  { padding-top: ${paddingHeight}%; }`;
+      cssText += `.f2h--responsive svg { width: ${relSvgWidth}%; } \n`;
+      cssText += `[data-id="${id}"], [id="textblock-${id}"] { display: block; } \n`;
+      cssText += `.f2h--responsive .f2h__wrap  { padding-top: ${paddingHeight}%; } \n`;
     } else {
       // Styles for the  remaining breakpoints
       const { id: prevId } = sortedFrames[i - 1];
@@ -353,7 +362,10 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
       cssText += `
       
       @media (min-width: ${width}px) {
-    
+
+        .f2h__embed {
+          background-color: ${sortedFrames[i].backgroundColour};
+        }    
 
         .f2h__svg_container,
         .f2h__wrap {

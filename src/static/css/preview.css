@@ -1,0 +1,185 @@
+/* [ Preview ]
+----------------------------------------------------------------- */
+.preview {
+  display: flex;
+  flex-direction: column;
+
+  grid-column: 2/3;
+  grid-row: 2/4;
+  position: relative;
+}
+.preview::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+.preview::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+.preview::-webkit-scrollbar-thumb {
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 4px solid #c3c3c3;
+}
+
+.preview__rendering {
+  display: flex;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  z-index: 4;
+  pointer-events: none;
+}
+.preview__settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size--small, 1rem);
+  padding: var(--padding-small, 0) 0;
+  border-bottom: 1px solid var(--colours-grey-3, #f0f);
+}
+.preview__settings label,
+.preview__settings p {
+  margin: 0 var(--padding-small, 0);
+  display: flex;
+  align-items: center;
+}
+.breakpoints {
+  font-size: var(--font-size--small, 1rem);
+  margin-right: var(--padding-small, 0);
+}
+.preview__container {
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: auto;
+  flex: 1;
+  height: 1;
+  border-top-right-radius: var(--border-radius-small, 0);
+  background-color: var(--colours-preview-background, #f0f);
+  background-size: 20px 20px;
+  background-position: 0 0, 30px 30px;
+}
+.preview__container--drag {
+  cursor: grab;
+}
+.preview__width input,
+.preview__zoom input {
+  width: 10ch;
+  text-align: center;
+  font-size: var(--font-size--small, 1rem);
+  padding: 0;
+  margin: 0 var(--padding-small, 0);
+}
+.preview__wrapper {
+  border: 1px solid var(--colours-grey-2, #f0f);
+  position: relative;
+  resize: horizontal;
+  z-index: 2;
+}
+.preview__iframe_wrapper {
+  position: absolute;
+  /* min-width: 100px; */
+}
+.preview__iframe_wrapper:hover {
+  outline: 2px solid var(--colours-active, #f0f);
+}
+.preview__iframe_resize {
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border: 1px solid var(--colours-active, #f0f);
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  cursor: nwse-resize;
+  z-index: 2;
+  text-indent: -200px;
+  overflow: hidden;
+  outline: none;
+  padding: 4px;
+  display: none;
+}
+
+.preview__iframe_wrapper.preview__iframe_wrapper--selected {
+  outline: 1px solid var(--colours-active, #f0f);
+}
+
+.preview__iframe_wrapper--selected .preview__iframe_resize {
+  display: block;
+}
+/* .preview--resizing .preview__iframe_resize,
+  .preview__iframe_wrapper:hover .preview__iframe_resize {
+    display: block;
+  } */
+.preview__iframe {
+  overflow: hidden;
+  transform-origin: 0 0;
+  height: 100%;
+  width: 100%;
+  border: none;
+  resize: none;
+  pointer-events: none;
+}
+.preview__iframe::before {
+  content: attr(style);
+  display: block;
+}
+.preview--resizing .preview__iframe {
+  pointer-events: none;
+}
+
+.preview__help {
+  position: absolute;
+  bottom: var(--padding-small, 0);
+  left: var(--padding-small, 0);
+  font-size: var(--font-size--small);
+}
+.preview__help p {
+  display: flex;
+  margin: 0;
+  color: var(--colours-grey-2, #f0f);
+  text-align: left;
+}
+.preview__help p span {
+  min-width: 7ch;
+}
+
+.preview__dimensions {
+  min-width: 12ch;
+  background: var(--colours-active, #f0f);
+  color: var(--colours-light-background, #f0f);
+  font-size: 10px;
+  padding: var(--padding-small, 0);
+  border-radius: var(--border-radius-small, 0);
+  text-align: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  bottom: -30px;
+  margin: 0;
+}
+.preview__iframe_wrapper--selected .preview__dimensions {
+  display: inline-block;
+}
+
+.warning {
+  font-size: var(--font-size--small, 1rem);
+  padding: var(--padding-small, 0);
+  text-align: center;
+  background-color: var(--colours-warning);
+  border-radius: var(--border-radius-small, 0);
+  margin: 0;
+
+  z-index: 4;
+  grid-row: 2/3;
+  grid-column: 1/2;
+}

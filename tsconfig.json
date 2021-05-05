@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "incremental": true,
+    "allowJs": true,
     "target": "es2017",
     "module": "commonjs",
     "lib": ["DOM", "ES2015", "ES2019", "ESNext", "DOM.Iterable"],
@@ -25,7 +26,11 @@
     "esModuleInterop": true,
     "downlevelIteration": true,
     "resolveJsonModule": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "react": ["../node_modules/preact/compat"],
+      "react-dom": ["../node_modules/preact/compat"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
