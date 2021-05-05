@@ -2,6 +2,8 @@ import fs from "fs-extra";
 import path from "path";
 import esbuild from "esbuild";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 (async () => {
   try {
     const buildTitle = `Build: ${new Date().toLocaleString()}`;
@@ -25,12 +27,14 @@ import esbuild from "esbuild";
       platform: "browser",
       loader: { [".css"]: "text" },
       define: {
-        "process.env.NODE_ENV": '"development"',
+        "process.env.NODE_ENV": `${
+          isProduction ? '"production"' : '"development"'
+        }`,
         "process.browser": "true",
       },
       bundle: true,
-      sourcemap: "inline",
-      minify: false,
+      sourcemap: isProduction ? false : "inline",
+      minify: isProduction ? true : false,
     });
 
     // Build UI JS
@@ -40,15 +44,17 @@ import esbuild from "esbuild";
       target: "es2017",
       platform: "browser",
       define: {
-        "process.env.NODE_ENV": '"development"',
+        "process.env.NODE_ENV": `${
+          isProduction ? '"production"' : '"development"'
+        }`,
         "process.browser": "true",
       },
       loader: { ".css": "text" },
       jsxFactory: "preact.h",
       jsxFragment: "preact.Fragment",
       bundle: true,
-      sourcemap: "inline",
-      minify: false,
+      sourcemap: isProduction ? false : "inline",
+      minify: isProduction ? true : false,
       treeShaking: true,
       write: false,
     });

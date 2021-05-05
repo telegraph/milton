@@ -5,7 +5,7 @@
   "main": "index.tsx",
   "scripts": {
     "dev": "watchexec --exts css,scss,html,tsx,ts,json --clear -w ./src node ./build.js",
-    "build": "node build.js",
+    "build": "NODE_ENV=production node build.js",
     "lint": "npx tsc",
     "test": "npx uvu -r ts-node/register ./src"
   },
