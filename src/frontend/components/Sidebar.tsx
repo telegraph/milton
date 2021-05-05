@@ -1,42 +1,42 @@
 import { h, Component, JSX } from "preact";
 
-interface SidebarProps {
-  sections: Record<string, () => JSX.Element>;
+interface Props {
+  children: JSX.Element[];
 }
 
-interface SidebarState {
-  activeSection: string;
+interface State {
+  selectedTab: number;
 }
 
-export class Sidebar extends Component<SidebarProps, SidebarState> {
-  state: SidebarState = {
-    activeSection: "",
+export class Sidebar extends Component<Props, State> {
+  state: State = {
+    selectedTab: 0,
   };
 
-  setActiveSection = (sectionName: string): void => {
-    this.setState({ activeSection: sectionName });
+  setActiveIndex = (tabIndex: number): void => {
+    this.setState({ selectedTab: tabIndex });
   };
 
-  render() {
-    const { sections } = this.props;
-    const sectionNames = Object.keys(sections);
-    const activeSection = this.state.activeSection || sectionNames[0];
+  render(): JSX.Element {
+    const { children } = this.props;
+    const { selectedTab } = this.state;
 
     return (
       <section class="sidebar">
         <nav class="controls__navigation">
-          {sectionNames.map((sectionName) => (
+          {children.map((childNode, index) => (
             <button
+              key={childNode.props.title}
               class="btn btn--clean"
-              data-active={activeSection === sectionName}
-              onClick={() => this.setActiveSection(sectionName)}
+              data-active={selectedTab === index}
+              onClick={() => this.setActiveIndex(index)}
             >
-              {sectionName}
+              {childNode.props.title}
             </button>
           ))}
         </nav>
 
-        <div class="">{sections[activeSection]()}</div>
+        {children[selectedTab]}
       </section>
     );
   }

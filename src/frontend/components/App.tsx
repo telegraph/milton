@@ -82,7 +82,12 @@ export function App(): JSX.Element {
 
         <Export svg={svg} html={html} zoom={zoom} dispatch={dispatch} />
 
-        <a href="https://example.com" target="_blank" class="btn btn--clean">
+        <a
+          href="https://example.com"
+          target="_blank"
+          class="btn btn--clean"
+          rel="noreferrer"
+        >
           Open Particle CMS ↗
         </a>
       </header>
@@ -102,55 +107,48 @@ export function App(): JSX.Element {
         zoom={zoom}
       />
 
-      <Sidebar
-        sections={{
-          Frames: () => (
-            <Fragment>
-              <Frames
-                figmaFrames={frames}
-                selectedFrames={selectedFrames}
-                handleChange={dispatch}
+      <Sidebar>
+        <div title="Frames" class="sidebar__tab">
+          <Frames
+            figmaFrames={frames}
+            selectedFrames={selectedFrames}
+            handleChange={dispatch}
+          />
+
+          <EmbedPropertiesInputs {...embedProperties} handleChange={dispatch} />
+
+          <div class="side_panel">
+            <div class="side_panel__row side_panel__row--input">
+              <input
+                id="responsive"
+                class="input__checkbox"
+                type="checkbox"
+                checked={responsive}
+                onInput={() => dispatch(actionSetResponsive(!responsive))}
               />
 
-              <EmbedPropertiesInputs
-                {...embedProperties}
-                handleChange={dispatch}
-              />
+              <label class="input__label" for="responsive">
+                Responsive
+              </label>
+            </div>
+          </div>
 
-              <div class="side_panel">
-                <div class="side_panel__row side_panel__row--input">
-                  <input
-                    id="responsive"
-                    class="input__checkbox"
-                    type="checkbox"
-                    checked={responsive}
-                    onInput={() => dispatch(actionSetResponsive(!responsive))}
-                  />
+          <BackgroundInput
+            colour={backgroundColour}
+            handleChange={(colour: string) =>
+              dispatch(actionSetBackgroundColour(colour))
+            }
+          />
+        </div>
 
-                  <label class="input__label" for="responsive">
-                    Responsive
-                  </label>
-                </div>
-              </div>
-
-              <BackgroundInput
-                colour={backgroundColour}
-                handleChange={(colour: string) =>
-                  dispatch(actionSetBackgroundColour(colour))
-                }
-              />
-            </Fragment>
-          ),
-
-          Links: () => (
-            <LinksInput
-              handleChange={dispatch}
-              embedUrl={embedProperties.embedUrl}
-              sourceUrl={embedProperties.sourceUrl}
-            />
-          ),
-        }}
-      />
+        <div title="Links" class="sidebar__tab">
+          <LinksInput
+            handleChange={dispatch}
+            embedUrl={embedProperties.embedUrl}
+            sourceUrl={embedProperties.sourceUrl}
+          />
+        </div>
+      </Sidebar>
     </div>
   );
 }
