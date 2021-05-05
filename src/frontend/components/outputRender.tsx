@@ -322,7 +322,7 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
       // Wrapper widths
       cssText += `
 
-        body {
+        .f2h__embed {
           background-color: ${sortedFrames[i].backgroundColour};
         }
    
@@ -346,7 +346,7 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
       
       @media (min-width: ${width}px) {
 
-        body {
+        .f2h__embed {
           background-color: ${sortedFrames[i].backgroundColour};
         }    
 
