@@ -289,10 +289,10 @@ export function generateEmbedHtml(props: renderInlineProps): string {
       )}
     </div>,
     null,
-    { pretty: false }
+    { pretty: true }
   );
 
-  html = minimiseText(html);
+  // html = minimiseText(html);
 
   html = `<!--
   # [ Figma2HTML Export v${version} ]
@@ -349,9 +349,9 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
             height: ${height}px;
           }`;
 
-      cssText += `.f2h--responsive svg { width: ${relSvgWidth}%; }`;
-      cssText += `[data-id="${id}"], [id="textblock-${id}"] { display: block; }`;
-      cssText += `.f2h--responsive .f2h__wrap  { padding-top: ${paddingHeight}%; }`;
+      cssText += `.f2h--responsive svg { width: ${relSvgWidth}%; } \n`;
+      cssText += `[data-id="${id}"], [id="textblock-${id}"] { display: block; } \n`;
+      cssText += `.f2h--responsive .f2h__wrap  { padding-top: ${paddingHeight}%; } \n`;
     } else {
       // Styles for the  remaining breakpoints
       const { id: prevId } = sortedFrames[i - 1];
