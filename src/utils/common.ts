@@ -46,3 +46,15 @@ export const debounce = <F extends (...args: any[]) => any>(
       timeout = setTimeout(() => resolve(func(...args)), waitFor);
     });
 };
+
+export function loadScript(url: string): Promise<boolean> {
+  const scriptEl = document.createElement("script");
+  scriptEl.setAttribute("src", url);
+
+  return new Promise((resolve, reject) => {
+    scriptEl.addEventListener("load", () => resolve(true));
+    scriptEl.addEventListener("error", reject);
+
+    document.head.appendChild(scriptEl);
+  });
+}

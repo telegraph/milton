@@ -24,6 +24,7 @@ export interface StateInterface {
   backgroundColour: string;
   notificationId?: NOTIFICATIONS_IDS;
   notificationMessage?: string;
+  fileKey: string;
 }
 
 export const initialState: StateInterface = {
@@ -37,8 +38,10 @@ export const initialState: StateInterface = {
     sourceUrl: "",
     embedUrl: "",
   },
+
   zoom: 1,
   breakpointIndex: 0,
+  fileKey: "",
   responsive: true,
   breakpointWidth: 100,
   backgroundColour: "#C4C4C4",

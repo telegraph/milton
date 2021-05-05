@@ -36,6 +36,7 @@ export function App(): JSX.Element {
     breakpointIndex,
     breakpointWidth,
     backgroundColour,
+    fileKey,
   } = state;
 
   const outputFrames = Object.values(frames).filter(({ id }) =>
@@ -63,6 +64,7 @@ export function App(): JSX.Element {
           frames: outputFrames,
           responsive,
           svg,
+          fileKey,
         })
       : "";
 

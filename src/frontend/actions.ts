@@ -100,7 +100,11 @@ export function actionToggleSelectedFrame(
 
 type InitialData = Pick<
   StateInterface,
-  "embedProperties" | "frames" | "selectedFrames" | "breakpointWidth"
+  | "embedProperties"
+  | "frames"
+  | "selectedFrames"
+  | "breakpointWidth"
+  | "fileKey"
 >;
 export const actionStoreInitialData = (
   figmaData: InitialData
@@ -145,6 +149,7 @@ export const actionGetFrameData = () => {
             embedProperties,
             selectedFrames,
             breakpointWidth: widths[0],
+            fileKey: response.fileKey,
           })
         );
       })
