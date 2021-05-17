@@ -1,3 +1,4 @@
+import type { JSX } from "preact";
 import { h, Component } from "preact";
 import { saveAs } from "file-saver";
 import copy from "clipboard-copy";
@@ -11,7 +12,7 @@ interface ExportProps {
   dispatch: (action: ActionTypes) => void;
 }
 export class Export extends Component<ExportProps> {
-  copyToClipboard = () => {
+  copyToClipboard = (): void => {
     copy(this.props.html)
       .then(() =>
         this.props.dispatch(
@@ -44,7 +45,7 @@ export class Export extends Component<ExportProps> {
     saveAs(new Blob([fileText], { type: "text/html" }), fileName);
   };
 
-  render() {
+  render(): JSX.Element {
     const fileSizeKb = Math.ceil(this.props.svg.length / 1024);
 
     return (

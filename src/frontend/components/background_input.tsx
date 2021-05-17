@@ -1,7 +1,9 @@
+import type { JSX } from "preact";
 import { h, Component } from "preact";
 import { HexColorPicker } from "react-colorful";
 import { debounce } from "../../utils/common";
 import { UI_TEXT } from "../../constants";
+import { Modal } from "./modal/modal";
 
 function cleanColourValue(value: string): string {
   let colour = value.trim().toLocaleUpperCase();
@@ -42,7 +44,7 @@ export class BackgroundInput extends Component<Props, State> {
 
   debouncedColourChange = debounce(this.handleColourChange, 100);
 
-  render() {
+  render(): JSX.Element {
     const { colour } = this.props;
     const { colourPickerVisible } = this.state;
 
@@ -54,18 +56,16 @@ export class BackgroundInput extends Component<Props, State> {
 
         <div class="side_panel__row side_panel__row--colour">
           {colourPickerVisible && (
-            <div class="modal modal--colour-picker">
-              <header class="modal_header">
-                <span class="modal_title">Background</span>
-                <button class="modal_close" onClick={this.closeColourPicker}>
-                  x
-                </button>
-              </header>
+            <Modal
+              title={UI_TEXT.TITLE_BACKGROUND_MODAL}
+              draggable={true}
+              onClose={this.closeColourPicker}
+            >
               <HexColorPicker
                 color={colour}
                 onChange={this.debouncedColourChange}
               />
-            </div>
+            </Modal>
           )}
 
           <button

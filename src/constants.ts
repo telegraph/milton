@@ -44,6 +44,7 @@ export enum NOTIFICATION_TYPE {
 
 export enum ERRORS {
   MISSING_FRAMES,
+  MISSING_FILE_KEY,
   MISSING_FONT,
   MULTIPLE_SAME_WIDTH,
   FAILED_TO_FETCH_DATA,
@@ -62,6 +63,7 @@ export const UI_TEXT = {
   TILE_OUTPUT: "Export",
   TITLE_LINKS: "Add links to all frames",
   TITLE_BACKGROUND_COLOUR: "Preview background",
+  TITLE_BACKGROUND_MODAL: "Background",
   BUTTON_NEXT: "Next",
   BUTTON_DOWNLOAD: "Download",
   BUTTON_PREVIOUS: "Back",
@@ -98,8 +100,7 @@ export const NOTIFICATIONS = {
   },
   [NOTIFICATIONS_IDS.ERROR_MULTIPLE_SAME_WIDTH]: {
     type: NOTIFICATION_TYPE.ERROR,
-    text:
-      "👎 All frames widths need to be different. Please resize frames and try again",
+    text: "👎 All frames widths need to be different. Please resize frames and try again",
   },
   [NOTIFICATIONS_IDS.ERROR_FAILED_TO_FETCH_DATA]: {
     type: NOTIFICATION_TYPE.ERROR,
@@ -107,8 +108,7 @@ export const NOTIFICATIONS = {
   },
   [NOTIFICATIONS_IDS.ERROR_NO_FRAMES_SELECTED]: {
     type: NOTIFICATION_TYPE.ERROR,
-    text:
-      "👎 No frames selected | You must select at least one frame to ‘copy to clipboard’ or ‘download’",
+    text: "👎 No frames selected | You must select at least one frame to ‘copy to clipboard’ or ‘download’",
   },
   [NOTIFICATIONS_IDS.ERROR_FAILED_TO_SET_EMBED_SETTINGS]: {
     type: NOTIFICATION_TYPE.ERROR,

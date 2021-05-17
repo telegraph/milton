@@ -4,7 +4,6 @@ import { textData, FrameDataInterface, TextRange } from "types";
 import { version } from "../../../package.json";
 
 // Import CSS file as plain text via esbuild loader option
-// @ts-ignore
 import embedCss from "backend/embed.css";
 // import fontsCss from "backend/telegraphFonts.css";
 import { buildFontFaceCss, generateFontStyles } from "../../backend/fonts";
@@ -197,9 +196,10 @@ function TextContainer(props: FrameProps) {
   return (
     <div class="f2h__text_container">
       {frames.map((frame) => (
-        <div id={`textblock-${frame.id}`}>
+        <div key={frame.id} id={`textblock-${frame.id}`}>
           {frame.textNodes.map((node) => (
             <Text
+              key={node.id}
               node={node}
               width={frame.width}
               height={frame.height}

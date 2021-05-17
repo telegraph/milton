@@ -24,7 +24,7 @@
     }
   },
   "rules": {
-    "react/no-unknown-property": [2, { "ignore": ["class", "for"] }],
+    "react/no-unknown-property": [2, { "ignore": ["class", "for", "spellcheck"] }],
     "react/prop-types": "off"
   }
 }

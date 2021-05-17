@@ -1,3 +1,4 @@
+import type { JSX } from "preact";
 import { h, Component } from "preact";
 import { NOTIFICATIONS, NOTIFICATIONS_IDS, NOTIFICATION_TYPE } from "constants";
 import { ActionTypes, actionClearNotification } from "frontend/actions";
@@ -22,13 +23,13 @@ export class NotificationBar extends Component<
 
   TIMEOUT_LENGTH = 2 * 1000;
 
-  removeNotification = () => {
+  removeNotification = (): void => {
     this.props.dispatch(actionClearNotification());
     clearTimeout(this.state.timerId);
     this.setState({ timerId: undefined });
   };
 
-  componentDidUpdate(oldProps: NotificationBarProps) {
+  componentDidUpdate(oldProps: NotificationBarProps): void {
     if (this.props.id === undefined) return;
     if (this.props.id === oldProps.id) return;
 
@@ -43,11 +44,11 @@ export class NotificationBar extends Component<
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     clearTimeout(this.state.timerId);
   }
 
-  render() {
+  render(): JSX.Element | null {
     const { id, message } = this.props;
 
     if (id === undefined) return null;

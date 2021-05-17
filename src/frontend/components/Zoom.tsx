@@ -1,4 +1,4 @@
-import { h, Component } from "preact";
+import { h, Component, JSX } from "preact";
 import { UI_TEXT } from "../../constants";
 import { ActionTypes, actionSetZoom } from "frontend/actions";
 import { Dropdown } from "frontend/components/dropdown/dropdown";
@@ -18,7 +18,7 @@ export class Zoom extends Component<ZoomProps> {
   ZOOM_MIN = 0.015625;
   ZOOM_MAX = 100;
 
-  handleKeyboardInput = ({ code }: KeyboardEvent) => {
+  handleKeyboardInput = ({ code }: KeyboardEvent): void => {
     const { handleChange, zoom } = this.props;
 
     if (code === KEYS.ZOOM_IN) {
@@ -32,15 +32,15 @@ export class Zoom extends Component<ZoomProps> {
     }
   };
 
-  componentDidMount() {
+  componentDidMount(): void {
     window.addEventListener("keydown", this.handleKeyboardInput);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     window.removeEventListener("keydown", this.handleKeyboardInput);
   }
 
-  render() {
+  render(): JSX.Element {
     const { handleChange, zoom } = this.props;
     const zoomLabel = `${(zoom * 100).toFixed(0)}%`;
     const zoomOptions = [

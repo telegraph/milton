@@ -1,4 +1,5 @@
-import { h, Component, RefObject, createRef } from "preact";
+import type { JSX, RefObject } from "preact";
+import { h, Component, createRef } from "preact";
 
 enum BUTTONS {
   LEFT = 0,
@@ -57,7 +58,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
   previewEl: RefObject<HTMLDivElement> = createRef();
   iframeEl: RefObject<HTMLIFrameElement> = createRef();
 
-  startPanning = (e: MouseEvent) => {
+  startPanning = (e: MouseEvent): void => {
     const { button, x, y } = e;
 
     if (this.state.panningEnabled) {
@@ -75,7 +76,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     }
   };
 
-  panPreview = (e: MouseEvent) => {
+  panPreview = (e: MouseEvent): void => {
     if (this.state.panningEnabled && this.state.isPanning) {
       const distanceX = e.x - this.state.startX;
       const distanceY = e.y - this.state.startY;
@@ -84,7 +85,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     }
   };
 
-  stopPanning = (e: MouseEvent) => {
+  stopPanning = (e: MouseEvent): void => {
     if (this.state.panningEnabled === false) return;
 
     let panningEnabled = true;
@@ -103,33 +104,33 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     });
   };
 
-  enablePanning = ({ code }: KeyboardEvent) => {
+  enablePanning = ({ code }: KeyboardEvent): void => {
     if (code === "Space" && this.state.panningEnabled === false) {
       this.setState({ panningEnabled: true });
     }
   };
 
-  disablePanning = ({ code }: KeyboardEvent) => {
+  disablePanning = ({ code }: KeyboardEvent): void => {
     if (code === "Space" && this.state.panningEnabled) {
       this.setState({ panningEnabled: false, isPanning: false });
     }
   };
 
-  enableSelection = (e: MouseEvent) => {
+  enableSelection = (e: MouseEvent): void => {
     e.stopPropagation();
     this.setState({ selected: true });
   };
 
-  disableSelection = () => {
+  disableSelection = (): void => {
     this.setState({ selected: false });
   };
 
-  startResize = ({ button, x, y }: MouseEvent) => {
+  startResize = ({ button, x, y }: MouseEvent): void => {
     if (button === BUTTONS.LEFT)
       this.setState({ resizing: true, prevMouseX: x, prevMouseY: y });
   };
 
-  updateResize = (e: MouseEvent) => {
+  updateResize = (e: MouseEvent): void => {
     if (this.state.resizing === false) return;
 
     const {
@@ -149,7 +150,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     });
   };
 
-  endResize = () => {
+  endResize = (): void => {
     if (this.state.resizing === false) return;
 
     this.setState({
@@ -161,7 +162,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     });
   };
 
-  updateIframeHeight = () => {
+  updateIframeHeight = (): void => {
     if (!this.iframeEl.current) return;
     const iframe = this.iframeEl.current;
     const height =
@@ -172,7 +173,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     });
   };
 
-  componentDidMount() {
+  componentDidMount(): void {
     if (!this.previewEl.current || !this.iframeEl.current) return;
 
     const previewRefEl = this.previewEl.current;
@@ -186,7 +187,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     this.iframeEl.current.addEventListener("load", this.updateIframeHeight);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     if (!this.previewEl.current || !this.iframeEl.current) return;
 
     const previewRefEl = this.previewEl.current;
@@ -200,7 +201,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     this.iframeEl.current.removeEventListener("load", this.updateIframeHeight);
   }
 
-  componentDidUpdate({ breakpointWidth }: PreviewProps) {
+  componentDidUpdate({ breakpointWidth }: PreviewProps): void {
     if (breakpointWidth !== this.props.breakpointWidth) {
       this.setState(
         {
@@ -218,7 +219,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     }
   }
 
-  render() {
+  render(): JSX.Element {
     const {
       breakpointWidth,
       html,

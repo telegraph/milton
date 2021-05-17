@@ -1,4 +1,4 @@
-import { Fragment, h, JSX } from "preact";
+import { h, JSX } from "preact";
 import { STATUS } from "constants";
 import { useEffect, useReducer, useRef } from "preact/hooks";
 import { initialState, reducer } from "../store";
@@ -9,16 +9,16 @@ import { Export } from "./Export";
 import { NotificationBar } from "./NotificationBar";
 import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
 import { BackgroundInput } from "./background_input";
+import { Zoom } from "./Zoom";
+import { Breakpoints } from "./breakpoints";
+import { Sidebar } from "./Sidebar";
+import { LinksInput } from "./links_input";
 import {
   actionGetFrameData,
   actionUpdateSelectedFrames,
   actionSetResponsive,
   actionSetBackgroundColour,
 } from "../actions";
-import { Zoom } from "./Zoom";
-import { Breakpoints } from "./breakpoints";
-import { Sidebar } from "./Sidebar";
-import { LinksInput } from "./links_input";
 
 export function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState);
