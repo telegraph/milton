@@ -13,12 +13,14 @@ import { Zoom } from "./Zoom";
 import { Breakpoints } from "./breakpoints";
 import { Sidebar } from "./Sidebar";
 import { LinksInput } from "./links_input";
+import config from "../../config.json";
 import {
   actionGetFrameData,
   actionUpdateSelectedFrames,
   actionSetResponsive,
   actionSetBackgroundColour,
 } from "../actions";
+import { Fragment } from "preact";
 
 export function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -82,14 +84,19 @@ export function App(): JSX.Element {
 
         <Export svg={svg} html={html} zoom={zoom} dispatch={dispatch} />
 
-        <a
-          href="https://example.com"
-          target="_blank"
-          class="btn btn--clean"
-          rel="noreferrer"
-        >
-          Open Particle CMS ↗
-        </a>
+        {config.shareServices?.map((service) => {
+          return (
+            <a
+              key={service.name}
+              href={service.url}
+              target="_blank"
+              class="btn btn--clean"
+              rel="noreferrer"
+            >
+              Open {service.name} ↗
+            </a>
+          );
+        })}
       </header>
 
       <NotificationBar
