@@ -26,8 +26,8 @@ export function Breakpoints({
 
   const breakpointOptions = breakpoints.map((breakpoint, index) => {
     const width = Math.round(breakpoint.width);
-    let text = `${width}px - `;
-    text += breakpoint.default ? "common" : "frame";
+    let text = `${width}px `;
+    text += breakpoint.default ? "" : "frame";
 
     return { text, value: index };
   });
