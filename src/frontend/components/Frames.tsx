@@ -25,7 +25,7 @@ export function Frames({
       {sizeSortedFrames.map(({ name, id }) => (
         <div
           key={id}
-          class="side_panel__row  selection__item"
+          class="side_panel__row side_panel__row--input selection__item"
           data-active={selectedFrames.includes(id)}
         >
           <label

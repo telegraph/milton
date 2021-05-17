@@ -80,7 +80,7 @@
     var(--padding-medium, 0) var(--padding-medium, 0);
 }
 .side_panel__row--input:hover {
-  background-color: var(--colours-item-hover, #f0f);
+  background-color: var(--colours-light-background-hover, #f0f);
 }
 .side_panel__row--headline {
   display: grid;
