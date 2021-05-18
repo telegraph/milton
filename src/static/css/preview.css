@@ -164,7 +164,7 @@
   left: 50%;
   transform: translateX(-50%);
   display: none;
-  bottom: -30px;
+  top: -30px;
   margin: 0;
 }
 .preview__iframe_wrapper--selected .preview__dimensions {
