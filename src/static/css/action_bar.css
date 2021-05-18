@@ -56,3 +56,9 @@
 .export__download {
   border-left: 1px solid var(--colours-light-border, #f0f);
 }
+
+/* [ Links ]
+----------------------------------------------------------------- */
+.links {
+  display: flex;
+}

@@ -20,7 +20,6 @@ import {
   actionSetResponsive,
   actionSetBackgroundColour,
 } from "../actions";
-import { Fragment } from "preact";
 
 export function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -86,15 +85,16 @@ export function App(): JSX.Element {
 
         {config.shareServices?.map((service) => {
           return (
-            <a
-              key={service.name}
-              href={service.url}
-              target="_blank"
-              class="btn btn--clean"
-              rel="noreferrer"
-            >
-              Open {service.name} ↗
-            </a>
+            <div key={service.name} class="links">
+              <a
+                href={service.url}
+                target="_blank"
+                class="btn btn--clean"
+                rel="noreferrer"
+              >
+                Open {service.name} ↗
+              </a>
+            </div>
           );
         })}
       </header>
