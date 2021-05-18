@@ -31,12 +31,12 @@ body {
 }
 ::-webkit-scrollbar-thumb {
   border-radius: 12px;
-  background: var(--colours-light-background, #f0f);
+  background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
-*:hover::-webkit-scrollbar-thumb {
-  background: black;
-}
 /* [ App ]
 ----------------------------------------------------------------- */
 .app {

@@ -51,6 +51,14 @@
   border-top: 1px solid var(--colours-light-border, #f0f);
   user-select: none;
 }
+.sidebar::-webkit-scrollbar-thumb,
+.side_panel::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+.sidebar:hover::-webkit-scrollbar-thumb,
+.side_panel:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
 .side_panel:first-of-type {
   border-top: none;
 }

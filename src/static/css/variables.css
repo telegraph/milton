@@ -10,16 +10,16 @@
   --border-radius-medium: 6px;
   --border-radius-large: 12px;
 
-  --colours-light-background: rgb(255, 255, 255);
-  --colours-light-background-hover: rgb(243, 243, 243);
+  --colours-light-background: #ffffff;
+  --colours-light-background-hover: #f3f3f3;
   --colours-dark-background: #222222;
   --colours-light-border: #dfdfdf;
   --colours-dark-border: #383838;
   --colours-active: #18a0fb;
   --colours-text: #222222;
-  --colours-text-disabled: rgb(184, 184, 184);
+  --colours-text-disabled: #b8b8b8;
   --colours-preview-background: #c4c4c4;
-  --colours-item-hover: rgb(218, 235, 247);
+  --colours-item-hover: #daebf7;
 
   --colours-main: rgb(72, 202, 126);
   --colours-main-light: rgb(208, 242, 222);
