@@ -99,7 +99,6 @@
   position: absolute;
   bottom: -4px;
   right: -4px;
-  cursor: nwse-resize;
   z-index: 2;
   text-indent: -200px;
   overflow: hidden;
@@ -107,14 +106,33 @@
   padding: 4px;
   display: none;
 }
-
 .preview__iframe_wrapper.preview__iframe_wrapper--selected {
   outline: 1px solid var(--colours-active, #f0f);
 }
-
 .preview__iframe_wrapper--selected .preview__iframe_resize {
   display: block;
 }
+.preview__iframe_resize--top-left {
+  left: -4px;
+  top: -4px;
+  cursor: nwse-resize;
+}
+.preview__iframe_resize--top-right {
+  right: -4px;
+  top: -4px;
+  cursor: nesw-resize;
+}
+.preview__iframe_resize--bottom-right {
+  right: -4px;
+  bottom: -4px;
+  cursor: nwse-resize;
+}
+.preview__iframe_resize--bottom-left {
+  left: -4px;
+  bottom: -4px;
+  cursor: nesw-resize;
+}
+
 /* .preview--resizing .preview__iframe_resize,
   .preview__iframe_wrapper:hover .preview__iframe_resize {
     display: block;

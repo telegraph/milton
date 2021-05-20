@@ -7,6 +7,13 @@ enum BUTTONS {
   RIGHT = 2,
 }
 
+enum DIRECTIONS {
+  NW,
+  NE,
+  SE,
+  SW,
+}
+
 interface PreviewProps {
   rendering: boolean;
   html: string;
@@ -30,6 +37,7 @@ interface PreviewStateInterface {
   panningEnabled: boolean;
   isPanning: boolean;
   resizing: boolean;
+  resizeDirection: DIRECTIONS;
   prevMouseX: number;
   prevMouseY: number;
   selected: boolean;
@@ -53,6 +61,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     prevMouseX: 0,
     prevMouseY: 0,
     selected: false,
+    resizeDirection: DIRECTIONS.NE,
   };
 
   previewEl: RefObject<HTMLDivElement> = createRef();
@@ -125,9 +134,14 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     this.setState({ selected: false });
   };
 
-  startResize = ({ button, x, y }: MouseEvent): void => {
+  startResize = (direction: DIRECTIONS, { button, x, y }: MouseEvent): void => {
     if (button === BUTTONS.LEFT)
-      this.setState({ resizing: true, prevMouseX: x, prevMouseY: y });
+      this.setState({
+        resizing: true,
+        prevMouseX: x,
+        prevMouseY: y,
+        resizeDirection: direction,
+      });
   };
 
   updateResize = (e: MouseEvent): void => {
@@ -138,11 +152,21 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
       prevMouseY,
       prevOffsetWidth,
       prevOffsetHeight,
+      resizeDirection,
     } = this.state;
     const { zoom } = this.props;
+    const { NE, SE, SW } = DIRECTIONS;
 
-    const newOffsetWidth = ((e.x - prevMouseX) * 2) / zoom + prevOffsetWidth;
-    const newOffsetHeight = ((e.y - prevMouseY) * 2) / zoom + prevOffsetHeight;
+    const xDirection =
+      resizeDirection === NE || resizeDirection === SW ? 1 : -1;
+    const yDirection =
+      resizeDirection === SE || resizeDirection === SW ? 1 : -1;
+
+    const scaledXDistance = ((e.x - prevMouseX) * 2) / zoom;
+    const scaledYDistance = ((e.y - prevMouseY) * 2) / zoom;
+
+    const newOffsetWidth = scaledXDistance * xDirection + prevOffsetWidth;
+    const newOffsetHeight = scaledYDistance * yDirection + prevOffsetHeight;
 
     this.setState({
       offsetWidth: newOffsetWidth,
@@ -220,13 +244,8 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
   }
 
   render(): JSX.Element {
-    const {
-      breakpointWidth,
-      html,
-      zoom,
-      rendering,
-      backgroundColour,
-    } = this.props;
+    const { breakpointWidth, html, zoom, rendering, backgroundColour } =
+      this.props;
     const {
       offsetWidth,
       offsetHeight,
@@ -282,8 +301,26 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
               ref={this.iframeEl}
             />
             <button
-              class="preview__iframe_resize"
-              onMouseDown={this.startResize}
+              class="preview__iframe_resize preview__iframe_resize--top-left"
+              onMouseDown={(event) => this.startResize(DIRECTIONS.NW, event)}
+            >
+              Resize
+            </button>
+            <button
+              class="preview__iframe_resize preview__iframe_resize--top-right"
+              onMouseDown={(event) => this.startResize(DIRECTIONS.NE, event)}
+            >
+              Resize
+            </button>
+            <button
+              class="preview__iframe_resize preview__iframe_resize--bottom-left"
+              onMouseDown={(event) => this.startResize(DIRECTIONS.SE, event)}
+            >
+              Resize
+            </button>
+            <button
+              class="preview__iframe_resize preview__iframe_resize--bottom-right"
+              onMouseDown={(event) => this.startResize(DIRECTIONS.SW, event)}
             >
               Resize
             </button>
