@@ -33,8 +33,12 @@
   border-bottom: 1px solid var(--colours-light-border, #f0f);
   display: flex;
 }
-.controls__navigation .btn {
+.controls__navigation > .btn {
   flex: 1;
+  border-right: 1px solid var(--colours-light-border, #f0f);
+}
+.controls__navigation > .btn:last-of-type {
+  border: none;
 }
 
 /* [ Controls - Section ]
