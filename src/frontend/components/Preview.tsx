@@ -60,7 +60,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     resizing: false,
     prevMouseX: 0,
     prevMouseY: 0,
-    selected: false,
+    selected: true,
     resizeDirection: DIRECTIONS.NE,
   };
 
