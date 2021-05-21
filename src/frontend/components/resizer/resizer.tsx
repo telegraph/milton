@@ -9,19 +9,17 @@ export class Resizer extends Component {
     const { current: element } = this.cornerElement;
     element?.setPointerCapture(event.pointerId);
     element?.addEventListener("pointermove", this.handleResize);
-    console.log(element, event);
   };
 
   private endResize = (event: PointerEvent): void => {
     const { current: element } = this.cornerElement;
     element?.releasePointerCapture(event.pointerId);
     element?.removeEventListener("pointermove", this.handleResize);
-    console.log(element, event);
   };
 
   handleResize = (event: PointerEvent): void => {
     const { clientX, clientY } = event;
-    console.log("move", clientX, clientY);
+
     postMan.send({
       workload: MSG_EVENTS.RESIZE_WINDOW,
       data: {
