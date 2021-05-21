@@ -33,7 +33,7 @@ export function actionResizeWindow(isMaximised: boolean): {
   payload: boolean;
 } {
   const maximized = !isMaximised;
-  postMan.send({ workload: MSG_EVENTS.RESIZE_WINDOW, data: maximized });
+  postMan.send({ workload: MSG_EVENTS.MIN_MAX_WINDOW, data: maximized });
   return { type: ACTIONS.RESIZE_WINDOW, payload: maximized };
 }
 

@@ -9,7 +9,11 @@ import { URL_REGEX } from "utils/common";
 import { getTextNodesFromFrame } from "utils/figmaText";
 import { EmbedProperties } from "frontend/store";
 
-export function resizeWindow(maximize: boolean): void {
+export function resizeWindow(size: { x: number; y: number }): void {
+  figma.ui.resize(size.x, size.y);
+}
+
+export function minMaxWindow(maximize: boolean): void {
   const { width, height } = figma.viewport.bounds;
 
   if (maximize) {

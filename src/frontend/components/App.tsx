@@ -1,5 +1,5 @@
 import { h, JSX } from "preact";
-import { MSG_EVENTS, STATUS, UI_TEXT } from "constants";
+import { STATUS, UI_TEXT } from "constants";
 import { useEffect, useReducer, useRef } from "preact/hooks";
 import { initialState, reducer } from "../store";
 import { generateEmbedHtml } from "./outputRender";
@@ -13,6 +13,7 @@ import { Zoom } from "./Zoom";
 import { Breakpoints } from "./breakpoints";
 import { Sidebar } from "./Sidebar";
 import { LinksInput } from "./links_input";
+import { Resizer } from "./resizer/resizer";
 import config from "../../config.json";
 import {
   actionGetFrameData,
@@ -21,7 +22,6 @@ import {
   actionSetBackgroundColour,
   actionResizeWindow,
 } from "../actions";
-import { postMan } from "utils/messages";
 
 export function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -170,6 +170,8 @@ export function App(): JSX.Element {
           />
         </div>
       </Sidebar>
+
+      <Resizer />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import {
   getRootFrames,
   renderFrames,
   setEmbedProperties,
+  minMaxWindow,
   resizeWindow,
 } from "backend/figmaUtils";
 
@@ -12,6 +13,7 @@ import {
 postMan.registerWorker(MSG_EVENTS.GET_ROOT_FRAMES, getRootFrames);
 postMan.registerWorker(MSG_EVENTS.RENDER, renderFrames);
 postMan.registerWorker(MSG_EVENTS.UPDATE_HEADLINES, setEmbedProperties);
+postMan.registerWorker(MSG_EVENTS.MIN_MAX_WINDOW, minMaxWindow);
 postMan.registerWorker(MSG_EVENTS.RESIZE_WINDOW, resizeWindow);
 
 // Render the DOM
