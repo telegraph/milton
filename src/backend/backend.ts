@@ -1,32 +1,21 @@
-import { MSG_EVENTS } from "constants";
+import { DEFAULT_WINDOW_SIZE, MSG_EVENTS } from "constants";
 import { postMan } from "utils/messages";
 
 import {
   getRootFrames,
   renderFrames,
   setEmbedProperties,
+  resizeWindow,
 } from "backend/figmaUtils";
 
 // Register messenger event functions
 postMan.registerWorker(MSG_EVENTS.GET_ROOT_FRAMES, getRootFrames);
 postMan.registerWorker(MSG_EVENTS.RENDER, renderFrames);
 postMan.registerWorker(MSG_EVENTS.UPDATE_HEADLINES, setEmbedProperties);
+postMan.registerWorker(MSG_EVENTS.RESIZE_WINDOW, resizeWindow);
 
 // Render the DOM
 figma.showUI(__html__);
 
 // Resize UI to max viewport dimensions
-const { width, height, x } = figma.viewport.bounds;
-const { zoom } = figma.viewport;
-
-const MIN_WIDTH = 600;
-const WIDTH_PERCENTAGE = 0.9;
-const pluginWidth = Math.round((width + Math.abs(x)) * zoom * WIDTH_PERCENTAGE);
-const initialWindowWidth = Math.max(pluginWidth, MIN_WIDTH);
-
-const MIN_HEIGHT = 480;
-const WINDOW_HEADER_HEIGHT = 120;
-const pluginHeight = Math.round(height * zoom) - WINDOW_HEADER_HEIGHT;
-const initialWindowHeight = Math.max(pluginHeight, MIN_HEIGHT);
-
-figma.ui.resize(initialWindowWidth, initialWindowHeight);
+figma.ui.resize(DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height);

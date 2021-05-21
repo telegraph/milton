@@ -1,5 +1,5 @@
 import { h, JSX } from "preact";
-import { STATUS } from "constants";
+import { MSG_EVENTS, STATUS, UI_TEXT } from "constants";
 import { useEffect, useReducer, useRef } from "preact/hooks";
 import { initialState, reducer } from "../store";
 import { generateEmbedHtml } from "./outputRender";
@@ -19,7 +19,9 @@ import {
   actionUpdateSelectedFrames,
   actionSetResponsive,
   actionSetBackgroundColour,
+  actionResizeWindow,
 } from "../actions";
+import { postMan } from "utils/messages";
 
 export function App(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -38,6 +40,7 @@ export function App(): JSX.Element {
     breakpointWidth,
     backgroundColour,
     fileKey,
+    isMaximized,
   } = state;
 
   const outputFrames = Object.values(frames).filter(({ id }) =>
@@ -97,6 +100,17 @@ export function App(): JSX.Element {
             </div>
           );
         })}
+
+        <div class="resize-window">
+          <button
+            class={`btn btn--clean ${
+              isMaximized ? "resize--min" : "resize--max"
+            }`}
+            onClick={() => dispatch(actionResizeWindow(isMaximized))}
+          >
+            {isMaximized ? UI_TEXT.WINDOW_MINIMIZE : UI_TEXT.WINDOW_MAXIMIZE}
+          </button>
+        </div>
       </header>
 
       <NotificationBar

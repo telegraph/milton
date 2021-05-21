@@ -4,6 +4,11 @@ export enum STAGES {
   SAVE_OUTPUT,
 }
 
+export const DEFAULT_WINDOW_SIZE = {
+  width: 820,
+  height: 560,
+};
+
 export enum EMBED_PROPERTIES {
   HEADLINE = "headline",
   SUBHEAD = "subhead",
@@ -29,6 +34,7 @@ export enum MSG_EVENTS {
   GET_ROOT_FRAMES,
   RENDER_EMBED_HTML,
   RENDER_IFRAME_HTML,
+  RESIZE_WINDOW,
 }
 
 export enum OUTPUT_FORMATS {
@@ -76,6 +82,8 @@ export const UI_TEXT = {
   EMBED_PROPS_URL_PLACEHOLDER: "Embed URL: https://...",
   EMBED_PROPS_SOURCE_URL_PLACEHOLDER: "Source URL: http://...",
   EMBED_PROPS_INVALID_URL: "Enter a valid link",
+  WINDOW_MAXIMIZE: "Maximize",
+  WINDOW_MINIMIZE: "Minimize",
 };
 
 export enum NOTIFICATIONS_IDS {

@@ -4,10 +4,20 @@ import {
   FrameDataInterface,
   imageNodeDimensions,
 } from "types";
-import { EMBED_PROPERTIES, ERRORS } from "constants";
+import { EMBED_PROPERTIES, ERRORS, DEFAULT_WINDOW_SIZE } from "constants";
 import { URL_REGEX } from "utils/common";
 import { getTextNodesFromFrame } from "utils/figmaText";
 import { EmbedProperties } from "frontend/store";
+
+export function resizeWindow(maximize: boolean): void {
+  const { width, height } = figma.viewport.bounds;
+
+  if (maximize) {
+    figma.ui.resize(Math.round(width), Math.round(height));
+  } else {
+    figma.ui.resize(DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height);
+  }
+}
 
 /**
  * Test if Figma node supports fill property type

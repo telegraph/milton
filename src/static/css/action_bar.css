@@ -62,3 +62,17 @@
 .links {
   display: flex;
 }
+
+/* [ Resize ]
+----------------------------------------------------------------- */
+.resize--max,
+.resize--min {
+  background-position: center right;
+  background-image: url("../images/icon-maximize.svg");
+  background-size: 32px;
+  background-repeat: no-repeat;
+  padding-right: 32px;
+}
+.resize--min {
+  background-image: url("../images/icon-minimize.svg");
+}

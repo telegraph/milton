@@ -25,6 +25,7 @@ export interface StateInterface {
   notificationId?: NOTIFICATIONS_IDS;
   notificationMessage?: string;
   fileKey: string;
+  isMaximized: boolean;
 }
 
 export const initialState: StateInterface = {
@@ -48,6 +49,7 @@ export const initialState: StateInterface = {
   svg: "",
   notificationId: undefined,
   notificationMessage: "",
+  isMaximized: false,
 };
 
 export function reducer(
@@ -94,6 +96,9 @@ export function reducer(
 
     case ACTIONS.SET_SVG:
       return { ...state, svg: action.payload };
+
+    case ACTIONS.RESIZE_WINDOW:
+      return { ...state, isMaximized: action.payload };
 
     case ACTIONS.TOGGLE_SELECTED_FRAME: {
       const newSelection = toggleItem(action.payload, state.selectedFrames);

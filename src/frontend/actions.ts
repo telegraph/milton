@@ -25,35 +25,50 @@ export enum ACTIONS {
   SET_BACKGROUND_COLOUR = "SET_BACKGROUND_COLOUR",
   CLEAR_NOTIFICATION = "CLEAR_NOTIFICATION",
   TOGGLE_SELECTED_FRAME = "TOGGLE_SELECTED_FRAME",
+  RESIZE_WINDOW = "RESIZE_WINDOW",
 }
 
-export function actionSetFrames(
-  frames: FigmaFramesType
-): { type: ACTIONS.SET_FRAMES; payload: FigmaFramesType } {
+export function actionResizeWindow(isMaximised: boolean): {
+  type: ACTIONS.RESIZE_WINDOW;
+  payload: boolean;
+} {
+  const maximized = !isMaximised;
+  postMan.send({ workload: MSG_EVENTS.RESIZE_WINDOW, data: maximized });
+  return { type: ACTIONS.RESIZE_WINDOW, payload: maximized };
+}
+
+export function actionSetFrames(frames: FigmaFramesType): {
+  type: ACTIONS.SET_FRAMES;
+  payload: FigmaFramesType;
+} {
   return { type: ACTIONS.SET_FRAMES, payload: frames };
 }
 
-export function actionSetSelectedFrames(
-  frameIds: string[]
-): { type: ACTIONS.SET_SELECTED_FRAMES; payload: string[] } {
+export function actionSetSelectedFrames(frameIds: string[]): {
+  type: ACTIONS.SET_SELECTED_FRAMES;
+  payload: string[];
+} {
   return { type: ACTIONS.SET_SELECTED_FRAMES, payload: frameIds };
 }
 
-export function actionSetStatus(
-  status: STATUS
-): { type: ACTIONS.SET_STATUS; payload: STATUS } {
+export function actionSetStatus(status: STATUS): {
+  type: ACTIONS.SET_STATUS;
+  payload: STATUS;
+} {
   return { type: ACTIONS.SET_STATUS, payload: status };
 }
 
-export function actionSetResponsive(
-  responsive: boolean
-): { type: ACTIONS.SET_RESPONSIVE; payload: boolean } {
+export function actionSetResponsive(responsive: boolean): {
+  type: ACTIONS.SET_RESPONSIVE;
+  payload: boolean;
+} {
   return { type: ACTIONS.SET_RESPONSIVE, payload: responsive };
 }
 
-export function actionSetZoom(
-  zoom: number
-): { type: ACTIONS.SET_ZOOM; payload: number } {
+export function actionSetZoom(zoom: number): {
+  type: ACTIONS.SET_ZOOM;
+  payload: number;
+} {
   return { type: ACTIONS.SET_ZOOM, payload: zoom };
 }
 
@@ -67,9 +82,10 @@ export function actionSetBreakpoint(
   return { type: ACTIONS.SET_BREAKPOINT, payload: { index, width } };
 }
 
-export function actionSetSvg(
-  svg: string
-): { type: ACTIONS.SET_SVG; payload: string } {
+export function actionSetSvg(svg: string): {
+  type: ACTIONS.SET_SVG;
+  payload: string;
+} {
   return { type: ACTIONS.SET_SVG, payload: svg };
 }
 
@@ -92,9 +108,10 @@ export function actionClearNotification(): {
   return { type: ACTIONS.CLEAR_NOTIFICATION };
 }
 
-export function actionToggleSelectedFrame(
-  id: string
-): { type: ACTIONS.TOGGLE_SELECTED_FRAME; payload: string } {
+export function actionToggleSelectedFrame(id: string): {
+  type: ACTIONS.TOGGLE_SELECTED_FRAME;
+  payload: string;
+} {
   return { type: ACTIONS.TOGGLE_SELECTED_FRAME, payload: id };
 }
 
@@ -254,13 +271,15 @@ export const actionUpdateEmbedProps = (
   };
 };
 
-export function actionSetBackgroundColour(
-  colour: string
-): { type: ACTIONS.SET_BACKGROUND_COLOUR; payload: string } {
+export function actionSetBackgroundColour(colour: string): {
+  type: ACTIONS.SET_BACKGROUND_COLOUR;
+  payload: string;
+} {
   return { type: ACTIONS.SET_BACKGROUND_COLOUR, payload: colour };
 }
 
 export type ActionTypes =
+  | ReturnType<typeof actionResizeWindow>
   | ReturnType<typeof actionStoreEmbedProperty>
   | ReturnType<typeof actionSetFrames>
   | ReturnType<typeof actionSetSelectedFrames>
