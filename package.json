@@ -12,6 +12,7 @@
   "author": "Andrew Mason",
   "license": "ISC",
   "dependencies": {
+    "@panzoom/panzoom": "^4.4.0",
     "clipboard-copy": "^4.0.1",
     "pako": "^2.0.3",
     "pica": "^6.1.1",

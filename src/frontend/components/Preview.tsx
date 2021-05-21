@@ -1,5 +1,7 @@
 import type { JSX, RefObject } from "preact";
+import type { PanzoomObject } from "@panzoom/panzoom";
 import { h, Component, createRef } from "preact";
+import PanZoom from "@panzoom/panzoom";
 
 enum BUTTONS {
   LEFT = 0,
@@ -44,6 +46,9 @@ interface PreviewStateInterface {
 }
 
 export class Preview extends Component<PreviewProps, PreviewStateInterface> {
+  private panZoom: PanzoomObject | undefined;
+  private containerElement: RefObject<HTMLDivElement> = createRef();
+
   state: PreviewStateInterface = {
     x: 0,
     y: 0,
@@ -200,66 +205,40 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
   componentDidMount(): void {
     if (!this.previewEl.current || !this.iframeEl.current) return;
 
-    const previewRefEl = this.previewEl.current;
-    previewRefEl.addEventListener("mousedown", this.startPanning);
-    previewRefEl.addEventListener("mousemove", this.panPreview);
-    previewRefEl.addEventListener("mouseup", this.stopPanning);
-    previewRefEl.addEventListener("mouseleave", this.stopPanning);
-    window.addEventListener("keydown", this.enablePanning);
-    window.addEventListener("keyup", this.disablePanning);
+    this.panZoom = PanZoom(this.previewEl.current, {
+      excludeClass: "preview__iframe_resize",
+      animate: false,
+      canvas: true,
+    });
+
+    this.previewEl.current.addEventListener("panzoomchange", (event) => {
+      this.setState({
+        x: event?.detail.x,
+        y: event?.detail.y,
+      });
+    });
 
     this.iframeEl.current.addEventListener("load", this.updateIframeHeight);
   }
 
   componentWillUnmount(): void {
     if (!this.previewEl.current || !this.iframeEl.current) return;
-
-    const previewRefEl = this.previewEl.current;
-    previewRefEl.removeEventListener("mousedown", this.startPanning);
-    previewRefEl.removeEventListener("mousemove", this.panPreview);
-    previewRefEl.removeEventListener("mouseup", this.stopPanning);
-    previewRefEl.removeEventListener("mouseleave", this.stopPanning);
-    window.removeEventListener("keydown", this.enablePanning);
-    window.removeEventListener("keyup", this.disablePanning);
-
     this.iframeEl.current.removeEventListener("load", this.updateIframeHeight);
   }
 
   componentDidUpdate({ breakpointWidth }: PreviewProps): void {
     if (breakpointWidth !== this.props.breakpointWidth) {
-      this.setState(
-        {
-          x: 0,
-          y: 0,
-          translateX: 0,
-          translateY: 0,
-          offsetWidth: 0,
-          offsetHeight: 0,
-          prevOffsetHeight: 0,
-          prevOffsetWidth: 0,
-        },
-        this.updateIframeHeight
-      );
+      this.panZoom?.reset();
     }
   }
 
   render(): JSX.Element {
     const { breakpointWidth, html, zoom, rendering, backgroundColour } =
       this.props;
-    const {
-      offsetWidth,
-      offsetHeight,
-      translateX,
-      translateY,
-      resizing,
-      panningEnabled,
-      selected,
-      x,
-      y,
-    } = this.state;
+    const { offsetWidth, offsetHeight, resizing, selected, x, y } = this.state;
 
-    const iframeWidth = breakpointWidth + offsetWidth;
-    const iframeHeight = offsetHeight;
+    const iframeWidth = Math.max(100, breakpointWidth + offsetWidth);
+    const iframeHeight = Math.max(100, offsetHeight);
 
     const iframeStyle = `
     width: ${iframeWidth}px;
@@ -270,7 +249,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     const iframeWrapperStyle = `
     width: ${iframeWidth * zoom}px;
     height: ${iframeHeight * zoom}px;
-    transform:  translateX(${translateX + x}px) translateY(${translateY + y}px);
+    transform:  translateX(${x}px) translateY(${y}px);
   `;
 
     return (
@@ -278,10 +257,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
         {rendering && <div class="preview__rendering">Rendering</div>}
 
         <div
-          class={`preview__container ${
-            panningEnabled ? "preview__container--drag" : ""
-          }`}
-          ref={this.previewEl}
+          class="preview__container"
           onMouseUp={this.endResize}
           onMouseMove={this.updateResize}
           onClick={this.disableSelection}
@@ -292,6 +268,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
               selected ? "preview__iframe_wrapper--selected" : ""
             }`}
             style={iframeWrapperStyle}
+            ref={this.previewEl}
             onClick={this.enableSelection}
           >
             <iframe
