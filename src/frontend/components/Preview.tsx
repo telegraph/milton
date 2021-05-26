@@ -1,19 +1,99 @@
 import type { JSX, RefObject } from "preact";
-import type { PanzoomObject } from "@panzoom/panzoom";
 import { h, Component, createRef } from "preact";
-import PanZoom from "@panzoom/panzoom";
-
-enum BUTTONS {
-  LEFT = 0,
-  MIDDLE = 1,
-  RIGHT = 2,
-}
 
 enum DIRECTIONS {
-  NW,
-  NE,
-  SE,
-  SW,
+  NW = "NW",
+  NE = "NE",
+  SE = "SE",
+  SW = "SW",
+}
+
+interface PointerCaptureProps {
+  onMove: (x: number, y: number) => void;
+  direction?: DIRECTIONS;
+  onEnd?: () => void;
+  className?: string;
+}
+
+interface PointerCaptureState {
+  x: number;
+  y: number;
+  startX: number;
+  startY: number;
+  isActive: boolean;
+}
+
+class PointerCapture extends Component<
+  PointerCaptureProps,
+  PointerCaptureState
+> {
+  private el: RefObject<HTMLDivElement> = createRef();
+
+  state: PointerCaptureState = {
+    x: 0,
+    y: 0,
+    startX: 0,
+    startY: 0,
+    isActive: false,
+  };
+
+  private pointerMove = (event: PointerEvent) => {
+    if (!this.state.isActive) return;
+
+    const { startX, startY } = this.state;
+    const { clientX, clientY } = event;
+    const { NE, SE, SW } = DIRECTIONS;
+    const { direction = SE } = this.props;
+
+    let x = clientX - startX;
+    let y = clientY - startY;
+    x *= direction === NE || direction === SE ? 1 : -1;
+    y *= direction === SE || direction === SW ? 1 : -1;
+
+    console.log(x, direction);
+
+    this.props.onMove(x, y);
+  };
+
+  private handlePointerDown = (event: PointerEvent): void => {
+    event.stopPropagation();
+    const { clientX, clientY, button } = event;
+
+    console.log("in here", button);
+    if (button !== 0) return;
+
+    this.el.current?.setPointerCapture(event.pointerId);
+    this.el.current?.addEventListener("pointermove", this.pointerMove);
+
+    this.setState({
+      isActive: true,
+      startX: clientX,
+      startY: clientY,
+    });
+  };
+
+  private handlePointerUp = (event: PointerEvent): void => {
+    this.el.current?.releasePointerCapture(event.pointerId);
+    this.el.current?.removeEventListener("pointermove", this.pointerMove);
+
+    this.setState({ isActive: false });
+    this.props.onEnd && this.props.onEnd();
+  };
+
+  render() {
+    const { children, className } = this.props;
+
+    return (
+      <div
+        class={`pointer_capture ${className ? className : ""}`}
+        onPointerDown={this.handlePointerDown}
+        onPointerUp={this.handlePointerUp}
+        ref={this.el}
+      >
+        {children}
+      </div>
+    );
+  }
 }
 
 interface PreviewProps {
@@ -28,285 +108,163 @@ interface PreviewProps {
 interface PreviewStateInterface {
   x: number;
   y: number;
-  startX: number;
-  startY: number;
-  translateX: number;
-  translateY: number;
-  offsetWidth: number;
-  offsetHeight: number;
-  prevOffsetWidth: number;
-  prevOffsetHeight: number;
-  panningEnabled: boolean;
-  isPanning: boolean;
-  resizing: boolean;
-  resizeDirection: DIRECTIONS;
-  prevMouseX: number;
-  prevMouseY: number;
+  prevX: number;
+  prevY: number;
+  width: number;
+  height: number;
+  prevWidth: number;
+  prevHeight: number;
   selected: boolean;
 }
 
 export class Preview extends Component<PreviewProps, PreviewStateInterface> {
-  private panZoom: PanzoomObject | undefined;
-  private containerElement: RefObject<HTMLDivElement> = createRef();
-
   state: PreviewStateInterface = {
     x: 0,
     y: 0,
-    startX: 0,
-    startY: 0,
-    offsetWidth: 0,
-    offsetHeight: 0,
-    prevOffsetWidth: 0,
-    prevOffsetHeight: 0,
-    translateX: 0,
-    translateY: 0,
-    panningEnabled: false,
-    isPanning: false,
-    resizing: false,
-    prevMouseX: 0,
-    prevMouseY: 0,
+    prevX: 0,
+    prevY: 0,
+    width: 0,
+    height: 0,
+    prevWidth: 0,
+    prevHeight: 0,
     selected: true,
-    resizeDirection: DIRECTIONS.NE,
   };
 
   previewEl: RefObject<HTMLDivElement> = createRef();
   iframeEl: RefObject<HTMLIFrameElement> = createRef();
 
-  startPanning = (e: MouseEvent): void => {
-    const { button, x, y } = e;
+  enableSelection = (): void => this.setState({ selected: true });
 
-    if (this.state.panningEnabled) {
-      this.setState({ startX: x, startY: y, isPanning: true });
-      return;
-    }
-
-    if (button === BUTTONS.MIDDLE && this.state.isPanning === false) {
-      this.setState({
-        startX: x,
-        startY: y,
-        isPanning: true,
-        panningEnabled: true,
-      });
-    }
-  };
-
-  panPreview = (e: MouseEvent): void => {
-    if (this.state.panningEnabled && this.state.isPanning) {
-      const distanceX = e.x - this.state.startX;
-      const distanceY = e.y - this.state.startY;
-
-      this.setState({ x: distanceX, y: distanceY });
-    }
-  };
-
-  stopPanning = (e: MouseEvent): void => {
-    if (this.state.panningEnabled === false) return;
-
-    let panningEnabled = true;
-
-    if (e.type === "mouseleave" || e.button === BUTTONS.MIDDLE) {
-      panningEnabled = false;
-    }
-
-    this.setState({
-      isPanning: false,
-      panningEnabled,
-      translateX: this.state.translateX + this.state.x,
-      translateY: this.state.translateY + this.state.y,
-      x: 0,
-      y: 0,
-    });
-  };
-
-  enablePanning = ({ code }: KeyboardEvent): void => {
-    if (code === "Space" && this.state.panningEnabled === false) {
-      this.setState({ panningEnabled: true });
-    }
-  };
-
-  disablePanning = ({ code }: KeyboardEvent): void => {
-    if (code === "Space" && this.state.panningEnabled) {
-      this.setState({ panningEnabled: false, isPanning: false });
-    }
-  };
-
-  enableSelection = (e: MouseEvent): void => {
-    e.stopPropagation();
-    this.setState({ selected: true });
-  };
-
-  disableSelection = (): void => {
-    this.setState({ selected: false });
-  };
-
-  startResize = (direction: DIRECTIONS, { button, x, y }: MouseEvent): void => {
-    if (button === BUTTONS.LEFT)
-      this.setState({
-        resizing: true,
-        prevMouseX: x,
-        prevMouseY: y,
-        resizeDirection: direction,
-      });
-  };
-
-  updateResize = (e: MouseEvent): void => {
-    if (this.state.resizing === false) return;
-
-    const {
-      prevMouseX,
-      prevMouseY,
-      prevOffsetWidth,
-      prevOffsetHeight,
-      resizeDirection,
-    } = this.state;
-    const { zoom } = this.props;
-    const { NE, SE, SW } = DIRECTIONS;
-
-    const xDirection =
-      resizeDirection === NE || resizeDirection === SW ? 1 : -1;
-    const yDirection =
-      resizeDirection === SE || resizeDirection === SW ? 1 : -1;
-
-    const scaledXDistance = ((e.x - prevMouseX) * 2) / zoom;
-    const scaledYDistance = ((e.y - prevMouseY) * 2) / zoom;
-
-    const newOffsetWidth = scaledXDistance * xDirection + prevOffsetWidth;
-    const newOffsetHeight = scaledYDistance * yDirection + prevOffsetHeight;
-
-    this.setState({
-      offsetWidth: newOffsetWidth,
-      offsetHeight: newOffsetHeight,
-    });
-  };
-
-  endResize = (): void => {
-    if (this.state.resizing === false) return;
-
-    this.setState({
-      resizing: false,
-      prevMouseX: 0,
-      prevMouseY: 0,
-      prevOffsetWidth: this.state.offsetWidth,
-      prevOffsetHeight: this.state.offsetHeight,
-    });
-  };
+  disableSelection = (): void => this.setState({ selected: false });
 
   updateIframeHeight = (): void => {
     if (!this.iframeEl.current) return;
     const iframe = this.iframeEl.current;
     const height =
       iframe.contentDocument?.body?.getBoundingClientRect().height ?? 100;
+
+    this.setState({ height, prevHeight: height });
+  };
+
+  resizeMove = (x: number, y: number) => {
+    const { prevWidth, prevHeight } = this.state;
+    const { zoom } = this.props;
+
     this.setState({
-      offsetHeight: height,
-      prevOffsetHeight: height,
+      width: prevWidth + (x / zoom) * 2,
+      height: prevHeight + (y / zoom) * 2,
     });
   };
 
+  resizeEnd = () => {
+    const { width, height } = this.state;
+    this.setState({ prevWidth: width, prevHeight: height });
+  };
+
+  onPan = (x: number, y: number) =>
+    this.setState({ x: x + this.state.prevX, y: y + this.state.prevY });
+
+  panEnd = () => this.setState({ prevX: this.state.x, prevY: this.state.y });
+
   componentDidMount(): void {
     if (!this.previewEl.current || !this.iframeEl.current) return;
-
-    this.panZoom = PanZoom(this.previewEl.current, {
-      excludeClass: "preview__iframe_resize",
-      animate: false,
-      canvas: true,
-    });
-
-    this.previewEl.current.addEventListener("panzoomchange", (event) => {
-      this.setState({
-        x: event?.detail.x,
-        y: event?.detail.y,
-      });
-    });
 
     this.iframeEl.current.addEventListener("load", this.updateIframeHeight);
   }
 
   componentWillUnmount(): void {
     if (!this.previewEl.current || !this.iframeEl.current) return;
-    this.iframeEl.current.removeEventListener("load", this.updateIframeHeight);
+    this.iframeEl.current?.removeEventListener("load", this.updateIframeHeight);
   }
 
   componentDidUpdate({ breakpointWidth }: PreviewProps): void {
     if (breakpointWidth !== this.props.breakpointWidth) {
-      this.panZoom?.reset();
     }
   }
 
   render(): JSX.Element {
+    const { width, height, selected, x, y } = this.state;
     const { breakpointWidth, html, zoom, rendering, backgroundColour } =
       this.props;
-    const { offsetWidth, offsetHeight, resizing, selected, x, y } = this.state;
 
-    const iframeWidth = Math.max(100, breakpointWidth + offsetWidth);
-    const iframeHeight = Math.max(100, offsetHeight);
-
-    const iframeStyle = `
-    width: ${iframeWidth}px;
-    height: ${iframeHeight}px;
-    transform: scale(${zoom});
-  `;
-
-    const iframeWrapperStyle = `
-    width: ${iframeWidth * zoom}px;
-    height: ${iframeHeight * zoom}px;
-    transform:  translateX(${x}px) translateY(${y}px);
-  `;
+    const iframeWidth = Math.max(100, breakpointWidth + width);
+    const iframeHeight = Math.max(100, height);
 
     return (
-      <section class={`preview ${resizing ? "preview--resizing" : ""}`}>
+      <section class="preview" style={{ background: backgroundColour }}>
         {rendering && <div class="preview__rendering">Rendering</div>}
 
-        <div
-          class="preview__container"
-          onMouseUp={this.endResize}
-          onMouseMove={this.updateResize}
-          onClick={this.disableSelection}
-          style={`background-color: ${backgroundColour}`}
+        <PointerCapture
+          onMove={this.onPan}
+          onEnd={this.panEnd}
+          className="preview__container"
         >
           <div
-            class={`preview__iframe_wrapper  ${
-              selected ? "preview__iframe_wrapper--selected" : ""
-            }`}
-            style={iframeWrapperStyle}
-            ref={this.previewEl}
+            class="preview__iframe_wrapper"
+            data-active={selected}
+            style={{
+              width: iframeWidth * zoom,
+              height: iframeHeight * zoom,
+              transform: `translateX(${x}px) translateY(${y}px)`,
+            }}
             onClick={this.enableSelection}
           >
             <iframe
               class="preview__iframe"
               srcDoc={html}
-              style={iframeStyle}
+              style={{
+                width: iframeWidth,
+                height: iframeHeight,
+                transform: `scale(${zoom})`,
+              }}
               ref={this.iframeEl}
             />
-            <button
-              class="preview__iframe_resize preview__iframe_resize--top-left"
-              onMouseDown={(event) => this.startResize(DIRECTIONS.NW, event)}
+
+            <PointerCapture
+              direction={DIRECTIONS.NW}
+              onMove={this.resizeMove}
+              onEnd={this.resizeEnd}
             >
-              Resize
-            </button>
-            <button
-              class="preview__iframe_resize preview__iframe_resize--top-right"
-              onMouseDown={(event) => this.startResize(DIRECTIONS.NE, event)}
+              <button class="preview__iframe_resize preview__iframe_resize--NW">
+                RESIZE NW
+              </button>
+            </PointerCapture>
+
+            <PointerCapture
+              direction={DIRECTIONS.NE}
+              onMove={this.resizeMove}
+              onEnd={this.resizeEnd}
             >
-              Resize
-            </button>
-            <button
-              class="preview__iframe_resize preview__iframe_resize--bottom-left"
-              onMouseDown={(event) => this.startResize(DIRECTIONS.SE, event)}
+              <button class="preview__iframe_resize preview__iframe_resize--NE">
+                RESIZE NE
+              </button>
+            </PointerCapture>
+
+            <PointerCapture
+              direction={DIRECTIONS.SE}
+              onMove={this.resizeMove}
+              onEnd={this.resizeEnd}
             >
-              Resize
-            </button>
-            <button
-              class="preview__iframe_resize preview__iframe_resize--bottom-right"
-              onMouseDown={(event) => this.startResize(DIRECTIONS.SW, event)}
+              <button class="preview__iframe_resize preview__iframe_resize--SE">
+                RESIZE SE
+              </button>
+            </PointerCapture>
+
+            <PointerCapture
+              direction={DIRECTIONS.SW}
+              onMove={this.resizeMove}
+              onEnd={this.resizeEnd}
             >
-              Resize
-            </button>
+              <button class="preview__iframe_resize preview__iframe_resize--SW">
+                RESIZE SW
+              </button>
+            </PointerCapture>
 
             <p class="preview__dimensions">
               {Math.round(iframeWidth)} x {Math.round(iframeHeight)}
             </p>
           </div>
-        </div>
+        </PointerCapture>
       </section>
     );
   }

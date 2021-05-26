@@ -126,6 +126,7 @@ export function App(): JSX.Element {
         breakpointWidth={breakpointWidth}
         backgroundColour={backgroundColour}
         zoom={zoom}
+        dispatch={dispatch}
       />
 
       <Sidebar>
