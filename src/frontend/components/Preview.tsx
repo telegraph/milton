@@ -201,8 +201,11 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
 
   handlePanZoom = (event: WheelEvent): void => {
     console.log(event, "wheel");
-    const { dispatch, zoom } = this.props;
     const { deltaY, ctrlKey } = event;
+
+    if (!ctrlKey) return;
+
+    const { dispatch, zoom } = this.props;
 
     const ZOOM_STEP = 0.1;
     let newZoom = deltaY > 0 ? zoom - ZOOM_STEP : zoom + ZOOM_STEP;
