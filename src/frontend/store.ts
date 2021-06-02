@@ -88,7 +88,6 @@ export function reducer(
         ...state,
         breakpointIndex: action.payload.index,
         breakpointWidth: action.payload.width,
-        zoom: 1,
       };
 
     case ACTIONS.SET_ZOOM:
@@ -102,10 +101,16 @@ export function reducer(
 
     case ACTIONS.TOGGLE_SELECTED_FRAME: {
       const newSelection = toggleItem(action.payload, state.selectedFrames);
+      const minWidth = Math.min(
+        ...Object.values(state.frames)
+          .filter((frame) => newSelection.includes(frame.id))
+          .map((frame) => frame.width)
+      );
 
       return {
         ...state,
         selectedFrames: newSelection,
+        breakpointWidth: minWidth,
       };
     }
 

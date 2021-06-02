@@ -127,6 +127,7 @@ export function App(): JSX.Element {
         backgroundColour={backgroundColour}
         zoom={zoom}
         dispatch={dispatch}
+        selectedFrames={selectedFrames}
       />
 
       <Sidebar>

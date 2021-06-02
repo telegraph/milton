@@ -111,6 +111,7 @@ interface PreviewProps {
   responsive: boolean;
   breakpointWidth: number;
   backgroundColour: string;
+  selectedFrames: string[];
   zoom: number;
   dispatch: (action: ActionTypes) => void;
 }
@@ -273,8 +274,23 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     }
   }
 
-  componentDidUpdate({ breakpointWidth }: PreviewProps): void {
+  componentDidUpdate({ breakpointWidth, selectedFrames }: PreviewProps): void {
     if (breakpointWidth !== this.props.breakpointWidth) {
+      this.setState({
+        panning: false,
+        width: 0,
+        x: 0,
+        y: 0,
+      });
+    }
+
+    if (selectedFrames.join() !== this.props.selectedFrames.join()) {
+      this.setState({
+        panning: false,
+        width: 0,
+        x: 0,
+        y: 0,
+      });
     }
   }
 
@@ -285,6 +301,8 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
 
     const iframeWidth = Math.max(100, breakpointWidth + width);
     const iframeHeight = Math.max(100, height);
+
+    console.log(breakpointWidth);
 
     return (
       <section
