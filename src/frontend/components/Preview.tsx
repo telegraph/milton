@@ -9,9 +9,11 @@ enum DIRECTIONS {
 }
 
 interface PointerCaptureProps {
-  onMove: (x: number, y: number) => void;
+  onMove: (x: number, y: number, event: PointerEvent) => void;
   direction?: DIRECTIONS;
-  onEnd?: () => void;
+  onStart?: (event: PointerEvent) => void;
+  onEnd?: (event: PointerEvent) => void;
+  onWheel?: (event: WheelEvent) => void;
   className?: string;
 }
 
@@ -50,20 +52,22 @@ class PointerCapture extends Component<
     x *= direction === NE || direction === SE ? 1 : -1;
     y *= direction === SE || direction === SW ? 1 : -1;
 
-    console.log(x, direction);
-
-    this.props.onMove(x, y);
+    this.props.onMove(x, y, event);
   };
 
   private handlePointerDown = (event: PointerEvent): void => {
     event.stopPropagation();
-    const { clientX, clientY, button } = event;
 
-    console.log("in here", button);
-    if (button !== 0) return;
+    if (this.state.isActive) return;
 
     this.el.current?.setPointerCapture(event.pointerId);
     this.el.current?.addEventListener("pointermove", this.pointerMove);
+
+    if (this.props.onStart) {
+      this.props.onStart(event);
+    }
+
+    const { clientX, clientY } = event;
 
     this.setState({
       isActive: true,
@@ -76,8 +80,11 @@ class PointerCapture extends Component<
     this.el.current?.releasePointerCapture(event.pointerId);
     this.el.current?.removeEventListener("pointermove", this.pointerMove);
 
+    if (this.props.onEnd) {
+      this.props.onEnd(event);
+    }
+
     this.setState({ isActive: false });
-    this.props.onEnd && this.props.onEnd();
   };
 
   render() {
@@ -88,6 +95,7 @@ class PointerCapture extends Component<
         class={`pointer_capture ${className ? className : ""}`}
         onPointerDown={this.handlePointerDown}
         onPointerUp={this.handlePointerUp}
+        onWheel={this.props.onWheel}
         ref={this.el}
       >
         {children}
@@ -115,6 +123,8 @@ interface PreviewStateInterface {
   prevWidth: number;
   prevHeight: number;
   selected: boolean;
+  panning: boolean;
+  spaceDown: boolean;
 }
 
 export class Preview extends Component<PreviewProps, PreviewStateInterface> {
@@ -128,14 +138,23 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     prevWidth: 0,
     prevHeight: 0,
     selected: true,
+    panning: false,
+    spaceDown: false,
   };
 
   previewEl: RefObject<HTMLDivElement> = createRef();
   iframeEl: RefObject<HTMLIFrameElement> = createRef();
 
-  enableSelection = (): void => this.setState({ selected: true });
+  enableSelection = (event: PointerEvent): void => {
+    if (event.button === 0 && this.state.spaceDown === false) {
+      event.stopPropagation();
+      this.setState({ selected: true });
+    }
+  };
 
-  disableSelection = (): void => this.setState({ selected: false });
+  disableSelection = (): void => {
+    this.setState({ selected: false });
+  };
 
   updateIframeHeight = (): void => {
     if (!this.iframeEl.current) return;
@@ -144,9 +163,10 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
       iframe.contentDocument?.body?.getBoundingClientRect().height ?? 100;
 
     this.setState({ height, prevHeight: height });
+    console.log("iframe height", height);
   };
 
-  resizeMove = (x: number, y: number) => {
+  resizeMove = (x: number, y: number): void => {
     const { prevWidth, prevHeight } = this.state;
     const { zoom } = this.props;
 
@@ -156,25 +176,89 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     });
   };
 
-  resizeEnd = () => {
+  resizeEnd = (): void => {
     const { width, height } = this.state;
     this.setState({ prevWidth: width, prevHeight: height });
   };
 
-  onPan = (x: number, y: number) =>
-    this.setState({ x: x + this.state.prevX, y: y + this.state.prevY });
+  onPan = (x: number, y: number, event: PointerEvent): void => {
+    if (this.state.panning) {
+      this.setState({ x: x + this.state.prevX, y: y + this.state.prevY });
+    }
+  };
 
-  panEnd = () => this.setState({ prevX: this.state.x, prevY: this.state.y });
+  panEnd = (event: PointerEvent): void => {
+    if (this.state.panning) {
+      this.setState({
+        prevX: this.state.x,
+        prevY: this.state.y,
+        panning: false,
+      });
+    }
+  };
+
+  handlePanZoom = (event: WheelEvent): void => {
+    console.log(event, "wheel");
+  };
+
+  handlePointerDown = (event: PointerEvent): void => {
+    console.log(event, "pointer down");
+
+    const { button } = event;
+
+    if (button === 0 && this.state.spaceDown) {
+      this.setState({ panning: true });
+      return;
+    }
+
+    if (button === 0 && this.state.selected) {
+      this.setState({ selected: false });
+      return;
+    }
+
+    if (button === 1) {
+      this.setState({ panning: true });
+      return;
+    }
+  };
+
+  setSpace = (event: KeyboardEvent): void => {
+    const { type, code } = event;
+
+    if (code === "Space") {
+      this.setState({ spaceDown: type === "keydown" });
+    }
+  };
+
+  disablePanning = (event: KeyboardEvent): void => {
+    if (this.state.spaceDown === false) return;
+    if (this.state.panning) return;
+
+    const { code } = event;
+
+    if (code === "Space") {
+      this.setState({ spaceDown: false });
+      return;
+    }
+  };
 
   componentDidMount(): void {
-    if (!this.previewEl.current || !this.iframeEl.current) return;
-
+    if (!this.iframeEl.current) return;
     this.iframeEl.current.addEventListener("load", this.updateIframeHeight);
+    window.addEventListener("keydown", this.setSpace);
+    window.addEventListener("keyup", this.setSpace);
   }
 
   componentWillUnmount(): void {
-    if (!this.previewEl.current || !this.iframeEl.current) return;
-    this.iframeEl.current?.removeEventListener("load", this.updateIframeHeight);
+    window.removeEventListener("keydown", this.setSpace);
+    window.removeEventListener("keyup", this.setSpace);
+
+    if (this.iframeEl.current) {
+      this.iframeEl.current.removeEventListener(
+        "load",
+        this.updateIframeHeight
+      );
+    }
   }
 
   componentDidUpdate({ breakpointWidth }: PreviewProps): void {
@@ -183,7 +267,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
   }
 
   render(): JSX.Element {
-    const { width, height, selected, x, y } = this.state;
+    const { width, height, selected, x, y, spaceDown, panning } = this.state;
     const { breakpointWidth, html, zoom, rendering, backgroundColour } =
       this.props;
 
@@ -191,74 +275,51 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     const iframeHeight = Math.max(100, height);
 
     return (
-      <section class="preview" style={{ background: backgroundColour }}>
+      <section
+        class="preview"
+        style={{ background: backgroundColour }}
+        data-panning={panning || spaceDown}
+      >
         {rendering && <div class="preview__rendering">Rendering</div>}
 
         <PointerCapture
+          onStart={this.handlePointerDown}
           onMove={this.onPan}
           onEnd={this.panEnd}
+          onWheel={this.handlePanZoom}
           className="preview__container"
         >
           <div
             class="preview__iframe_wrapper"
             data-active={selected}
+            onPointerDown={this.enableSelection}
             style={{
               width: iframeWidth * zoom,
               height: iframeHeight * zoom,
               transform: `translateX(${x}px) translateY(${y}px)`,
             }}
-            onClick={this.enableSelection}
           >
             <iframe
               class="preview__iframe"
               srcDoc={html}
+              ref={this.iframeEl}
               style={{
                 width: iframeWidth,
                 height: iframeHeight,
                 transform: `scale(${zoom})`,
               }}
-              ref={this.iframeEl}
             />
 
-            <PointerCapture
-              direction={DIRECTIONS.NW}
-              onMove={this.resizeMove}
-              onEnd={this.resizeEnd}
-            >
-              <button class="preview__iframe_resize preview__iframe_resize--NW">
-                RESIZE NW
-              </button>
-            </PointerCapture>
-
-            <PointerCapture
-              direction={DIRECTIONS.NE}
-              onMove={this.resizeMove}
-              onEnd={this.resizeEnd}
-            >
-              <button class="preview__iframe_resize preview__iframe_resize--NE">
-                RESIZE NE
-              </button>
-            </PointerCapture>
-
-            <PointerCapture
-              direction={DIRECTIONS.SE}
-              onMove={this.resizeMove}
-              onEnd={this.resizeEnd}
-            >
-              <button class="preview__iframe_resize preview__iframe_resize--SE">
-                RESIZE SE
-              </button>
-            </PointerCapture>
-
-            <PointerCapture
-              direction={DIRECTIONS.SW}
-              onMove={this.resizeMove}
-              onEnd={this.resizeEnd}
-            >
-              <button class="preview__iframe_resize preview__iframe_resize--SW">
-                RESIZE SW
-              </button>
-            </PointerCapture>
+            {Object.values(DIRECTIONS).map((val) => (
+              <PointerCapture
+                key={val}
+                direction={val}
+                onMove={this.resizeMove}
+                onEnd={this.resizeEnd}
+              >
+                <button class={`preview__resize preview__resize--${val}`} />
+              </PointerCapture>
+            ))}
 
             <p class="preview__dimensions">
               {Math.round(iframeWidth)} x {Math.round(iframeHeight)}

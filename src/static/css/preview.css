@@ -21,6 +21,10 @@
   border: 4px solid #c3c3c3;
 }
 
+.preview[data-panning] {
+  cursor: grab;
+}
+
 .preview__rendering {
   display: flex;
   position: absolute;
@@ -88,7 +92,7 @@
 .preview__iframe_wrapper:hover {
   outline: 2px solid var(--colours-active, #f0f);
 }
-.preview__iframe_resize {
+.preview__resize {
   width: 8px;
   height: 8px;
   background: #fff;
@@ -107,25 +111,25 @@
 .preview__iframe_wrapper[data-active] {
   outline: 1px solid var(--colours-active, #f0f);
 }
-.preview__iframe_wrapper[data-active] .preview__iframe_resize {
+.preview__iframe_wrapper[data-active] .preview__resize {
   display: block;
 }
-.preview__iframe_resize--NW {
+.preview__resize--NW {
   left: -4px;
   top: -4px;
   cursor: nwse-resize;
 }
-.preview__iframe_resize--NE {
+.preview__resize--NE {
   right: -4px;
   top: -4px;
   cursor: nesw-resize;
 }
-.preview__iframe_resize--SE {
+.preview__resize--SE {
   right: -4px;
   bottom: -4px;
   cursor: nwse-resize;
 }
-.preview__iframe_resize--SW {
+.preview__resize--SW {
   left: -4px;
   bottom: -4px;
   cursor: nesw-resize;
@@ -183,7 +187,7 @@
   top: -30px;
   margin: 0;
 }
-.preview__iframe_wrapper--selected .preview__dimensions {
+.preview__iframe_wrapper[data-active] .preview__dimensions {
   display: inline-block;
 }
 
