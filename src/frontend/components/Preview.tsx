@@ -256,6 +256,8 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
   };
 
   componentDidMount(): void {
+    window.focus();
+
     if (!this.iframeEl.current) return;
     this.iframeEl.current.addEventListener("load", this.updateIframeHeight);
     window.addEventListener("keydown", this.setSpace);
