@@ -198,7 +198,6 @@ export const actionUpdateSelectedFrames = (
   frames: FrameDataInterface[]
 ) => {
   return (dispatch: DispatchType) => {
-    console.log("IN HERE");
     if (selectedFrames.length < 1) {
       return dispatch(
         actionSetNotification(NOTIFICATIONS_IDS.ERROR_NO_FRAMES_SELECTED)

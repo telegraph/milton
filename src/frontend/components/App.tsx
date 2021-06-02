@@ -72,7 +72,7 @@ export function App(): JSX.Element {
         })
       : "";
 
-  console.log(state);
+  console.log("RENDER", state);
   return (
     <div class="app">
       <header class="action_bar">

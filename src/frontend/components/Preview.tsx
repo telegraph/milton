@@ -166,7 +166,6 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
       iframe.contentDocument?.body?.getBoundingClientRect().height ?? 100;
 
     this.setState({ height, prevHeight: height });
-    console.log("iframe height", height);
   };
 
   resizeMove = (x: number, y: number): void => {
@@ -210,14 +209,16 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     newZoom = Math.max(0.2, newZoom);
     newZoom = Math.min(6, newZoom);
 
-    console.log(newZoom);
     dispatch(actionSetZoom(newZoom));
   };
 
   handlePointerDown = (event: PointerEvent): void => {
-    console.log(event, "pointer down");
-
     const { button } = event;
+
+    if (button === 1) {
+      this.setState({ panning: true });
+      return;
+    }
 
     if (button === 0 && this.state.spaceDown) {
       this.setState({ panning: true });
@@ -226,11 +227,6 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
 
     if (button === 0 && this.state.selected) {
       this.setState({ selected: false });
-      return;
-    }
-
-    if (button === 1) {
-      this.setState({ panning: true });
       return;
     }
   };
@@ -303,8 +299,6 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
 
     const iframeWidth = Math.max(100, breakpointWidth + width);
     const iframeHeight = Math.max(100, height);
-
-    console.log(breakpointWidth);
 
     return (
       <section
