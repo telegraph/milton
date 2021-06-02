@@ -1,3 +1,4 @@
+import { actionSetZoom, ActionTypes } from "frontend/actions";
 import type { JSX, RefObject } from "preact";
 import { h, Component, createRef } from "preact";
 
@@ -111,6 +112,7 @@ interface PreviewProps {
   breakpointWidth: number;
   backgroundColour: string;
   zoom: number;
+  dispatch: (action: ActionTypes) => void;
 }
 
 interface PreviewStateInterface {
@@ -181,13 +183,13 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     this.setState({ prevWidth: width, prevHeight: height });
   };
 
-  onPan = (x: number, y: number, event: PointerEvent): void => {
+  onPan = (x: number, y: number): void => {
     if (this.state.panning) {
       this.setState({ x: x + this.state.prevX, y: y + this.state.prevY });
     }
   };
 
-  panEnd = (event: PointerEvent): void => {
+  panEnd = (): void => {
     if (this.state.panning) {
       this.setState({
         prevX: this.state.x,
@@ -199,6 +201,16 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
 
   handlePanZoom = (event: WheelEvent): void => {
     console.log(event, "wheel");
+    const { dispatch, zoom } = this.props;
+    const { deltaY, ctrlKey } = event;
+
+    const ZOOM_STEP = 0.1;
+    let newZoom = deltaY > 0 ? zoom - ZOOM_STEP : zoom + ZOOM_STEP;
+    newZoom = Math.max(0.2, newZoom);
+    newZoom = Math.min(6, newZoom);
+
+    console.log(newZoom);
+    dispatch(actionSetZoom(newZoom));
   };
 
   handlePointerDown = (event: PointerEvent): void => {

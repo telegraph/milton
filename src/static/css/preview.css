@@ -63,7 +63,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: auto;
+  overflow: hidden;
   flex: 1;
   height: 1;
   border-top-right-radius: var(--border-radius-small, 0);
