@@ -165,7 +165,9 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     const height =
       iframe.contentDocument?.body?.getBoundingClientRect().height ?? 100;
 
-    this.setState({ height, prevHeight: height });
+    if (height !== this.state.height) {
+      this.setState({ height, prevHeight: height });
+    }
   };
 
   resizeMove = (x: number, y: number): void => {
