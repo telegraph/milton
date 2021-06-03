@@ -33,11 +33,21 @@ export class LinksInput extends Component<Props> {
 
     return (
       <div class="side_panel links">
-        <div class="side_panel__row side_panel__row--title">
-          {UI_TEXT.TITLE_LINKS}
+        <div class="side_panel__row ">
+          <input
+            class="input input--text input--url"
+            type="url"
+            pattern={this.URL_VALIDATION}
+            placeholder={UI_TEXT.EMBED_PROPS_SOURCE_URL_PLACEHOLDER}
+            value={sourceUrl}
+            id={EMBED_PROPERTIES.SOURCE_URL}
+            onBlur={this.handleInput}
+            spellcheck={false}
+          />
+          <span class="input__error">{UI_TEXT.EMBED_PROPS_INVALID_URL}</span>
         </div>
 
-        <div class="side_panel__row side_panel__row--vertical">
+        <div class="side_panel__row ">
           <input
             type="url"
             pattern={this.URL_VALIDATION}
@@ -47,20 +57,6 @@ export class LinksInput extends Component<Props> {
             id={EMBED_PROPERTIES.EMBED_URL}
             onBlur={this.handleInput}
             data-error-text={UI_TEXT.EMBED_PROPS_INVALID_URL}
-            spellcheck={false}
-          />
-          <span class="input__error">{UI_TEXT.EMBED_PROPS_INVALID_URL}</span>
-        </div>
-
-        <div class="side_panel__row side_panel__row--vertical">
-          <input
-            class="input input--text input--url"
-            type="url"
-            pattern={this.URL_VALIDATION}
-            placeholder={UI_TEXT.EMBED_PROPS_SOURCE_URL_PLACEHOLDER}
-            value={sourceUrl}
-            id={EMBED_PROPERTIES.SOURCE_URL}
-            onBlur={this.handleInput}
             spellcheck={false}
           />
           <span class="input__error">{UI_TEXT.EMBED_PROPS_INVALID_URL}</span>

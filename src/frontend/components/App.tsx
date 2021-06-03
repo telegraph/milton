@@ -140,6 +140,12 @@ export function App(): JSX.Element {
 
           <EmbedPropertiesInputs {...embedProperties} handleChange={dispatch} />
 
+          <LinksInput
+            handleChange={dispatch}
+            embedUrl={embedProperties.embedUrl}
+            sourceUrl={embedProperties.sourceUrl}
+          />
+
           <div class="side_panel">
             <div class="side_panel__row side_panel__row--input">
               <input
@@ -164,12 +170,8 @@ export function App(): JSX.Element {
           />
         </div>
 
-        <div title="Links" class="sidebar__tab">
-          <LinksInput
-            handleChange={dispatch}
-            embedUrl={embedProperties.embedUrl}
-            sourceUrl={embedProperties.sourceUrl}
-          />
+        <div title="Compression" class="sidebar__tab">
+          <p>Coming soon...</p>
         </div>
       </Sidebar>
 
