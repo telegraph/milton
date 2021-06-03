@@ -172,7 +172,7 @@
   min-width: 7ch;
 }
 
-.preview__dimensions {
+.preview__meta {
   min-width: 12ch;
   background: var(--colours-active, #f0f);
   color: var(--colours-light-background, #f0f);
@@ -187,8 +187,17 @@
   top: -30px;
   margin: 0;
 }
-.preview__iframe_wrapper[data-active] .preview__dimensions {
-  display: inline-block;
+.preview__iframe_wrapper[data-active] .preview__meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.preview__meta--url {
+  max-width: 30ch;
+  color: var(--colours-light-background, #f0f);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: var(--padding-small, 0);
 }
 
 .preview__frame {

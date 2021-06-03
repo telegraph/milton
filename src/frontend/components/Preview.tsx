@@ -113,6 +113,7 @@ interface PreviewProps {
   backgroundColour: string;
   selectedFrames: string[];
   zoom: number;
+  embedUrl?: string;
   dispatch: (action: ActionTypes) => void;
 }
 
@@ -303,8 +304,14 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
 
   render(): JSX.Element {
     const { width, height, selected, x, y, spaceDown, panning } = this.state;
-    const { breakpointWidth, html, zoom, rendering, backgroundColour } =
-      this.props;
+    const {
+      breakpointWidth,
+      html,
+      zoom,
+      rendering,
+      backgroundColour,
+      embedUrl,
+    } = this.props;
 
     const iframeWidth = Math.max(100, breakpointWidth + width);
     const iframeHeight = Math.max(100, height);
@@ -356,8 +363,16 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
               </PointerCapture>
             ))}
 
-            <p class="preview__dimensions">
-              {Math.round(iframeWidth)} x {Math.round(iframeHeight)}
+            <p class="preview__meta">
+              <span class="preview__meta-dimensions">
+                {Math.round(iframeWidth)} x {Math.round(iframeHeight)}
+              </span>
+
+              {embedUrl && (
+                <a href={embedUrl} class="preview__meta--url">
+                  {embedUrl}
+                </a>
+              )}
             </p>
           </div>
         </PointerCapture>

@@ -128,6 +128,7 @@ export function App(): JSX.Element {
         zoom={zoom}
         dispatch={dispatch}
         selectedFrames={selectedFrames}
+        embedUrl={embedProperties.embedUrl}
       />
 
       <Sidebar>
