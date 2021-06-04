@@ -45,14 +45,14 @@ export class Zoom extends Component<ZoomProps> {
     const zoomLabel = `${(zoom * 100).toFixed(0)}%`;
     const zoomOptions = [
       {
-        text: "Zoom in +",
+        title: "Zoom in +",
         value: Math.min(zoom * this.ZOOM_STEPS, this.ZOOM_MAX),
       },
       {
-        text: "Zoom out -",
+        title: "Zoom out -",
         value: Math.max(this.ZOOM_MIN, zoom / this.ZOOM_STEPS),
       },
-      { text: "Zoom 100%", value: 1 },
+      { title: "Zoom 100%", value: 1 },
     ];
 
     return (
