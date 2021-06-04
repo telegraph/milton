@@ -19,7 +19,6 @@ export interface StateInterface {
   responsive: boolean;
   svg: string;
   zoom: number;
-  breakpointIndex: number;
   breakpointWidth: number;
   backgroundColour: string;
   notificationId?: NOTIFICATIONS_IDS;
@@ -41,7 +40,6 @@ export const initialState: StateInterface = {
   },
 
   zoom: 1,
-  breakpointIndex: 0,
   fileKey: "",
   responsive: true,
   breakpointWidth: 100,
@@ -86,7 +84,6 @@ export function reducer(
     case ACTIONS.SET_BREAKPOINT:
       return {
         ...state,
-        breakpointIndex: action.payload.index,
         breakpointWidth: action.payload.width,
       };
 

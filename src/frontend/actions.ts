@@ -72,14 +72,11 @@ export function actionSetZoom(zoom: number): {
   return { type: ACTIONS.SET_ZOOM, payload: zoom };
 }
 
-export function actionSetBreakpoint(
-  index: number,
-  width: number
-): {
+export function actionSetBreakpoint(width: number): {
   type: ACTIONS.SET_BREAKPOINT;
-  payload: { index: number; width: number };
+  payload: { width: number };
 } {
-  return { type: ACTIONS.SET_BREAKPOINT, payload: { index, width } };
+  return { type: ACTIONS.SET_BREAKPOINT, payload: { width } };
 }
 
 export function actionSetSvg(svg: string): {

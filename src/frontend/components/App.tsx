@@ -36,7 +36,6 @@ export function App(): JSX.Element {
     frames,
     responsive,
     zoom,
-    breakpointIndex,
     breakpointWidth,
     backgroundColour,
     fileKey,
@@ -80,7 +79,7 @@ export function App(): JSX.Element {
 
         <Breakpoints
           outputFrames={outputFrames}
-          breakpointIndex={breakpointIndex}
+          breakpointWidth={breakpointWidth}
           handleChange={dispatch}
         />
 

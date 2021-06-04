@@ -1,47 +1,45 @@
 import { FrameDataInterface } from "types";
 import { h, JSX } from "preact";
-import { UI_TEXT, DEFAULT_BREAKPOINTS } from "../../constants";
+import { UI_TEXT } from "../../constants";
 import { Dropdown } from "frontend/components/dropdown/dropdown";
 import { ActionTypes, actionSetBreakpoint } from "frontend/actions";
 
+const DEFAULT_BREAKPOINTS = [
+  { value: 320, title: "mobile" },
+  { value: 480, title: "large mobile" },
+  { value: 640, title: "tablet" },
+  { value: 720, title: "iPad" },
+  { value: 1024, title: "laptop" },
+  { value: 1200, title: "desktop" },
+];
+
 interface BreakpointsProps {
-  breakpointIndex: number;
+  breakpointWidth: number;
   outputFrames: FrameDataInterface[];
   handleChange: (action: ActionTypes) => void;
 }
 
 export function Breakpoints({
   outputFrames,
-  breakpointIndex,
+  breakpointWidth,
   handleChange,
 }: BreakpointsProps): JSX.Element {
-  const breakpoints = [
-    ...outputFrames.map(({ width, height }) => ({
-      width,
-      height,
-      default: false,
-    })),
-    ...DEFAULT_BREAKPOINTS,
-  ];
+  let breakpointOptions: { value: number; title: string }[] = [];
 
-  const breakpointOptions = breakpoints.map((breakpoint, index) => {
-    const width = Math.round(breakpoint.width);
-    let text = `${width}px `;
-    text += breakpoint.default ? "" : "frame";
+  for (const { width } of outputFrames) {
+    const optionItem = { value: width, title: `Frame ${width}px` };
+    breakpointOptions.push(optionItem);
+  }
 
-    return { text, value: index };
-  });
+  breakpointOptions = breakpointOptions.concat(DEFAULT_BREAKPOINTS);
 
-  const width = Math.round(breakpoints[breakpointIndex]?.width || 0);
-  const breakpointLabel = `Select breakpoint: ${width}px`;
+  const breakpointLabel = `Select breakpoint: ${breakpointWidth}px`;
 
   return (
     <div class="breakpoints">
       <Dropdown
         label={breakpointLabel}
-        onSelect={(val: number) => {
-          handleChange(actionSetBreakpoint(val, breakpoints[val].width));
-        }}
+        onSelect={(val: number) => handleChange(actionSetBreakpoint(val))}
         options={breakpointOptions}
         tooltip={UI_TEXT.ZOOM_TOOLTIP}
       />

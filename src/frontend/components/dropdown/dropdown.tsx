@@ -2,7 +2,7 @@ import { h, Component } from "preact";
 
 interface DropdownProps {
   label: string;
-  options: { text: string; value: any }[];
+  options: { title: string; value: any }[];
   onSelect: (val: any) => void;
   onBlur?: (val: any) => void;
   onOpen?: () => void;
@@ -69,11 +69,11 @@ export class Dropdown extends Component<DropdownProps> {
 
               {options.map((option) => (
                 <button
-                  key={option.text}
+                  key={option.title}
                   class="dropdown__option"
                   onClick={() => onSelect(option.value)}
                 >
-                  {option.text}
+                  {option.title}
                 </button>
               ))}
             </div>
