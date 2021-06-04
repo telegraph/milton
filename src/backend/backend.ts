@@ -20,4 +20,16 @@ postMan.registerWorker(MSG_EVENTS.RESIZE_WINDOW, resizeWindow);
 figma.showUI(__html__);
 
 // Resize UI to max viewport dimensions
-figma.ui.resize(DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height);
+figma.clientStorage
+  .getAsync("WINDOW_SIZE")
+  .then((size) => {
+    if (size && size.width && size.height) {
+      figma.ui.resize(size.width, size.height);
+    } else {
+      throw new Error("Missing or invalid user window size");
+    }
+  })
+  .catch((error) => {
+    figma.ui.resize(DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height);
+    console.info(error);
+  });

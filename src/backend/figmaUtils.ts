@@ -11,6 +11,12 @@ import { EmbedProperties } from "frontend/store";
 
 export function resizeWindow(size: { x: number; y: number }): void {
   figma.ui.resize(size.x, size.y);
+  figma.clientStorage
+    .setAsync("WINDOW_SIZE", {
+      width: size.x,
+      height: size.y,
+    })
+    .catch((error) => console.log("Failed to save window size", error));
 }
 
 export function minMaxWindow(maximize: boolean): void {
