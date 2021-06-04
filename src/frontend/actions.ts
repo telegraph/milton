@@ -201,6 +201,7 @@ export const actionUpdateSelectedFrames = (
       );
     }
 
+    dispatch(actionClearNotification());
     actionCheckFonts(frames, dispatch);
     actionFetchFrameRender(selectedFrames)(dispatch);
   };

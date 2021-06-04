@@ -42,6 +42,7 @@ export function Frames({
             class="input__checkbox"
             type="checkbox"
             checked={selectedFrames.includes(id)}
+            disabled={selectedFrames.length === 1 && selectedFrames[0] === id}
             onInput={() => handleChange(actionToggleSelectedFrame(id))}
           />
         </div>
