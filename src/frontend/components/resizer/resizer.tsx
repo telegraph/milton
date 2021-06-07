@@ -23,8 +23,8 @@ export class Resizer extends Component {
     postMan.send({
       workload: MSG_EVENTS.RESIZE_WINDOW,
       data: {
-        x: clientX,
-        y: clientY,
+        x: Math.ceil(clientX),
+        y: Math.ceil(clientY),
       },
     });
   };
