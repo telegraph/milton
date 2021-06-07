@@ -18,7 +18,8 @@
     "points-on-path": "^0.2.1",
     "preact": "^10.5.13",
     "preact-render-to-string": "^5.1.19",
-    "react-colorful": "^5.2.2"
+    "react-colorful": "^5.2.2",
+    "svgo": "^2.3.0"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.23.0",
