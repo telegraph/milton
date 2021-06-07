@@ -1,6 +1,7 @@
 import { resizeAndOptimiseImage } from "./imageHelper";
 import { imageNodeDimensions } from "types";
 import { randomId } from "utils/common";
+import { optimize, extendDefaultPlugins } from "svgo/dist/svgo.browser.js";
 
 // TODO: Is there a way to identify mapping of image to elements from
 // the @figma context? If so we don't need to look inside the SVG elements
@@ -44,19 +45,6 @@ async function optimizeSvgImages(
   }
 }
 
-export function reducePathPrecision(svgEl: SVGElement): void {
-  svgEl.querySelectorAll("path").forEach((path) => {
-    const d = path.getAttribute("d");
-    if (d) {
-      // Simplify paths
-      // const points = pointsOnPath(d, 0.1, 0.3);
-      // d = points.reduce((acc, point) => (acc += "M" + point.join(" ")), "");
-      // Reduce precision
-      path.setAttribute("d", d.replace(/(\.\d{2})\d+/g, "$1"));
-    }
-  });
-}
-
 // Replace all HTTP urls with HTTPS
 export function replaceHttpWithHttps(svgText: string): string {
   return svgText.replace(/http:\/\//g, "https://");
@@ -81,26 +69,6 @@ function cleanUpSvg(svgEl: SVGElement): void {
     .querySelectorAll("text")
     .forEach((textNode) => textNode.parentNode?.removeChild(textNode));
 }
-
-// function addLinks(svgEl: SVGElement): void {
-//   // @ref: https://ihateregex.io/expr/url/
-
-//   const elWithIds = svgEl.querySelectorAll("[id]");
-
-//   for (const el of elWithIds) {
-//     const { id } = el;
-//     const [match] = URL_REGEX.exec(id) || [];
-//     // console.log(match, el);
-
-//     if (match) {
-//       const a = window.document.createElement("a");
-//       a.setAttribute("href", match);
-//       a.setAttribute("target", "_parent");
-//       el.parentNode?.insertBefore(a, el);
-//       a.appendChild(el);
-//     }
-//   }
-// }
 
 // https://www.w3.org/TR/SVG11/linking.html#processingIRI
 const ID_REF_PROPERTIES = [
@@ -160,14 +128,65 @@ export async function decodeSvgToString(
   let svgStr = new TextDecoder("utf-8").decode(svgData);
   svgStr = replaceHttpWithHttps(svgStr);
 
-  const svgEl = createSvgElement(svgStr);
+  const optimizedSvg = optimize(svgStr, {
+    plugins: extendDefaultPlugins([
+      {
+        name: "convertPathData",
+        params: {
+          floatPrecision: 1,
+        },
+        active: true,
+      },
+      {
+        name: "convertShapeToPath",
+        params: {
+          floatPrecision: 1,
+        },
+        active: true,
+      },
+
+      {
+        name: "mergePaths",
+        params: {
+          floatPrecision: 1,
+        },
+        active: true,
+      },
+
+      {
+        name: "cleanupListOfValues",
+        active: true,
+        params: {
+          floatPrecision: 1,
+        },
+      },
+      {
+        name: "removeViewBox",
+        active: false,
+      },
+
+      {
+        name: "collapseGroups",
+        active: false,
+      },
+
+      {
+        name: "cleanupIDs",
+        active: false,
+      },
+
+      {
+        name: "reusePaths",
+        active: false,
+      },
+    ]),
+  });
+
+  const svgEl = createSvgElement(optimizedSvg.data);
   if (!svgEl) throw new Error("Failed to create SVG element");
 
   svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
-
   cleanUpSvg(svgEl);
-  reducePathPrecision(svgEl);
-  // addLinks(svgEl);
   randomiseIds(svgEl);
   await optimizeSvgImages(svgEl, imageNodeDimensions);
 
