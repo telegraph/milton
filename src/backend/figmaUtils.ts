@@ -25,7 +25,18 @@ export function minMaxWindow(maximize: boolean): void {
   if (maximize) {
     figma.ui.resize(Math.round(width), Math.round(height));
   } else {
-    figma.ui.resize(DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height);
+    figma.clientStorage
+      .getAsync("WINDOW_SIZE")
+      .then((size) => {
+        figma.ui.resize(
+          size?.width ?? DEFAULT_WINDOW_SIZE.width,
+          size?.height ?? DEFAULT_WINDOW_SIZE.height
+        );
+      })
+      .catch((error) => {
+        console.error("Failed to get window size", error);
+        figma.ui.resize(DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height);
+      });
   }
 }
 
