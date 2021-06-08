@@ -164,7 +164,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     if (!this.iframeEl.current) return;
     const iframe = this.iframeEl.current;
     const height =
-      iframe.contentDocument?.body?.getBoundingClientRect().height ?? 100;
+      iframe.contentDocument?.body?.getBoundingClientRect().height ?? 1;
 
     if (height !== this.state.height) {
       this.setState({ height, prevHeight: height });
@@ -313,8 +313,8 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
       embedUrl,
     } = this.props;
 
-    const iframeWidth = Math.max(100, breakpointWidth + width);
-    const iframeHeight = Math.max(100, height);
+    const iframeWidth = Math.max(1, breakpointWidth + width);
+    const iframeHeight = Math.max(1, height);
 
     return (
       <section
