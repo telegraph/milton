@@ -39,7 +39,7 @@ function getRangeStyles(textNode: TextNode): TextRange[] {
     const paint = fill !== figma.mixed && fill[0].type === "SOLID" && fill[0];
     const rgb = paint ? paint.color : { r: 0, g: 0, b: 0 };
     const rgb255 = Object.values(rgb).flatMap((c) => Math.round(c * 255));
-    let colour = `rgb(${rgb255.join(",")})`;
+    const colour = `rgb(${rgb255.join(",")})`;
 
     // Line height
     const lh = textNode.getRangeLineHeight(i, i + 1);

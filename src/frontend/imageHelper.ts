@@ -2,7 +2,7 @@ import UPNG from "@pdf-lib/upng";
 import pica from "pica";
 import { imageNodeDimensions } from "types";
 
-async function loadImage(dataUrl: string): Promise<HTMLImageElement> {
+function loadImage(dataUrl: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.addEventListener("load", () => resolve(img));
@@ -11,27 +11,29 @@ async function loadImage(dataUrl: string): Promise<HTMLImageElement> {
   });
 }
 
-async function optimizePng(
+function optimizePng(
   canvas: HTMLCanvasElement,
   colours: number
 ): Promise<string> {
-  const { width, height } = canvas;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return canvas.toDataURL();
-
-  const imageData = ctx.getImageData(0, 0, width, height);
-
-  console.log(UPNG);
-
-  // Quantize palette
-  const pngData = UPNG.encode([imageData?.data], width, height, colours);
-
-  // Convert PNG data into image
-  const blob = new Blob([new Uint8Array(pngData).buffer], {
-    type: "image/png",
-  });
-
   return new Promise((resolve, reject) => {
+    const { width, height } = canvas;
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      resolve(canvas.toDataURL());
+      return;
+    }
+
+    const imageData = ctx.getImageData(0, 0, width, height);
+
+    // Quantize palette
+    const pngData = UPNG.encode([imageData?.data], width, height, colours);
+
+    // Convert PNG data into image
+    const blob = new Blob([new Uint8Array(pngData).buffer], {
+      type: "image/png",
+    });
+
     const reader = new FileReader();
     reader.readAsDataURL(blob);
     reader.addEventListener("load", () => resolve(reader.result as string));

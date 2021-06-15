@@ -37,6 +37,7 @@
     "singleQuote": false
   },
   "dependencies": {
-    "@pdf-lib/upng": "^1.0.1"
+    "@pdf-lib/upng": "^1.0.1",
+    "just-throttle": "^2.3.1"
   }
 }

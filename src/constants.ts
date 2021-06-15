@@ -77,6 +77,7 @@ export const UI_TEXT = {
   ZOOM_TOOLTIP: "Zoom/view options",
   COPY_TO_CLIPBOARD: "Copy to clipboard",
   DOWNLOAD: "Download",
+  RESPONSIVE_LABEL: "Responsive",
   EMBED_PROPS_HEADLINE_PLACEHOLDER: "Headline",
   EMBED_PROPS_SUB_HEAD_PLACEHOLDER: "Sub headline",
   EMBED_PROPS_SOURCE_PLACEHOLDER: "Source",
@@ -85,6 +86,9 @@ export const UI_TEXT = {
   EMBED_PROPS_INVALID_URL: "Enter a valid link",
   WINDOW_MAXIMIZE: "Maximize",
   WINDOW_MINIMIZE: "Minimize",
+  TAB_OPTIONS: "Options",
+  TAB_COMPRESSION: "Compression",
+  TAB_WRAPPER: "Wrapper",
 };
 
 export enum NOTIFICATIONS_IDS {

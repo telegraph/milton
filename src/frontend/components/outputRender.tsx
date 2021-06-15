@@ -215,7 +215,7 @@ function TextContainer(props: FrameProps) {
 const WrapIf: FunctionalComponent<{
   condition: boolean;
   Wrapper: FunctionalComponent;
-  [id: string]: any;
+  [id: string]: unknown;
 }> = (props) => {
   const { condition, Wrapper, children, ...rest } = props;
 

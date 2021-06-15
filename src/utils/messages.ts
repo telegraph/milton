@@ -1,10 +1,12 @@
 import { MSG_EVENTS } from "../constants";
 
+type Callback = (result: unknown, err?: string) => unknown;
+
 interface IPostmanMessage {
   name: string;
   uid: string;
   workload: MSG_EVENTS;
-  data: any;
+  data: unknown;
   returning?: boolean;
   err?: string;
 }
@@ -12,8 +14,8 @@ interface IPostmanMessage {
 class Postman {
   private name: string;
   private inFigmaSandbox: boolean;
-  private callbackStore: { [id: string]: Function };
-  private workers: { [id: string]: Function };
+  private callbackStore: Record<string, Callback>;
+  private workers: Record<string, Callback>;
 
   private TIMEOUT = 30000;
 
@@ -51,36 +53,45 @@ class Postman {
         this.callbackStore[uid](data, err);
       } else {
         const workloadResult = await this.workers[workload](data);
-        this.postBack({ data: workloadResult, uid });
+        this.postBack({ data: workloadResult, uid, workload });
       }
     } catch (err) {
-      this.postBack({ uid, err: "Postman failed" });
+      this.postBack({ uid, err: "Postman failed", workload });
       console.error("Postman failed", err);
     }
   };
 
-  public registerWorker = (eventType: MSG_EVENTS, fn: Function) => {
+  public registerWorker = (eventType: MSG_EVENTS, fn: Callback) => {
     this.workers[eventType] = fn;
   };
 
   public removeWorker = (eventType: MSG_EVENTS) =>
     delete this.workers[eventType];
 
-  private postBack = (props: { uid: string; data?: any; err?: string }) =>
+  private postBack = (props: {
+    uid: string;
+    workload: MSG_EVENTS;
+    data?: unknown;
+    err?: string;
+  }) =>
     this.postMessage({
       name: this.name,
       uid: props.uid,
       data: props.data,
       returning: true,
+      workload: props.workload,
       err: props.err,
     });
 
-  private postMessage = (messageBody: {}) =>
+  private postMessage = (messageBody: IPostmanMessage) =>
     this.inFigmaSandbox
       ? figma.ui.postMessage(messageBody)
       : parent.postMessage({ pluginMessage: messageBody }, "*");
 
-  public send = (props: { workload: MSG_EVENTS; data?: any }): Promise<any> => {
+  public send = (props: {
+    workload: MSG_EVENTS;
+    data?: unknown;
+  }): Promise<unknown> => {
     return new Promise((resolve, reject) => {
       const { workload, data } = props;
 
@@ -91,9 +102,9 @@ class Postman {
         uid: randomId,
         workload,
         data,
-      } as IPostmanMessage);
+      });
 
-      this.callbackStore[randomId] = (result: any, err?: string) => {
+      this.callbackStore[randomId] = (result: unknown, err?: string) => {
         if (err) {
           reject(err);
         } else {

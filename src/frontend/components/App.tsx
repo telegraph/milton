@@ -1,5 +1,5 @@
 import { h, JSX } from "preact";
-import { STATUS, UI_TEXT } from "constants";
+import { EMBED_PROPERTIES, STATUS, UI_TEXT } from "constants";
 import { useEffect, useReducer, useRef } from "preact/hooks";
 import { initialState, reducer } from "../store";
 import { generateEmbedHtml } from "./outputRender";
@@ -21,6 +21,7 @@ import {
   actionSetResponsive,
   actionSetBackgroundColour,
   actionResizeWindow,
+  actionUpdateEmbedProps,
 } from "../actions";
 
 export function App(): JSX.Element {
@@ -131,14 +132,12 @@ export function App(): JSX.Element {
       />
 
       <Sidebar>
-        <div title="Frames" class="sidebar__tab">
+        <div title={UI_TEXT.TAB_OPTIONS} class="sidebar__tab">
           <Frames
             figmaFrames={frames}
             selectedFrames={selectedFrames}
             handleChange={dispatch}
           />
-
-          <EmbedPropertiesInputs {...embedProperties} handleChange={dispatch} />
 
           <LinksInput
             handleChange={dispatch}
@@ -157,9 +156,29 @@ export function App(): JSX.Element {
               />
 
               <label class="input__label" for="responsive">
-                Responsive
+                {UI_TEXT.RESPONSIVE_LABEL}
               </label>
             </div>
+          </div>
+
+          <div
+            class="side_panel__row side_panel__row--headline"
+            data-value={embedProperties.source}
+          >
+            <textarea
+              type="text"
+              value={embedProperties.embedUrl}
+              class="input input--textbox input--headline"
+              id={EMBED_PROPERTIES.EMBED_URL}
+              placeholder={UI_TEXT.EMBED_PROPS_URL_PLACEHOLDER}
+              spellcheck
+              onBlur={(e) =>
+                actionUpdateEmbedProps(
+                  EMBED_PROPERTIES.EMBED_URL,
+                  e.currentTarget.value.trim()
+                )(dispatch)
+              }
+            />
           </div>
 
           <BackgroundInput
@@ -170,7 +189,11 @@ export function App(): JSX.Element {
           />
         </div>
 
-        <div title="Compression" class="sidebar__tab">
+        <div title={UI_TEXT.TAB_WRAPPER} class="sidebar__tab">
+          <EmbedPropertiesInputs {...embedProperties} handleChange={dispatch} />
+        </div>
+
+        <div title={UI_TEXT.TAB_COMPRESSION} class="sidebar__tab">
           <p>Coming soon...</p>
         </div>
       </Sidebar>

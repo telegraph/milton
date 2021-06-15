@@ -26,8 +26,6 @@ export function EmbedPropertiesInputs({
 
   return (
     <div class="side_panel information">
-      <div class="side_panel__row side_panel__row--title">Embed properties</div>
-
       <div
         class="side_panel__row side_panel__row--headline"
         data-value={headline}
@@ -53,21 +51,6 @@ export function EmbedPropertiesInputs({
           value={subhead}
           id={EMBED_PROPERTIES.SUBHEAD}
           placeholder={UI_TEXT.EMBED_PROPS_SUB_HEAD_PLACEHOLDER}
-          onBlur={inputChange}
-          spellcheck
-        />
-      </div>
-
-      <div
-        class="side_panel__row side_panel__row--headline"
-        data-value={source}
-      >
-        <textarea
-          type="text"
-          value={source}
-          class="input input--textbox input--headline"
-          id={EMBED_PROPERTIES.SOURCE}
-          placeholder={UI_TEXT.EMBED_PROPS_SOURCE_PLACEHOLDER}
           onBlur={inputChange}
           spellcheck
         />

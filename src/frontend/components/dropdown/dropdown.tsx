@@ -2,15 +2,15 @@ import { h, Component } from "preact";
 
 interface DropdownProps {
   label: string;
-  options: { title: string; value: any }[];
-  onSelect: (val: any) => void;
-  onBlur?: (val: any) => void;
+  options: { title: string; value: number | string }[];
+  onSelect?: (val: number | string) => void;
+  onBlur?: (val: string) => void;
   onOpen?: () => void;
   onClose?: () => void;
   tooltip?: string;
   activeIndex?: number;
   manualInput?: boolean;
-  manualValue?: any;
+  manualValue?: string;
   showIcon?: boolean;
   className?: string;
 }
@@ -71,7 +71,7 @@ export class Dropdown extends Component<DropdownProps> {
                 <button
                   key={option.title}
                   class="dropdown__option"
-                  onClick={() => onSelect(option.value)}
+                  onClick={() => onSelect && onSelect(option.value)}
                 >
                   {option.title}
                 </button>

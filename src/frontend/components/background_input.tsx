@@ -1,7 +1,7 @@
 import type { JSX } from "preact";
 import { h, Component } from "preact";
 import { HexColorPicker } from "react-colorful";
-import { debounce } from "../../utils/common";
+import throttle from "just-throttle";
 import { UI_TEXT } from "../../constants";
 import { Modal } from "./modal/modal";
 
@@ -42,7 +42,7 @@ export class BackgroundInput extends Component<Props, State> {
     this.props.handleChange(newColour);
   };
 
-  debouncedColourChange = debounce(this.handleColourChange, 100);
+  debouncedColourChange = throttle(this.handleColourChange, 100);
 
   render(): JSX.Element {
     const { colour } = this.props;
