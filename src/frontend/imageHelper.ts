@@ -1,4 +1,4 @@
-import UPNG from "../libs/upng";
+import UPNG from "@pdf-lib/upng";
 import pica from "pica";
 import { imageNodeDimensions } from "types";
 
