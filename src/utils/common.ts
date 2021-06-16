@@ -46,3 +46,19 @@ export function loadScript(url: string): Promise<boolean> {
     document.head.appendChild(scriptEl);
   });
 }
+
+export function cleanUrl(text: string): string {
+  const urlText = text.trim();
+
+  if (urlText === "") {
+    return "";
+  }
+
+  if (RegExp(URL_REGEX_LOOSE).test(urlText)) {
+    return urlText;
+  }
+
+  return "https://" + urlText;
+}
+
+export const URL_REGEX_LOOSE = "https?://.*";

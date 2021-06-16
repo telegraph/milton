@@ -1,4 +1,5 @@
 import { h, JSX } from "preact";
+import { cleanUrl, URL_REGEX_LOOSE } from "utils/common";
 import { EMBED_PROPERTIES, UI_TEXT } from "../../constants";
 import { ActionTypes, actionUpdateEmbedProps } from "../actions";
 
@@ -6,6 +7,7 @@ interface EmbedPropertiesInputs {
   headline: string;
   subhead: string;
   source: string;
+  sourceUrl: string;
   handleChange: (action: ActionTypes) => void;
 }
 
@@ -13,6 +15,7 @@ export function EmbedPropertiesInputs({
   headline,
   subhead,
   source,
+  sourceUrl,
   handleChange,
 }: EmbedPropertiesInputs): JSX.Element {
   const inputChange = (event: JSX.TargetedEvent<HTMLDivElement>): void => {
@@ -61,6 +64,24 @@ export function EmbedPropertiesInputs({
           placeholder={UI_TEXT.EMBED_PROPS_SOURCE_PLACEHOLDER}
           onBlur={inputChange}
           spellcheck
+        />
+      </div>
+
+      <div class="side_panel__row side_panel__row--url">
+        <input
+          type="url"
+          pattern={URL_REGEX_LOOSE}
+          class="input input--text input--url"
+          value={sourceUrl}
+          placeholder={UI_TEXT.EMBED_PROPS_SOURCE_URL_PLACEHOLDER}
+          id={EMBED_PROPERTIES.SOURCE_URL}
+          onBlur={(e) =>
+            actionUpdateEmbedProps(
+              EMBED_PROPERTIES.SOURCE_URL,
+              cleanUrl(e.currentTarget.value)
+            )(handleChange)
+          }
+          spellcheck={false}
         />
       </div>
     </div>

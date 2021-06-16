@@ -39,9 +39,10 @@
   background-image: url(../images/icon-headline.svg);
   background-repeat: no-repeat;
   background-position: var(--padding-x-small) center;
-  background-size: 16px;
-  padding-left: var(--padding-x-large, 0);
+  background-size: 11px;
+  padding-left: var(--padding-large, 0);
   margin: calc(var(--padding-x-small, 0) / 2);
+  margin-top: 0;
   flex-grow: 1;
 }
 
@@ -67,26 +68,18 @@
 .input--url {
   background-image: url(../images/icon-link.svg);
   background-repeat: no-repeat;
-  background-position: 2px;
-  background-size: 14px;
-  padding-left: 22px;
+  background-position: var(--padding-x-small) center;
+  padding: var(--padding-x-small, 0);
+  background-size: 11px;
+  padding-left: var(--padding-large, 0);
+  margin: calc(var(--padding-x-small, 0) / 2);
+  margin-top: 0;
 }
 .input--url:invalid {
   border: 1px solid var(--colours-error, #f0f);
 }
 
-.input__error {
-  display: none;
-  margin-top: -6px;
-  align-self: flex-start;
-  margin-left: var(--padding-medium);
-  color: var(--colours-error, #f0f);
-}
-.input--url:invalid ~ .input__error {
-  display: block;
-}
-
-.input--colour {
+.input--url .input--colour {
   margin: 0;
   padding: 0;
   border: none;

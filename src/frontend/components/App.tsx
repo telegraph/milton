@@ -1,10 +1,12 @@
-import { STATUS, UI_TEXT } from "constants";
+import { EMBED_PROPERTIES, STATUS, UI_TEXT } from "constants";
 import { h, JSX } from "preact";
 import { useEffect, useReducer, useRef } from "preact/hooks";
+import { cleanUrl, URL_REGEX_LOOSE } from "utils/common";
 import {
   actionGetFrameData,
   actionSetBackgroundColour,
   actionSetResponsive,
+  actionUpdateEmbedProps,
   actionUpdateSelectedFrames,
 } from "../actions";
 import { initialState, reducer } from "../store";
@@ -13,7 +15,6 @@ import { Breakpoints } from "./breakpoints";
 import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
 import { Export } from "./Export";
 import { Frames } from "./Frames";
-import { LinksInput } from "./links_input";
 import { NotificationBar } from "./NotificationBar";
 import { generateEmbedHtml } from "./outputRender";
 import { Preview } from "./Preview";
@@ -109,11 +110,28 @@ export function App(): JSX.Element {
 
         <EmbedPropertiesInputs handleChange={dispatch} {...embedProperties} />
 
-        <LinksInput
-          handleChange={dispatch}
-          embedUrl={embedProperties.embedUrl}
-          sourceUrl={embedProperties.sourceUrl}
-        />
+        <div class="side_panel">
+          <div class="side_panel__row side_panel__row--title">
+            {UI_TEXT.TITLE_DESTINATION_URL}
+          </div>
+          <div class="side_panel__row ">
+            <input
+              type="url"
+              pattern={URL_REGEX_LOOSE}
+              class="input input--text input--url"
+              value={embedProperties.embedUrl}
+              placeholder={UI_TEXT.EMBED_PROPS_URL_PLACEHOLDER}
+              id={EMBED_PROPERTIES.EMBED_URL}
+              onBlur={(e) =>
+                actionUpdateEmbedProps(
+                  EMBED_PROPERTIES.EMBED_URL,
+                  cleanUrl(e.currentTarget.value)
+                )(dispatch)
+              }
+              spellcheck={false}
+            />
+          </div>
+        </div>
 
         <div class="side_panel">
           <div class="side_panel__row side_panel__row--input">

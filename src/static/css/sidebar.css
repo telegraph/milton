@@ -2,7 +2,7 @@
 .sidebar {
   grid-column: 1/2;
   grid-row: 2/4;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
 }
 
