@@ -24,7 +24,7 @@
   flex-direction: column;
   z-index: 2;
   min-width: 140px;
-  padding: var(--padding-small, 0) 0;
+  padding: var(--padding-x-small, 0) 0;
   border-radius: var(--border-radius-small, 0);
   box-shadow: 0 2px 7px rgba(0, 0, 0, 0.15), 0 5px 17px rgba(0, 0, 0, 0.2);
 }
@@ -44,8 +44,8 @@
   background: transparent;
   color: #fff;
   cursor: pointer;
-  padding: var(--padding-small, 0) var(--padding-small, 0)
-    var(--padding-small, 0) var(--padding-large, 0);
+  padding: var(--padding-x-small, 0) var(--padding-small, 0)
+    var(--padding-x-small, 0) var(--padding-large, 0);
   text-align: left;
   outline: none;
   user-select: none;
@@ -53,6 +53,12 @@
 .dropdown__option:hover,
 .dropdown__option:active {
   background-color: var(--colours-active, #f0f);
+}
+.dropdown__option[data-active] {
+  background-image: url(../images/icon-tick-white.svg);
+  background-position: var(--padding-x-small) center;
+  background-repeat: no-repeat;
+  background-size: 10px;
 }
 
 .dropdown__btn {
@@ -75,7 +81,8 @@
   background-color: var(--colours-active, #f0f);
   color: #fff;
 }
+
 .dropdown__arrow {
   margin-top: -0.2em;
-  padding-left: var(--padding-small);
+  padding-left: var(--padding-x-small);
 }

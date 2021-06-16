@@ -5,12 +5,9 @@ import { FrameDataInterface } from "types";
 import { UI_TEXT } from "../../constants";
 
 const DEFAULT_BREAKPOINTS = [
-  { value: 320, title: "mobile" },
-  { value: 480, title: "large mobile" },
-  { value: 640, title: "tablet" },
-  { value: 720, title: "iPad" },
-  { value: 1024, title: "laptop" },
-  { value: 1200, title: "desktop" },
+  { value: 304, title: "Article mobile" },
+  { value: 456, title: "Article tablet" },
+  { value: 712, title: "Article desktop" },
 ];
 
 interface BreakpointsProps {
@@ -24,16 +21,32 @@ export function Breakpoints({
   breakpointWidth,
   handleChange,
 }: BreakpointsProps): JSX.Element {
-  let breakpointOptions: { value: number; title: string }[] = [];
+  let breakpointOptions: {
+    value: number;
+    title: string;
+    className?: string;
+  }[] = [];
 
   for (const { width } of outputFrames) {
-    const optionItem = { value: width, title: `Frame ${width}px` };
+    const optionItem = {
+      value: width,
+      title: `Frame ${width}px`,
+      className: "frame_width",
+    };
     breakpointOptions.push(optionItem);
   }
+
+  breakpointOptions = breakpointOptions.sort((a, b) => {
+    return a.value > b.value ? 1 : -1;
+  });
 
   breakpointOptions = breakpointOptions.concat(DEFAULT_BREAKPOINTS);
 
   const breakpointLabel = `${UI_TEXT.LABEL_BREAKPOINTS} ${breakpointWidth}px`;
+
+  const activeIndex = breakpointOptions.findIndex(
+    ({ value }) => value === breakpointWidth
+  );
 
   return (
     <div class="breakpoints">
@@ -42,6 +55,7 @@ export function Breakpoints({
         onSelect={(val: number) => handleChange(actionSetBreakpoint(val))}
         options={breakpointOptions}
         tooltip={UI_TEXT.ZOOM_TOOLTIP}
+        activeIndex={activeIndex}
       />
     </div>
   );

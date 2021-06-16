@@ -1,8 +1,8 @@
-import { h, Component } from "preact";
+import { Component, h } from "preact";
 
 interface DropdownProps {
   label: string;
-  options: { title: string; value: number | string }[];
+  options: { title: string; value: number | string; className?: string }[];
   onSelect?: (val: number | string) => void;
   onBlur?: (val: string) => void;
   onOpen?: () => void;
@@ -37,6 +37,7 @@ export class Dropdown extends Component<DropdownProps> {
       options,
       onSelect,
       onBlur,
+      activeIndex,
       manualInput = false,
       className = "",
       showIcon = true,
@@ -67,11 +68,14 @@ export class Dropdown extends Component<DropdownProps> {
                 />
               )}
 
-              {options.map((option) => (
+              {options.map((option, index) => (
                 <button
                   key={option.title}
-                  class="dropdown__option"
+                  class={`dropdown__option ${
+                    option.className ? option.className : ""
+                  }`}
                   onClick={() => onSelect && onSelect(option.value)}
+                  data-active={index === activeIndex}
                 >
                   {option.title}
                 </button>

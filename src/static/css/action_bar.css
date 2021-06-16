@@ -32,6 +32,12 @@
   margin: var(--padding-small, 0) 0;
 }
 
+/* [ Breakpoints ]
+----------------------------------------------------------------- */
+.dropdown__option.frame_width + .dropdown__option:not(.frame_width) {
+  border-top: 1px solid var(--colours-dark-border, #f0f);
+}
+
 /* [ Export - clipboard ]
 ----------------------------------------------------------------- */
 .export__clipboard {
