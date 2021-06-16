@@ -1,6 +1,6 @@
+import { UI_TEXT } from "constants";
 import { h, JSX } from "preact";
 import { FigmaFramesType } from "types";
-
 import { actionToggleSelectedFrame, ActionTypes } from "../actions";
 
 interface FramesProps {
@@ -20,7 +20,9 @@ export function Frames({
 
   return (
     <div class="side_panel selection">
-      <div class="side_panel__row side_panel__row--title">Frames selected</div>
+      <div class="side_panel__row side_panel__row--title">
+        {UI_TEXT.TITLE_FRAMES}
+      </div>
 
       {sizeSortedFrames.map(({ name, id }) => (
         <div

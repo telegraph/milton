@@ -1,6 +1,6 @@
+import esbuild from "esbuild";
 import fs from "fs-extra";
 import path from "path";
-import esbuild from "esbuild";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -60,7 +60,7 @@ const isProduction = process.env.NODE_ENV === "production";
     });
 
     const uiCss = esbuild.build({
-      entryPoints: [path.join("src", "static", "css", "ui.css")],
+      entryPoints: [path.join("src", "static", "css", "main.css")],
       platform: "browser",
       loader: { ".svg": "dataurl" },
       bundle: true,

@@ -27,14 +27,6 @@ export function generateIframeHtml(body: string): string {
   `;
 }
 
-// Remove line-breaks and multiple whitespace
-function minimiseText(str: string): string {
-  return str
-    .replace(/\s{2,}/g, " ")
-    .replace(/\n|\r/g, "")
-    .trim();
-}
-
 function generateParagraphStyle(
   node: textData,
   frameWidth: number,

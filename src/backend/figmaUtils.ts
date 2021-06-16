@@ -4,7 +4,7 @@ import {
   FrameDataInterface,
   imageNodeDimensions,
 } from "types";
-import { EMBED_PROPERTIES, ERRORS, DEFAULT_WINDOW_SIZE } from "constants";
+import { EMBED_PROPERTIES } from "constants";
 import { URL_REGEX } from "utils/common";
 import { getTextNodesFromFrame } from "utils/figmaText";
 import { EmbedProperties } from "frontend/store";
@@ -17,27 +17,6 @@ export function resizeWindow(size: { x: number; y: number }): void {
       height: size.y,
     })
     .catch((error) => console.log("Failed to save window size", error));
-}
-
-export function minMaxWindow(maximize: boolean): void {
-  const { width, height } = figma.viewport.bounds;
-
-  if (maximize) {
-    figma.ui.resize(Math.round(width), Math.round(height));
-  } else {
-    figma.clientStorage
-      .getAsync("WINDOW_SIZE")
-      .then((size) => {
-        figma.ui.resize(
-          size?.width ?? DEFAULT_WINDOW_SIZE.width,
-          size?.height ?? DEFAULT_WINDOW_SIZE.height
-        );
-      })
-      .catch((error) => {
-        console.error("Failed to get window size", error);
-        figma.ui.resize(DEFAULT_WINDOW_SIZE.width, DEFAULT_WINDOW_SIZE.height);
-      });
-  }
 }
 
 /**
@@ -249,6 +228,6 @@ export function getRootFrames(): IFrameData {
     source: currentPage.getPluginData(EMBED_PROPERTIES.SOURCE),
     sourceUrl: currentPage.getPluginData(EMBED_PROPERTIES.SOURCE_URL),
     embedUrl: currentPage.getPluginData(EMBED_PROPERTIES.EMBED_URL),
-    fileKey: figma.fileKey ?? ERRORS.MISSING_FILE_KEY,
+    fileKey: figma.fileKey ?? "MISSING_KEY",
   };
 }

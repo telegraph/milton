@@ -31,19 +31,6 @@
 .export__copy {
   margin: var(--padding-small, 0) 0;
 }
-.export_services__heading {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 300;
-  border-bottom: 1px solid #ccc;
-}
-.export_services {
-  display: flex;
-}
-.export__service {
-  margin: 6px 0;
-  font-size: 12px;
-}
 
 /* [ Export - clipboard ]
 ----------------------------------------------------------------- */
@@ -62,18 +49,4 @@
 .links {
   display: flex;
   border-top: none;
-}
-
-/* [ Resize ]
------------------------------------------------------------------ */
-.resize--max,
-.resize--min {
-  background-position: center right;
-  background-image: url("../images/icon-maximize.svg");
-  background-size: 32px;
-  background-repeat: no-repeat;
-  padding-right: 32px;
-}
-.resize--min {
-  background-image: url("../images/icon-minimize.svg");
 }

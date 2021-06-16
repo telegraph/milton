@@ -1,0 +1,32 @@
+/* [ Colour picker ]
+----------------------------------------------------------------- */
+.modal--colour-picker {
+  bottom: 10%;
+  left: 10%;
+}
+.react-colorful__alpha-gradient,
+.react-colorful__saturation {
+  box-shadow: none;
+}
+.react-colorful__saturation,
+.react-colorful__last-control {
+  border-radius: 0;
+}
+.react-colorful__pointer {
+  width: 12px;
+  height: 12px;
+  box-shadow: none;
+  border-width: 1px;
+}
+
+.btn--colour-picker {
+  min-width: 22px;
+  border: none;
+  height: 22px;
+  outline: none;
+  margin-left: var(--padding-medium, 0);
+  margin-bottom: 7px;
+}
+.btn--colour-picker:active {
+  outline: none;
+}

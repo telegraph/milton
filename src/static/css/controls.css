@@ -61,8 +61,7 @@
   font-size: var(--font-size--small, 1rem);
   display: flex;
   align-items: center;
-  padding: var(--padding-small, 0) var(--padding-small, 0)
-    var(--padding-small, 0) 32px;
+  padding-left: var(--padding-x-large, 0);
 }
 .selection__item[data-active] {
   background-image: url(../images/icon-tick.svg);

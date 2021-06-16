@@ -17,7 +17,7 @@
     "@types/pica": "^5.1.2",
     "@types/resize-observer-browser": "^0.1.5",
     "clipboard-copy": "^4.0.1",
-    "esbuild": "^0.12.8",
+    "esbuild": "^0.12.9",
     "file-saver": "^2.0.5",
     "fs-extra": "^10.0.0",
     "node-html-parser": "^3.3.5",

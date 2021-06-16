@@ -1,0 +1,11 @@
+/* [ Footer ]
+----------------------------------------------------------------- */
+.footer {
+  bottom: var(--padding-small, 0);
+  right: var(--padding-small, 0);
+  font-size: var(--font-size--small);
+  text-align: right;
+  color: var(--colours-grey-3, #f0f);
+  position: absolute;
+  margin: 0;
+}

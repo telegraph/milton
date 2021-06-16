@@ -25,16 +25,6 @@ export enum ACTIONS {
   SET_BACKGROUND_COLOUR = "SET_BACKGROUND_COLOUR",
   CLEAR_NOTIFICATION = "CLEAR_NOTIFICATION",
   TOGGLE_SELECTED_FRAME = "TOGGLE_SELECTED_FRAME",
-  RESIZE_WINDOW = "RESIZE_WINDOW",
-}
-
-export function actionResizeWindow(isMaximised: boolean): {
-  type: ACTIONS.RESIZE_WINDOW;
-  payload: boolean;
-} {
-  const maximized = !isMaximised;
-  postMan.send({ workload: MSG_EVENTS.MIN_MAX_WINDOW, data: maximized });
-  return { type: ACTIONS.RESIZE_WINDOW, payload: maximized };
 }
 
 export function actionSetFrames(frames: FigmaFramesType): {
@@ -276,7 +266,6 @@ export function actionSetBackgroundColour(colour: string): {
 }
 
 export type ActionTypes =
-  | ReturnType<typeof actionResizeWindow>
   | ReturnType<typeof actionStoreEmbedProperty>
   | ReturnType<typeof actionSetFrames>
   | ReturnType<typeof actionSetSelectedFrames>

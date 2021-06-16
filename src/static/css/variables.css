@@ -1,9 +1,11 @@
 /* [ Style variables ]
 ----------------------------------------------------------------- */
 :root {
-  --padding-small: 6px;
-  --padding-medium: 12px;
+  --padding-x-small: 8px;
+  --padding-small: 12px;
+  --padding-medium: 16px;
   --padding-large: 24px;
+  --padding-x-large: 36px;
   --padding-huge: 48px;
 
   --border-radius-small: 2px;

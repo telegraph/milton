@@ -64,7 +64,9 @@ export enum ERRORS {
 
 export const UI_TEXT = {
   INFO_PREVIEW: "Preview each frame output",
+  TITLE_FRAMES: "Frames",
   TITLE_CHOOSE_FRAME: "Choose which frames to export",
+  TITLE_HEADERS_FOOTER: "Header and footer",
   TITLE_PREVIEW: "Preview",
   TITLE_RESPONSIVE_PREVIEW: "Responsive preview",
   TILE_OUTPUT: "Export",
@@ -84,8 +86,6 @@ export const UI_TEXT = {
   EMBED_PROPS_URL_PLACEHOLDER: "Destination link https://...",
   EMBED_PROPS_SOURCE_URL_PLACEHOLDER: "Source link https://...",
   EMBED_PROPS_INVALID_URL: "Enter a valid link",
-  WINDOW_MAXIMIZE: "Maximize",
-  WINDOW_MINIMIZE: "Minimize",
   TAB_OPTIONS: "Options",
   TAB_COMPRESSION: "Compression",
   TAB_WRAPPER: "Wrapper",

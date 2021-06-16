@@ -1,0 +1,9 @@
+/* [ App ]
+----------------------------------------------------------------- */
+.app {
+  display: grid;
+  grid-template-columns: 240px auto;
+  grid-template-rows: min-content auto;
+  background: #fff;
+  height: 100%;
+}
