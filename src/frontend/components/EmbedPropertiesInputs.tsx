@@ -37,7 +37,8 @@ export function EmbedPropertiesInputs({
           class="input input--textbox input--headline"
           id={EMBED_PROPERTIES.HEADLINE}
           dangerouslySetInnerHTML={{ __html: headline }}
-          placeholder={UI_TEXT.EMBED_PROPS_HEADLINE_PLACEHOLDER}
+          data-empty={!headline}
+          data-placeholder={UI_TEXT.EMBED_PROPS_HEADLINE_PLACEHOLDER}
           onBlur={inputChange}
           spellcheck
         />
@@ -49,7 +50,8 @@ export function EmbedPropertiesInputs({
           class="input input--textbox input--headline"
           dangerouslySetInnerHTML={{ __html: subhead }}
           id={EMBED_PROPERTIES.SUBHEAD}
-          placeholder={UI_TEXT.EMBED_PROPS_SUB_HEAD_PLACEHOLDER}
+          data-empty={!subhead}
+          data-placeholder={UI_TEXT.EMBED_PROPS_SUB_HEAD_PLACEHOLDER}
           onBlur={inputChange}
           spellcheck
         />
@@ -61,7 +63,8 @@ export function EmbedPropertiesInputs({
           class="input input--textbox input--headline"
           dangerouslySetInnerHTML={{ __html: source }}
           id={EMBED_PROPERTIES.SOURCE}
-          placeholder={UI_TEXT.EMBED_PROPS_SOURCE_PLACEHOLDER}
+          data-empty={!source}
+          data-placeholder={UI_TEXT.EMBED_PROPS_SOURCE_PLACEHOLDER}
           onBlur={inputChange}
           spellcheck
         />

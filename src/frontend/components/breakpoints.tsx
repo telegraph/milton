@@ -1,8 +1,8 @@
-import { FrameDataInterface } from "types";
-import { h, JSX } from "preact";
-import { UI_TEXT } from "../../constants";
+import { actionSetBreakpoint, ActionTypes } from "frontend/actions";
 import { Dropdown } from "frontend/components/dropdown/dropdown";
-import { ActionTypes, actionSetBreakpoint } from "frontend/actions";
+import { h, JSX } from "preact";
+import { FrameDataInterface } from "types";
+import { UI_TEXT } from "../../constants";
 
 const DEFAULT_BREAKPOINTS = [
   { value: 320, title: "mobile" },
@@ -33,7 +33,7 @@ export function Breakpoints({
 
   breakpointOptions = breakpointOptions.concat(DEFAULT_BREAKPOINTS);
 
-  const breakpointLabel = `Select breakpoint: ${breakpointWidth}px`;
+  const breakpointLabel = `${UI_TEXT.LABEL_BREAKPOINTS} ${breakpointWidth}px`;
 
   return (
     <div class="breakpoints">

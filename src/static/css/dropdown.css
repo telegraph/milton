@@ -58,7 +58,7 @@
 .dropdown__btn {
   border: none;
   outline: none;
-  padding: var(--padding-medium);
+  padding: var(--padding-small, 0) var(--padding-medium, 0);
   background: transparent;
   cursor: pointer;
   display: flex;

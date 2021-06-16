@@ -45,6 +45,10 @@
   margin-top: 0;
   flex-grow: 1;
 }
+.input--headline[data-empty]:not(:focus)::before {
+  color: var(--colours-text-placeholder, #f0f);
+  content: attr(data-placeholder);
+}
 
 .input--text {
   font-size: var(--font-size--small, 1rem);
@@ -74,6 +78,9 @@
   padding-left: var(--padding-large, 0);
   margin: calc(var(--padding-x-small, 0) / 2);
   margin-top: 0;
+}
+.input--url::placeholder {
+  color: var(--colours-text-placeholder, #f0f);
 }
 .input--url:invalid {
   border: 1px solid var(--colours-error, #f0f);
