@@ -21,9 +21,7 @@
 .side_panel:first-of-type {
   border-top: none;
 }
-.side_panel:last-of-type {
-  /* border-bottom: 1px solid var(--colours-light-border, #f0f); */
-}
+
 .side_panel__row {
   font-size: var(--font-size--small, 1rem);
   display: flex;

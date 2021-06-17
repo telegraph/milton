@@ -38,9 +38,9 @@
 .input--headline {
   background-image: url(../images/icon-headline.svg);
   background-repeat: no-repeat;
-  background-position: var(--padding-x-small) center;
-  background-size: 11px;
-  padding-left: var(--padding-large, 0);
+  background-position: var(--padding-small) center;
+  background-size: 12px;
+  padding-left: var(--padding-x-large, 0);
   margin: calc(var(--padding-x-small, 0) / 2);
   margin-top: 0;
   flex-grow: 1;
@@ -72,10 +72,10 @@
 .input--url {
   background-image: url(../images/icon-link.svg);
   background-repeat: no-repeat;
-  background-position: var(--padding-x-small) center;
+  background-position: var(--padding-small) center;
   padding: var(--padding-x-small, 0);
-  background-size: 11px;
-  padding-left: var(--padding-large, 0);
+  background-size: 12px;
+  padding-left: var(--padding-x-large, 0);
   margin: calc(var(--padding-x-small, 0) / 2);
   margin-top: 0;
 }
