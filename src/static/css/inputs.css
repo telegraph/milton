@@ -85,15 +85,3 @@
 .input--url:invalid {
   border: 1px solid var(--colours-error, #f0f);
 }
-
-.input--url .input--colour {
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-.input--text-colour {
-  text-transform: uppercase;
-  width: 100%;
-  margin-top: 0;
-  margin-left: var(--padding-small, 0);
-}

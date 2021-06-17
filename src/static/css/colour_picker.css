@@ -19,13 +19,27 @@
   border-width: 1px;
 }
 
-.btn--colour-picker {
-  min-width: 22px;
+.input--url .input--colour {
+  margin: 0;
+  padding: 0;
   border: none;
-  height: 22px;
+}
+.input--text-colour {
+  text-transform: uppercase;
+  flex: 1;
+  width: 100%;
+  margin: 0 var(--padding-x-small, 0);
+  padding: var(--padding-x-small, 0) var(--padding-small, 0);
+}
+
+.btn--colour-picker {
+  min-width: 16px;
+  border: none;
+  height: 16px;
   outline: none;
   margin-left: var(--padding-medium, 0);
-  margin-bottom: 7px;
+  margin-bottom: 0;
+  cursor: pointer;
 }
 .btn--colour-picker:active {
   outline: none;
