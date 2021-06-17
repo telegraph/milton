@@ -1,14 +1,13 @@
-import type { JSX } from "preact";
-import { h, Component } from "preact";
-import { saveAs } from "file-saver";
 import copy from "clipboard-copy";
-import { NOTIFICATIONS_IDS, UI_TEXT } from "../../constants";
+import { saveAs } from "file-saver";
 import { actionSetNotification, ActionTypes } from "frontend/actions";
+import type { JSX } from "preact";
+import { Component, h } from "preact";
+import { NOTIFICATIONS_IDS, UI_TEXT } from "../../constants";
 
 interface ExportProps {
   svg: string;
   html: string;
-  zoom: number;
   dispatch: (action: ActionTypes) => void;
 }
 export class Export extends Component<ExportProps> {

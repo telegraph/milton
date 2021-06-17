@@ -1,20 +1,24 @@
-import { EMBED_PROPERTIES, STATUS, UI_TEXT } from "constants";
+import { STATUS, UI_TEXT } from "constants";
 import { h, JSX } from "preact";
 import { useEffect, useReducer, useRef } from "preact/hooks";
-import { cleanUrl, URL_REGEX_LOOSE } from "utils/common";
 import {
   actionGetFrameData,
   actionSetBackgroundColour,
-  actionSetResponsive,
-  actionUpdateEmbedProps,
   actionUpdateSelectedFrames,
 } from "../actions";
 import { initialState, reducer } from "../store";
 import { BackgroundInput } from "./background_input";
 import { Breakpoints } from "./breakpoints";
-import { EmbedPropertiesInputs } from "./EmbedPropertiesInputs";
 import { Export } from "./Export";
-import { Frames } from "./Frames";
+import {
+  EmbedUrlInput,
+  FrameSelectionInput,
+  HeadlineInput,
+  ResponsiveToggle,
+  SourceInput,
+  SourceUrlInput,
+  SubheadInput,
+} from "./inputs";
 import { NotificationBar } from "./NotificationBar";
 import { generateEmbedHtml } from "./outputRender";
 import { Preview } from "./Preview";
@@ -57,6 +61,7 @@ export function App(): JSX.Element {
     actionUpdateSelectedFrames(selectedFrames, outputFrames)(dispatch);
   }, [selectedFrames]);
 
+  // Ugly. Need to cache to and prevent re-generation
   const html =
     outputFrames.length > 0
       ? generateEmbedHtml({
@@ -80,7 +85,7 @@ export function App(): JSX.Element {
           handleChange={dispatch}
         />
 
-        <Export svg={svg} html={html} zoom={zoom} dispatch={dispatch} />
+        <Export svg={svg} html={html} dispatch={dispatch} />
       </header>
 
       <NotificationBar
@@ -102,59 +107,99 @@ export function App(): JSX.Element {
       />
 
       <div class="sidebar">
-        <Frames
-          figmaFrames={frames}
-          selectedFrames={selectedFrames}
-          handleChange={dispatch}
-        />
+        <div class="side_panel selection">
+          <div class="side_panel__row side_panel__row--title">
+            {UI_TEXT.TITLE_FRAMES}
+          </div>
 
-        <EmbedPropertiesInputs handleChange={dispatch} {...embedProperties} />
+          {Object.values(frames).map((frame) => {
+            const selected = selectedFrames.includes(frame.id);
 
+            return (
+              <div
+                key={frame.id}
+                data-active={selected}
+                class="side_panel__row side_panel__row--input selection__item"
+              >
+                <FrameSelectionInput
+                  id={frame.id}
+                  name={frame.name}
+                  disabled={selected && selectedFrames.length < 2}
+                  selected={selected}
+                  dispatch={dispatch}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <div class="side_panel information">
+          <div class="side_panel__row side_panel__row--title">
+            {UI_TEXT.TITLE_HEADERS_FOOTER}
+          </div>
+
+          <div class="side_panel__row side_panel__row--headline">
+            <HeadlineInput
+              headline={embedProperties.headline}
+              dispatch={dispatch}
+            />
+          </div>
+
+          <div class="side_panel__row side_panel__row--headline">
+            <SubheadInput
+              subhead={embedProperties.subhead}
+              dispatch={dispatch}
+            />
+          </div>
+
+          <div class="side_panel__row side_panel__row--headline">
+            <SourceInput source={embedProperties.source} dispatch={dispatch} />
+          </div>
+
+          <div class="side_panel__row side_panel__row--headline">
+            <SourceUrlInput
+              sourceUrl={embedProperties.sourceUrl}
+              dispatch={dispatch}
+            />
+          </div>
+        </div>
+
+        {/* Destination URL  */}
         <div class="side_panel">
           <div class="side_panel__row side_panel__row--title">
             {UI_TEXT.TITLE_DESTINATION_URL}
           </div>
+
           <div class="side_panel__row ">
-            <input
-              type="url"
-              pattern={URL_REGEX_LOOSE}
-              class="input input--text input--url"
-              value={embedProperties.embedUrl}
-              placeholder={UI_TEXT.EMBED_PROPS_URL_PLACEHOLDER}
-              id={EMBED_PROPERTIES.EMBED_URL}
-              onBlur={(e) =>
-                actionUpdateEmbedProps(
-                  EMBED_PROPERTIES.EMBED_URL,
-                  cleanUrl(e.currentTarget.value)
-                )(dispatch)
-              }
-              spellcheck={false}
+            <EmbedUrlInput
+              embedUrl={embedProperties.embedUrl}
+              dispatch={dispatch}
             />
           </div>
         </div>
 
+        {/* Responsive toggle  */}
         <div class="side_panel">
           <div class="side_panel__row side_panel__row--input">
-            <input
-              id="responsive"
-              class="input__checkbox"
-              type="checkbox"
-              checked={responsive}
-              onInput={() => dispatch(actionSetResponsive(!responsive))}
-            />
-
-            <label class="input__label" for="responsive">
-              {UI_TEXT.RESPONSIVE_LABEL}
-            </label>
+            <ResponsiveToggle responsive={responsive} dispatch={dispatch} />
           </div>
         </div>
 
-        <BackgroundInput
-          colour={backgroundColour}
-          handleChange={(colour: string) =>
-            dispatch(actionSetBackgroundColour(colour))
-          }
-        />
+        {/* Preview background colour picker  */}
+        <div class="side_panel side_panel--background-color">
+          <div class="side_panel__row side_panel__row--title">
+            {UI_TEXT.TITLE_BACKGROUND_COLOUR}
+          </div>
+
+          <div class="side_panel__row side_panel__row--colour">
+            <BackgroundInput
+              colour={backgroundColour}
+              handleChange={(colour: string) =>
+                dispatch(actionSetBackgroundColour(colour))
+              }
+            />
+          </div>
+        </div>
       </div>
 
       <Resizer />
