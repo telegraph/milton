@@ -1,7 +1,7 @@
-import { resizeAndOptimiseImage } from "./imageHelper";
+import { extendDefaultPlugins, optimize } from "svgo/dist/svgo.browser.js";
 import { imageNodeDimensions } from "types";
 import { randomId } from "utils/common";
-import { optimize, extendDefaultPlugins } from "svgo/dist/svgo.browser.js";
+import { resizeAndOptimiseImage } from "./imageHelper";
 
 // TODO: Is there a way to identify mapping of image to elements from
 // the @figma context? If so we don't need to look inside the SVG elements
@@ -126,7 +126,7 @@ export async function decodeSvgToString(
   imageNodeDimensions: imageNodeDimensions[]
 ): Promise<string> {
   let svgStr = new TextDecoder("utf-8").decode(svgData);
-  svgStr = replaceHttpWithHttps(svgStr);
+  // svgStr = replaceHttpWithHttps(svgStr);
 
   const optimizedSvg = optimize(svgStr, {
     plugins: extendDefaultPlugins([
@@ -182,8 +182,17 @@ export async function decodeSvgToString(
     ]),
   });
 
-  const svgEl = createSvgElement(optimizedSvg.data);
-  if (!svgEl) throw new Error("Failed to create SVG element");
+  if (!optimizedSvg.data) {
+    console.error("Failed to optimize data", optimizedSvg);
+    console.log(svgStr);
+    // throw new Error("Optimization failed. Missing SVG data");
+  }
+
+  // const svgEl = createSvgElement(optimizedSvg.data);
+  const svgEl = createSvgElement(svgStr);
+  if (!svgEl) {
+    throw new Error("Failed to create SVG element");
+  }
 
   svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
   cleanUpSvg(svgEl);

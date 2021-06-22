@@ -1,14 +1,8 @@
 import { findMissingFonts } from "backend/fonts";
-import {
-  FigmaFramesType,
-  FrameDataInterface,
-  FrameRender,
-  IFrameData,
-} from "types";
 import { MSG_EVENTS, NOTIFICATIONS_IDS, STATUS } from "constants";
-import { containsDuplicate, isEmpty } from "utils/common";
+import { FigmaFramesType, FrameDataInterface, FrameRender } from "types";
 import { postMan } from "utils/messages";
-import { EmbedProperties, StateInterface } from "./store";
+import { EmbedProperties } from "./store";
 import { decodeSvgToString } from "./svgUtils";
 
 export enum ACTIONS {
@@ -21,7 +15,6 @@ export enum ACTIONS {
   SET_BREAKPOINT = "SET_BREAKPOINT",
   SET_SELECTED_FRAMES = "SET_SELECTED_FRAMES",
   SET_SVG = "SET_SVG",
-  SET_INITIAL_DATA = "SET_INITIAL_DATA",
   SET_BACKGROUND_COLOUR = "SET_BACKGROUND_COLOUR",
   CLEAR_NOTIFICATION = "CLEAR_NOTIFICATION",
   TOGGLE_SELECTED_FRAME = "TOGGLE_SELECTED_FRAME",
@@ -102,69 +95,6 @@ export function actionToggleSelectedFrame(id: string): {
   return { type: ACTIONS.TOGGLE_SELECTED_FRAME, payload: id };
 }
 
-type InitialData = Pick<
-  StateInterface,
-  | "embedProperties"
-  | "frames"
-  | "selectedFrames"
-  | "breakpointWidth"
-  | "fileKey"
->;
-export const actionStoreInitialData = (
-  figmaData: InitialData
-): { type: ACTIONS.SET_INITIAL_DATA; payload: InitialData } => {
-  return { type: ACTIONS.SET_INITIAL_DATA, payload: figmaData };
-};
-
-export const actionGetFrameData = () => {
-  return (dispatch: DispatchType) => {
-    dispatch(actionSetStatus(STATUS.LOADING));
-
-    postMan
-      .send({ workload: MSG_EVENTS.GET_ROOT_FRAMES })
-      .then((response: IFrameData) => {
-        if (isEmpty(response.frames)) {
-          dispatch(
-            actionSetNotification(NOTIFICATIONS_IDS.ERROR_MISSING_FRAMES)
-          );
-          return;
-        }
-
-        const widths = Object.values(response.frames).map(({ width }) => width);
-        if (containsDuplicate(widths)) {
-          dispatch(
-            actionSetNotification(NOTIFICATIONS_IDS.ERROR_MULTIPLE_SAME_WIDTH)
-          );
-          return;
-        }
-
-        const selectedFrames = Object.keys(response.frames);
-        const embedProperties: EmbedProperties = {
-          headline: response.headline,
-          subhead: response.subhead,
-          source: response.source,
-          sourceUrl: response.sourceUrl,
-          embedUrl: response.embedUrl,
-        };
-
-        dispatch(
-          actionStoreInitialData({
-            frames: response.frames,
-            embedProperties,
-            selectedFrames,
-            breakpointWidth: widths[0],
-            fileKey: response.fileKey,
-          })
-        );
-      })
-      .catch(() =>
-        dispatch(
-          actionSetNotification(NOTIFICATIONS_IDS.ERROR_FAILED_TO_FETCH_DATA)
-        )
-      );
-  };
-};
-
 export const actionFetchFrameRender = (frameIds: string[]) => {
   return async (dispatch: DispatchType) => {
     dispatch(actionSetStatus(STATUS.RENDERING));
@@ -185,12 +115,6 @@ export const actionUpdateSelectedFrames = (
   frames: FrameDataInterface[]
 ) => {
   return (dispatch: DispatchType) => {
-    if (selectedFrames.length < 1) {
-      return dispatch(
-        actionSetNotification(NOTIFICATIONS_IDS.ERROR_NO_FRAMES_SELECTED)
-      );
-    }
-
     dispatch(actionClearNotification());
     actionCheckFonts(frames, dispatch);
     actionFetchFrameRender(selectedFrames)(dispatch);
@@ -275,7 +199,6 @@ export type ActionTypes =
   | ReturnType<typeof actionSetSvg>
   | ReturnType<typeof actionSetStatus>
   | ReturnType<typeof actionToggleSelectedFrame>
-  | ReturnType<typeof actionStoreInitialData>
   | ReturnType<typeof actionSetNotification>
   | ReturnType<typeof actionClearNotification>
   | ReturnType<typeof actionSetBackgroundColour>;

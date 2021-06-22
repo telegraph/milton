@@ -1,3 +1,4 @@
+import { AppContext, StateInterface2 } from "frontend/app_context";
 import throttle from "just-throttle";
 import type { JSX } from "preact";
 import { Component, Fragment, h } from "preact";
@@ -15,16 +16,14 @@ function cleanColourValue(value: string): string {
   return colour;
 }
 
-interface Props {
-  colour: string;
-  handleChange: (colour: string) => void;
-}
-
 interface State {
   colourPickerVisible: boolean;
 }
 
-export class BackgroundInput extends Component<Props, State> {
+export class BackgroundInput extends Component<{}, State> {
+  static contextType = AppContext;
+  context!: StateInterface2;
+
   state: State = {
     colourPickerVisible: false,
   };
@@ -39,13 +38,13 @@ export class BackgroundInput extends Component<Props, State> {
 
   handleColourChange = (colour: string): void => {
     const newColour = cleanColourValue(colour);
-    this.props.handleChange(newColour);
+    this.context.setBackgroundColour(newColour);
   };
 
   debouncedColourChange = throttle(this.handleColourChange, 100);
 
   render(): JSX.Element {
-    const { colour } = this.props;
+    const { backgroundColour } = this.context;
     const { colourPickerVisible } = this.state;
 
     return (
@@ -57,7 +56,7 @@ export class BackgroundInput extends Component<Props, State> {
             onClose={this.closeColourPicker}
           >
             <HexColorPicker
-              color={colour}
+              color={backgroundColour}
               onChange={this.debouncedColourChange}
             />
           </Modal>
@@ -66,14 +65,14 @@ export class BackgroundInput extends Component<Props, State> {
         <button
           class="btn--colour-picker"
           onClick={this.openColourPicker}
-          style={`background-color: ${colour};`}
+          style={`background-color: ${backgroundColour};`}
         ></button>
 
         <input
           id="backgroundColour"
           class="input--text input--text-colour"
           type="text"
-          value={colour}
+          value={backgroundColour}
           maxLength={7}
           minLength={4}
           placeholder="#CFCFCF"

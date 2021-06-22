@@ -1,12 +1,11 @@
-import { DEFAULT_WINDOW_SIZE, MSG_EVENTS } from "constants";
-import { postMan } from "utils/messages";
-
 import {
   getRootFrames,
   renderFrames,
-  setEmbedProperties,
   resizeWindow,
+  setEmbedProperties,
 } from "backend/figmaUtils";
+import { DEFAULT_WINDOW_SIZE, MSG_EVENTS } from "constants";
+import { postMan } from "utils/messages";
 
 // Register messenger event functions
 postMan.registerWorker(MSG_EVENTS.GET_ROOT_FRAMES, getRootFrames);

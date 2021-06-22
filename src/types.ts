@@ -59,22 +59,6 @@ export type AppPropsInterface = {
   version: string;
 };
 
-export type AppState = {
-  readonly error: string;
-  readonly ready: boolean;
-  readonly frames: FigmaFramesType;
-  readonly stage: STAGES;
-  readonly responsive: boolean;
-  readonly headline: string;
-  readonly subhead: string;
-  readonly source: string;
-  readonly sourceLink: string;
-
-  readonly selectedFrames: string[];
-  readonly svgMarkup: string;
-  readonly loading: boolean;
-};
-
 type textNodeSelectedProps = Pick<
   TextNode,
   | "x"

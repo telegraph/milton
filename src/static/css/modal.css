@@ -9,6 +9,7 @@
   display: grid;
   grid-template-rows: min-content auto;
   grid-template-columns: auto 28px;
+  z-index: 1;
 }
 .modal__header {
   display: flex;

@@ -1,4 +1,4 @@
-import { STATUS, NOTIFICATIONS_IDS } from "constants";
+import { NOTIFICATIONS_IDS, STATUS } from "constants";
 import { FigmaFramesType } from "types";
 import { toggleItem } from "utils/common";
 import { ACTIONS, ActionTypes } from "./actions";
@@ -17,7 +17,6 @@ export interface StateInterface {
   frames: FigmaFramesType;
   embedProperties: EmbedProperties;
   responsive: boolean;
-  svg: string;
   zoom: number;
   breakpointWidth: number;
   backgroundColour: string;
@@ -43,7 +42,6 @@ export const initialState: StateInterface = {
   responsive: true,
   breakpointWidth: 100,
   backgroundColour: "#C4C4C4",
-  svg: "",
   notificationId: undefined,
   notificationMessage: "",
 };
@@ -54,13 +52,6 @@ export function reducer(
 ): StateInterface {
   console.log(action);
   switch (action.type) {
-    case ACTIONS.SET_INITIAL_DATA:
-      return {
-        ...state,
-        ...action.payload,
-        status: STATUS.IDLE,
-      };
-
     case ACTIONS.SET_EMBED_PROPERTY:
       return {
         ...state,
@@ -87,24 +78,6 @@ export function reducer(
 
     case ACTIONS.SET_ZOOM:
       return { ...state, zoom: action.payload };
-
-    case ACTIONS.SET_SVG:
-      return { ...state, svg: action.payload };
-
-    case ACTIONS.TOGGLE_SELECTED_FRAME: {
-      const newSelection = toggleItem(action.payload, state.selectedFrames);
-      const minWidth = Math.min(
-        ...Object.values(state.frames)
-          .filter((frame) => newSelection.includes(frame.id))
-          .map((frame) => frame.width)
-      );
-
-      return {
-        ...state,
-        selectedFrames: newSelection,
-        breakpointWidth: minWidth,
-      };
-    }
 
     case ACTIONS.SET_BACKGROUND_COLOUR:
       return { ...state, backgroundColour: action.payload };
