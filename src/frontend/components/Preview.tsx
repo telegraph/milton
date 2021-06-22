@@ -1,7 +1,7 @@
 import { STATUS } from "constants";
 import type { JSX, RefObject } from "preact";
 import { Component, createRef, h } from "preact";
-import { AppContext, StateInterface2 } from "../app_context";
+import { AppContext, StateInterface } from "../app_context";
 
 enum DIRECTIONS {
   NW = "NW",
@@ -123,7 +123,7 @@ interface PreviewStateInterface {
 export class Preview extends Component<{}, PreviewStateInterface> {
   static contextType = AppContext;
 
-  context!: StateInterface2;
+  context!: StateInterface;
 
   state: PreviewStateInterface = {
     x: 0,

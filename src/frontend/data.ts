@@ -2,12 +2,16 @@ import { EMBED_PROPERTIES, MSG_EVENTS, NOTIFICATIONS_IDS } from "constants";
 import { FigmaFramesType, FrameRender, IFrameData } from "types";
 import { containsDuplicate, isEmpty } from "utils/common";
 import { postMan } from "utils/messages";
-import { StateInterface } from "./store";
+import { StateInterface } from "./app_context";
 import { decodeSvgToString } from "./svgUtils";
 
 type InitialData = Pick<
   StateInterface,
-  | "embedProperties"
+  | "headline"
+  | "subhead"
+  | "source"
+  | "sourceUrl"
+  | "embedUrl"
   | "frames"
   | "selectedFrames"
   | "breakpointWidth"
@@ -34,8 +38,12 @@ export async function getRootFramesFromBackend(): Promise<InitialData> {
       throw NOTIFICATIONS_IDS.ERROR_MULTIPLE_SAME_WIDTH;
     }
 
+    const widths = Object.values(response.frames).map(({ width }) => width);
+    const minWidth = Math.min(...widths);
+
     return {
       ...response,
+      breakpointWidth: minWidth,
       selectedFrames: Object.keys(response.frames),
     };
   } catch (err) {

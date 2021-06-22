@@ -1,6 +1,5 @@
 import copy from "clipboard-copy";
 import { saveAs } from "file-saver";
-import { actionSetNotification } from "frontend/actions";
 import { AppContext } from "frontend/app_context";
 import { h } from "preact";
 import { NOTIFICATIONS_IDS, UI_TEXT } from "../../constants";
@@ -24,16 +23,7 @@ function downloadHtml(html: string): void {
   const date = new Date().toISOString().replace(/\W/g, "_");
   const fileName = `figma2html-${date}.html`;
 
-  saveAs(new Blob([fileText], { type: "text/html" }), fileName);
-}
-
-async function copyToClipboard(html: string): Promise<void> {
-  try {
-    await copy(html);
-    actionSetNotification(NOTIFICATIONS_IDS.INFO_CLIPBOARD_COPIED);
-  } catch (err) {
-    console.error(err);
-  }
+  saveAs(new Blob([fileText], { type: "text/html;charset=utf-8" }), fileName);
 }
 
 export function Export() {
@@ -43,14 +33,23 @@ export function Export() {
         <div class="export">
           <button
             class="export__clipboard btn btn--clean"
-            onClick={async () => copyToClipboard(await props.getHtml())}
+            onClick={async () => {
+              const html = await props.getHtml();
+              await copy(html);
+              console.log("here");
+              props.setNotification(NOTIFICATIONS_IDS.INFO_CLIPBOARD_COPIED);
+            }}
           >
             {UI_TEXT.COPY_TO_CLIPBOARD}
           </button>
 
           <button
             class="export__download btn btn--clean"
-            onClick={async () => downloadHtml(await props.getHtml())}
+            onClick={async () => {
+              const html = await props.getHtml();
+              downloadHtml(html);
+              props.setNotification(NOTIFICATIONS_IDS.INFO_DOWNLOAD_SUCCESS);
+            }}
           ></button>
         </div>
       )}

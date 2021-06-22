@@ -5,9 +5,9 @@ import { h } from "preact";
 export function NotificationBar() {
   return (
     <AppContext.Consumer>
-      {({ notificationId, notificationMessage, setNotificationId }) => {
-        const notification = notificationId && NOTIFICATIONS[notificationId];
-        if (!notification) return;
+      {({ notificationId, notificationMessage, setNotification }) => {
+        if (notificationId === undefined) return;
+        const notification = NOTIFICATIONS[notificationId];
 
         return (
           <section
@@ -22,7 +22,7 @@ export function NotificationBar() {
             <button
               class="btn btn__close btn__close--white"
               title="Close"
-              onClick={() => setNotificationId()}
+              onClick={() => setNotification()}
             />
           </section>
         );

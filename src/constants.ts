@@ -44,12 +44,6 @@ export enum OUTPUT_FORMATS {
   IFRAME,
 }
 
-export enum NOTIFICATION_TYPE {
-  INFO = "INFO",
-  WARN = "WARN",
-  ERROR = "ERROR",
-}
-
 export const UI_TEXT = {
   INFO_PREVIEW: "Preview each frame output",
   TITLE_FRAMES: "Frames",
@@ -81,8 +75,15 @@ export const UI_TEXT = {
   TAB_WRAPPER: "Wrapper",
 };
 
+export enum NOTIFICATION_TYPE {
+  INFO = "INFO",
+  WARN = "WARN",
+  ERROR = "ERROR",
+}
+
 export enum NOTIFICATIONS_IDS {
   INFO_CLIPBOARD_COPIED,
+  INFO_DOWNLOAD_SUCCESS,
   ERROR_MISSING_FRAMES,
   ERROR_MULTIPLE_SAME_WIDTH,
   ERROR_FAILED_TO_FETCH_DATA,
@@ -93,10 +94,17 @@ export enum NOTIFICATIONS_IDS {
   ERROR_UNKNOWN,
 }
 
-export const NOTIFICATIONS = {
+export const NOTIFICATIONS: Record<
+  NOTIFICATIONS_IDS,
+  { type: NOTIFICATION_TYPE; text: string }
+> = {
   [NOTIFICATIONS_IDS.INFO_CLIPBOARD_COPIED]: {
     type: NOTIFICATION_TYPE.INFO,
     text: "👍 Success! Code copied to clipboard!",
+  },
+  [NOTIFICATIONS_IDS.INFO_DOWNLOAD_SUCCESS]: {
+    type: NOTIFICATION_TYPE.INFO,
+    text: "👍 Success! Code downloaded!",
   },
   [NOTIFICATIONS_IDS.ERROR_MISSING_FRAMES]: {
     type: NOTIFICATION_TYPE.ERROR,
@@ -117,6 +125,10 @@ export const NOTIFICATIONS = {
   [NOTIFICATIONS_IDS.ERROR_FAILED_TO_SET_EMBED_SETTINGS]: {
     type: NOTIFICATION_TYPE.ERROR,
     text: "😬 Failed to save embed setting",
+  },
+  [NOTIFICATIONS_IDS.ERROR_FAILED_TO_RENDER_BACKEND_SVG]: {
+    type: NOTIFICATION_TYPE.ERROR,
+    text: "😬 Failed to render SVG",
   },
   [NOTIFICATIONS_IDS.ERROR_MISSING_FONT]: {
     type: NOTIFICATION_TYPE.WARN,

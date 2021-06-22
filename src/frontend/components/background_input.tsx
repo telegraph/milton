@@ -1,4 +1,4 @@
-import { AppContext, StateInterface2 } from "frontend/app_context";
+import { AppContext, StateInterface } from "frontend/app_context";
 import throttle from "just-throttle";
 import type { JSX } from "preact";
 import { Component, Fragment, h } from "preact";
@@ -22,7 +22,7 @@ interface State {
 
 export class BackgroundInput extends Component<{}, State> {
   static contextType = AppContext;
-  context!: StateInterface2;
+  context!: StateInterface;
 
   state: State = {
     colourPickerVisible: false,

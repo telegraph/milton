@@ -1,4 +1,4 @@
-import { AppContext, StateInterface2 } from "frontend/app_context";
+import { AppContext, StateInterface } from "frontend/app_context";
 import { Dropdown } from "frontend/components/dropdown/dropdown";
 import { Component, h, JSX } from "preact";
 import { UI_TEXT } from "../../constants";
@@ -14,7 +14,7 @@ export class Zoom extends Component {
   ZOOM_MAX = 100;
 
   static contextType = AppContext;
-  context!: StateInterface2;
+  context!: StateInterface;
 
   handleKeyboardInput = ({ code }: KeyboardEvent): void => {
     const { zoom, setZoom: updateZoom } = this.context;

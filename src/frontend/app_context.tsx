@@ -25,7 +25,7 @@ interface StateProps {
 interface StateMethods {
   setZoom: (val: number) => void;
   setBreakpointWidth: (width: number) => void;
-  setNotificationId: (id?: NOTIFICATIONS_IDS) => void;
+  setNotification: (id?: NOTIFICATIONS_IDS, msg?: string) => void;
   setFrameSelection: (id: string) => void;
   setHeadline: (text: string) => void;
   setSubhead: (text: string) => void;
@@ -38,7 +38,7 @@ interface StateMethods {
   toggleResponsive: () => void;
 }
 
-export interface StateInterface2 extends StateMethods, StateProps {}
+export interface StateInterface extends StateMethods, StateProps {}
 
 const initialProps: StateProps = {
   status: STATUS.LOADING,
@@ -60,9 +60,9 @@ const initialProps: StateProps = {
   notificationMessage: "",
 };
 
-export const AppContext = createContext({} as StateInterface2);
+export const AppContext = createContext({} as StateInterface);
 
-export class AppProvider extends Component<{}, StateInterface2> {
+export class AppProvider extends Component<{}, StateInterface> {
   svgCache: Record<string, string> = {};
 
   getSvg = async (framesIds: string[]): Promise<string> => {
@@ -77,6 +77,7 @@ export class AppProvider extends Component<{}, StateInterface2> {
       svg = await renderSvg(framesIds);
     } catch (err) {
       console.error("Failed to render SVG", err);
+      throw NOTIFICATIONS_IDS.ERROR_FAILED_TO_RENDER_BACKEND_SVG;
     }
 
     this.svgCache[cacheId] = svg;
@@ -90,6 +91,7 @@ export class AppProvider extends Component<{}, StateInterface2> {
       this.setState({ ...response, status: STATUS.IDLE });
     } catch (err) {
       console.error("Failed to fetch initial frames", err);
+      this.setNotification(err);
     }
   };
 
@@ -167,13 +169,17 @@ export class AppProvider extends Component<{}, StateInterface2> {
     saveToFigma(EMBED_PROPERTIES.EMBED_URL, text);
   };
 
-  state: StateInterface2 = {
+  setNotification = (id?: NOTIFICATIONS_IDS, msg?: string): void => {
+    this.setState({ notificationId: id, notificationMessage: msg });
+  };
+
+  state: StateInterface = {
     ...initialProps,
     toggleResponsive: () =>
       this.setState({ responsive: !this.state.responsive }),
     setZoom: (val) => this.setState({ zoom: val }),
     setBreakpointWidth: (width) => this.setState({ breakpointWidth: width }),
-    setNotificationId: (id) => this.setState({ notificationId: id }),
+    setNotification: this.setNotification,
     setHeadline: this.setHeadline,
     setSubhead: this.setSubhead,
     setSource: this.setSource,
