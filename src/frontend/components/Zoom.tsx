@@ -30,6 +30,11 @@ export class Zoom extends Component {
     }
   };
 
+  handleZoomSelect = (val: string | number) => {
+    const zoom = typeof val === "number" ? val : parseFloat(val);
+    this.context.setZoom(zoom);
+  };
+
   componentDidMount(): void {
     window.addEventListener("keydown", this.handleKeyboardInput);
   }
@@ -39,7 +44,7 @@ export class Zoom extends Component {
   }
 
   render(): JSX.Element {
-    const { setZoom: updateZoom, zoom } = this.context;
+    const { zoom } = this.context;
     const zoomLabel = `${(zoom * 100).toFixed(0)}%`;
     const zoomOptions = [
       {
@@ -57,7 +62,7 @@ export class Zoom extends Component {
       <div class="zoom">
         <Dropdown
           label={zoomLabel}
-          onSelect={(val) => updateZoom(val)}
+          onSelect={(val) => this.handleZoomSelect(val)}
           options={zoomOptions}
           tooltip={UI_TEXT.ZOOM_TOOLTIP}
         />
