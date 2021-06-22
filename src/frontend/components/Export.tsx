@@ -50,7 +50,9 @@ export function Export() {
               downloadHtml(html);
               props.setNotification(NOTIFICATIONS_IDS.INFO_DOWNLOAD_SUCCESS);
             }}
-          ></button>
+          >
+            {UI_TEXT.BUTTON_DOWNLOAD}
+          </button>
         </div>
       )}
     </AppContext.Consumer>
