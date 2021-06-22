@@ -68,7 +68,7 @@ export class AppProvider extends Component<{}, StateInterface> {
 
   getSvg = async (framesIds: string[]): Promise<string> => {
     let svg = "";
-    const cacheId = framesIds.join("");
+    const cacheId = [...framesIds].sort().join("");
 
     if (this.svgCache[cacheId]) {
       return this.svgCache[cacheId];
