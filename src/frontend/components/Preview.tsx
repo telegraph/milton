@@ -122,8 +122,8 @@ interface PreviewStateInterface {
 
 export class Preview extends Component<{}, PreviewStateInterface> {
   static contextType = AppContext;
-
   context!: StateInterface;
+  private privateContext!: StateInterface;
 
   state: PreviewStateInterface = {
     x: 0,
@@ -256,10 +256,8 @@ export class Preview extends Component<{}, PreviewStateInterface> {
 
   async componentDidMount() {
     window.focus();
-
-    if (!this.iframeEl.current) return;
-
-    this.iframeEl.current.addEventListener("load", this.updateIframeHeight);
+    this.privateContext = this.context;
+    this.iframeEl.current?.addEventListener("load", this.updateIframeHeight);
     window.addEventListener("keydown", this.setSpace);
     window.addEventListener("keyup", this.setSpace);
   }
@@ -267,40 +265,25 @@ export class Preview extends Component<{}, PreviewStateInterface> {
   componentWillUnmount(): void {
     window.removeEventListener("keydown", this.setSpace);
     window.removeEventListener("keyup", this.setSpace);
-
-    if (this.iframeEl.current) {
-      this.iframeEl.current.removeEventListener(
-        "load",
-        this.updateIframeHeight
-      );
-    }
+    this.iframeEl.current?.removeEventListener("load", this.updateIframeHeight);
   }
 
   async componentDidUpdate(): Promise<void> {
-    // FIXME: Better logic to detect if iframe src has changed.
-    if (this.iframeEl.current) {
+    const { getRenderPropsHash, breakpointWidth } = this.context;
+    const newHash = getRenderPropsHash(this.context);
+    const oldHash = getRenderPropsHash(this.privateContext);
+
+    if (newHash !== oldHash) {
+      console.log("diff context");
+      this.privateContext = this.context;
       const html = await this.context.getHtml();
-      if (this.iframeEl.current.srcdoc !== html) {
-        this.iframeEl.current.setAttribute("srcDoc", html);
-      }
+      this.iframeEl.current?.setAttribute("srcDoc", html);
     }
 
-    // if (breakpointWidth !== this.props.breakpointWidth) {
-    //   this.setState({
-    //     panning: false,
-    //     width: 0,
-    //     x: 0,
-    //     y: 0,
-    //   });
-    // }
-    // if (selectedFrames.join() !== this.props.selectedFrames.join()) {
-    //   this.setState({
-    //     panning: false,
-    //     width: 0,
-    //     x: 0,
-    //     y: 0,
-    //   });
-    // }
+    if (breakpointWidth !== this.privateContext.breakpointWidth) {
+      this.setState({ panning: false, width: 0, x: 0, y: 0 });
+      this.privateContext = this.context;
+    }
   }
 
   render(): JSX.Element {

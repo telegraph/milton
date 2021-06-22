@@ -36,6 +36,7 @@ interface StateMethods {
   getHtml: () => Promise<string>;
   getOutputFrames: () => FrameDataInterface[];
   toggleResponsive: () => void;
+  getRenderPropsHash: (state: StateInterface) => string;
 }
 
 export interface StateInterface extends StateMethods, StateProps {}
@@ -132,7 +133,7 @@ export class AppProvider extends Component<{}, StateInterface> {
   };
 
   setFrameSelection = (id: string) => {
-    const { selectedFrames } = this.state;
+    const { selectedFrames, frames } = this.state;
     let newSelection: string[];
 
     if (selectedFrames.includes(id)) {
@@ -141,7 +142,13 @@ export class AppProvider extends Component<{}, StateInterface> {
       newSelection = selectedFrames.concat(id);
     }
 
-    this.setState({ selectedFrames: newSelection });
+    const widths = Object.values(frames)
+      .filter(({ id }) => newSelection.includes(id))
+      .map(({ width }) => width);
+
+    const minWidth = Math.min(...widths);
+
+    this.setState({ selectedFrames: newSelection, breakpointWidth: minWidth });
   };
 
   setHeadline = (text: string) => {
@@ -173,6 +180,17 @@ export class AppProvider extends Component<{}, StateInterface> {
     this.setState({ notificationId: id, notificationMessage: msg });
   };
 
+  getRenderPropsHash = (state: StateInterface): string => {
+    return [
+      state.embedUrl,
+      state.headline,
+      state.subhead,
+      state.source,
+      state.sourceUrl,
+      ...state.selectedFrames,
+    ].join();
+  };
+
   state: StateInterface = {
     ...initialProps,
     toggleResponsive: () =>
@@ -189,6 +207,7 @@ export class AppProvider extends Component<{}, StateInterface> {
     setFrameSelection: this.setFrameSelection,
     getOutputFrames: this.getOutputFrames,
     getHtml: this.getHtml,
+    getRenderPropsHash: this.getRenderPropsHash,
   };
 
   componentDidMount() {
