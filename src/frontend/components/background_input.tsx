@@ -1,7 +1,7 @@
 import { AppContext, StateInterface } from "frontend/app_context";
 import throttle from "just-throttle";
 import type { JSX } from "preact";
-import { Component, Fragment, h } from "preact";
+import { Component, h } from "preact";
 import { HexColorPicker } from "react-colorful";
 import { UI_TEXT } from "../../constants";
 import { Modal } from "./modal/modal";

@@ -1,4 +1,4 @@
-import { h, Component, JSX, createRef, RefObject } from "preact";
+import { Component, createRef, Fragment, h, JSX, RefObject } from "preact";
 
 interface Props {
   title?: string;
@@ -117,17 +117,20 @@ export class Modal extends Component<Props, State> {
     `;
 
     return (
-      <div class="modal" style={style} ref={this.rootEl}>
-        <div class="modal__drag_bar" draggable={true} ref={this.dragEl}></div>
-        <header class="modal__header">
-          <span class="modal__title">{title}</span>
-          <button class="modal__close" onClick={onClose}>
-            x
-          </button>
-        </header>
+      <Fragment>
+        <div class="modal" style={style} ref={this.rootEl}>
+          <div class="modal__drag_bar" draggable={true} ref={this.dragEl}></div>
+          <header class="modal__header">
+            <span class="modal__title">{title}</span>
+            <button class="modal__close" onClick={onClose}>
+              x
+            </button>
+          </header>
 
-        <div class="modal__body">{children}</div>
-      </div>
+          <div class="modal__body">{children}</div>
+        </div>
+        <div class="modal__background" onClick={onClose}></div>
+      </Fragment>
     );
   }
 }
