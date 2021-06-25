@@ -105,7 +105,6 @@ export class AppProvider extends Component<{}, StateInterface> {
   };
 
   getHtml = async (): Promise<string> => {
-    // FIXME: Better way to generate HTML
     const {
       headline,
       embedUrl,
@@ -187,6 +186,7 @@ export class AppProvider extends Component<{}, StateInterface> {
       state.subhead,
       state.source,
       state.sourceUrl,
+      state.responsive,
       ...state.selectedFrames,
     ].join();
   };
