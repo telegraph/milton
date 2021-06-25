@@ -1,4 +1,4 @@
-import { STATUS } from "constants";
+import { STATUS, UI_TEXT } from "constants";
 import type { JSX, RefObject } from "preact";
 import { Component, createRef, h } from "preact";
 import { AppContext, StateInterface } from "../app_context";
@@ -118,6 +118,7 @@ interface PreviewStateInterface {
   selected: boolean;
   panning: boolean;
   spaceDown: boolean;
+  fileSize: number;
 }
 
 export class Preview extends Component<{}, PreviewStateInterface> {
@@ -137,6 +138,7 @@ export class Preview extends Component<{}, PreviewStateInterface> {
     selected: true,
     panning: false,
     spaceDown: false,
+    fileSize: 0,
   };
 
   previewEl: RefObject<HTMLDivElement> = createRef();
@@ -285,6 +287,9 @@ export class Preview extends Component<{}, PreviewStateInterface> {
       this.privateContext = this.context;
       const html = await this.context.getHtml();
       this.iframeEl.current?.setAttribute("srcDoc", html);
+
+      const fileSize = Math.round(html.length / 1024);
+      this.setState({ fileSize });
     }
 
     if (breakpointWidth !== this.privateContext.breakpointWidth) {
@@ -304,7 +309,8 @@ export class Preview extends Component<{}, PreviewStateInterface> {
   }
 
   render(): JSX.Element {
-    const { width, height, selected, x, y, spaceDown, panning } = this.state;
+    const { width, height, selected, x, y, spaceDown, panning, fileSize } =
+      this.state;
     const { breakpointWidth, status, backgroundColour, zoom, embedUrl } =
       this.context;
 
@@ -319,8 +325,10 @@ export class Preview extends Component<{}, PreviewStateInterface> {
         data-panning={panning || spaceDown}
       >
         {status === STATUS.RENDERING && (
-          <div class="preview__rendering">Rendering</div>
+          <div class="preview__rendering">{UI_TEXT.INFO_RENDERING}</div>
         )}
+
+        <p class="preview__filesize">{fileSize}KB</p>
 
         <PointerCapture
           onStart={this.handlePointerDown}

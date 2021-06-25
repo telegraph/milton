@@ -87,6 +87,8 @@ export class AppProvider extends Component<{}, StateInterface> {
 
   getFigmaFrames = async (): Promise<void> => {
     try {
+      this.setState({ status: STATUS.RENDERING });
+
       const response = await getRootFramesFromBackend();
       await this.getSvg(response.selectedFrames);
       this.setState({ ...response, status: STATUS.IDLE });

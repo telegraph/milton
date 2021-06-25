@@ -74,6 +74,7 @@ export const UI_TEXT = {
   TAB_OPTIONS: "Options",
   TAB_COMPRESSION: "Compression",
   TAB_WRAPPER: "Wrapper",
+  INFO_RENDERING: "Rendering and optimizing...",
 };
 
 export enum NOTIFICATION_TYPE {
