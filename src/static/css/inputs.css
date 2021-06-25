@@ -47,7 +47,7 @@
   border: none;
   outline: none;
 }
-.input--headline[data-empty]:not(:focus)::before {
+.input--textbox[data-empty]:not(:focus)::before {
   color: var(--colours-text-placeholder, #f0f);
   content: attr(data-placeholder);
 }
