@@ -7,7 +7,6 @@
 
 .colour_picker {
   display: flex;
-  flex: 1;
   border-radius: var(--border-radius-small, 0);
   z-index: 1;
 }

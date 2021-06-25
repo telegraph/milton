@@ -70,4 +70,5 @@
   box-shadow: none;
   margin: 0;
   padding-left: 0;
+  flex-grow: none;
 }
