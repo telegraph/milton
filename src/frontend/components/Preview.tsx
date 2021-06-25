@@ -153,11 +153,19 @@ export class Preview extends Component<{}, PreviewStateInterface> {
     this.setState({ selected: false });
   };
 
+  getIframeHeight = (): number => {
+    let height = 10;
+
+    const iframeBody = this.iframeEl.current?.contentDocument?.body;
+    if (iframeBody) {
+      height = iframeBody.getBoundingClientRect().height;
+    }
+
+    return height;
+  };
+
   updateIframeHeight = (): void => {
-    if (!this.iframeEl.current) return;
-    const iframe = this.iframeEl.current;
-    const height =
-      iframe.contentDocument?.body?.getBoundingClientRect().height ?? 1;
+    const height = this.getIframeHeight();
 
     if (height !== this.state.height) {
       this.setState({ height, prevHeight: height });
@@ -274,14 +282,23 @@ export class Preview extends Component<{}, PreviewStateInterface> {
     const oldHash = getRenderPropsHash(this.privateContext);
 
     if (newHash !== oldHash) {
-      console.log("diff context");
       this.privateContext = this.context;
       const html = await this.context.getHtml();
       this.iframeEl.current?.setAttribute("srcDoc", html);
     }
 
     if (breakpointWidth !== this.privateContext.breakpointWidth) {
-      this.setState({ panning: false, width: 0, x: 0, y: 0 });
+      const height = this.getIframeHeight();
+
+      this.setState({
+        panning: false,
+        width: 0,
+        x: 0,
+        y: 0,
+        height,
+        prevHeight: this.state.height,
+      });
+
       this.privateContext = this.context;
     }
   }
