@@ -70,6 +70,7 @@ export const UI_TEXT = {
   EMBED_PROPS_URL_PLACEHOLDER: "Destination URL https://",
   EMBED_PROPS_SOURCE_URL_PLACEHOLDER: "Source URL https://",
   EMBED_PROPS_INVALID_URL: "Enter a valid link",
+  BACKGROUND_COLOUR_PLACEHOLDER: "#ccc",
   TAB_OPTIONS: "Options",
   TAB_COMPRESSION: "Compression",
   TAB_WRAPPER: "Wrapper",

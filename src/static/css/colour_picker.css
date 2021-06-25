@@ -4,6 +4,19 @@
   bottom: 10%;
   left: 10%;
 }
+
+.colour_picker {
+  display: flex;
+  flex: 1;
+  border-radius: var(--border-radius-small, 0);
+}
+.colour_picker:hover {
+  outline: 1px solid var(--colours-light-border, #f0f);
+}
+.colour_picker[data-active] {
+  outline: 2px solid var(--colours-active, #f0f);
+}
+
 .react-colorful__alpha-gradient,
 .react-colorful__saturation {
   box-shadow: none;
@@ -19,28 +32,20 @@
   border-width: 1px;
 }
 
-.input--url .input--colour {
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-.input--text-colour {
-  text-transform: uppercase;
-  flex: 1;
-  width: 100%;
-  margin: 0 var(--padding-x-small, 0);
-  padding: var(--padding-x-small, 0) var(--padding-small, 0);
-}
-
 .btn--colour-picker {
   min-width: 16px;
   border: none;
-  height: 16px;
+  max-height: 16px;
   outline: none;
-  margin-left: var(--padding-medium, 0);
-  margin-bottom: 0;
+  margin: var(--padding-x-small, 0);
   cursor: pointer;
+  border-right: 1px solid transparent;
 }
 .btn--colour-picker:active {
   outline: none;
+}
+
+.colour_picker[data-active] .btn--colour-picker,
+.colour_picker:hover .btn--colour-picker {
+  border-right: 1px solid var(--colours-light-border, #f0f);
 }

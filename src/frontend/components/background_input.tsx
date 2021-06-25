@@ -18,6 +18,7 @@ function cleanColourValue(value: string): string {
 
 interface State {
   colourPickerVisible: boolean;
+  active: boolean;
 }
 
 export class BackgroundInput extends Component<{}, State> {
@@ -26,29 +27,41 @@ export class BackgroundInput extends Component<{}, State> {
 
   state: State = {
     colourPickerVisible: false,
+    active: false,
   };
 
   openColourPicker = (): void => {
-    this.setState({ colourPickerVisible: true });
+    this.setState({ active: true, colourPickerVisible: true });
   };
 
   closeColourPicker = (): void => {
-    this.setState({ colourPickerVisible: false });
+    this.setState({ colourPickerVisible: false, active: false });
+  };
+
+  handleFocus = (): void => {
+    this.setState({
+      colourPickerVisible: false,
+      active: true,
+    });
   };
 
   handleColourChange = (colour: string): void => {
     const newColour = cleanColourValue(colour);
     this.context.setBackgroundColour(newColour);
+
+    if (this.state.colourPickerVisible === false) {
+      this.setState({ active: false });
+    }
   };
 
   debouncedColourChange = throttle(this.handleColourChange, 100);
 
   render(): JSX.Element {
     const { backgroundColour } = this.context;
-    const { colourPickerVisible } = this.state;
+    const { colourPickerVisible, active } = this.state;
 
     return (
-      <Fragment>
+      <div class="colour_picker" data-active={active}>
         {colourPickerVisible && (
           <Modal
             title={UI_TEXT.TITLE_BACKGROUND_MODAL}
@@ -68,20 +81,20 @@ export class BackgroundInput extends Component<{}, State> {
           style={`background-color: ${backgroundColour};`}
         ></button>
 
-        <input
+        <div
+          contentEditable={true}
+          class="input input--textbox input--textbox--colour"
           id="backgroundColour"
-          class="input--text input--text-colour"
-          type="text"
-          value={backgroundColour}
-          maxLength={7}
-          minLength={4}
-          placeholder="#CFCFCF"
-          pattern="#[a-fA-F0-9]"
-          onFocus={this.closeColourPicker}
-          onInput={(e) => this.handleColourChange(e.currentTarget.value)}
+          data-empty={!backgroundColour}
+          data-placeholder={UI_TEXT.BACKGROUND_COLOUR_PLACEHOLDER}
+          onFocus={this.handleFocus}
+          onBlur={({ currentTarget }) =>
+            this.handleColourChange(currentTarget.innerText.trim())
+          }
           spellcheck={false}
+          dangerouslySetInnerHTML={{ __html: backgroundColour }}
         />
-      </Fragment>
+      </div>
     );
   }
 }
