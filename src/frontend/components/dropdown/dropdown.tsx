@@ -58,7 +58,7 @@ export class Dropdown extends Component<DropdownProps> {
           onClick={this.toggleOpen}
           title={tooltip}
         >
-          {label} {showIcon && <span class="dropdown__arrow">⌄</span>}
+          {label} {showIcon && <span class="dropdown__arrow" />}
         </button>
 
         {open && (

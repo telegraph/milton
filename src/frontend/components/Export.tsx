@@ -41,6 +41,7 @@ export function Export() {
             }}
           >
             {UI_TEXT.COPY_TO_CLIPBOARD}
+            <span class="icon icon--action" />
           </button>
 
           <button
@@ -52,6 +53,7 @@ export function Export() {
             }}
           >
             {UI_TEXT.BUTTON_DOWNLOAD}
+            <span class="icon icon--action" />
           </button>
         </div>
       )}

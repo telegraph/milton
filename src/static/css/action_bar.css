@@ -56,3 +56,13 @@
   display: flex;
   border-top: none;
 }
+
+.icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  width: var(--padding-medium, 0);
+  align-self: stretch;
+}
+.icon--action {
+  background-image: url(../images/icon-action-arrow.svg);
+}
