@@ -9,12 +9,13 @@
   display: flex;
   flex: 1;
   border-radius: var(--border-radius-small, 0);
+  z-index: 1;
 }
 .colour_picker:hover {
-  outline: 1px solid var(--colours-light-border, #f0f);
+  box-shadow: 0 0 0 1px var(--colours-light-border, #f0f);
 }
 .colour_picker[data-active] {
-  outline: 2px solid var(--colours-active, #f0f);
+  box-shadow: 0 0 0 2px var(--colours-active, #f0f);
 }
 
 .react-colorful__alpha-gradient,
@@ -43,9 +44,4 @@
 }
 .btn--colour-picker:active {
   outline: none;
-}
-
-.colour_picker[data-active] .btn--colour-picker,
-.colour_picker:hover .btn--colour-picker {
-  border-right: 1px solid var(--colours-light-border, #f0f);
 }

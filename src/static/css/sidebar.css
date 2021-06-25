@@ -67,9 +67,5 @@
 
 .side_panel__row--colour {
   border: 1px solid transparent;
-  margin: var(--padding-x-small, 0);
-}
-
-.side_panel__row--colour:hover {
-  border: 1px solid var(--colours-light-border, #f0f);
+  margin: 0 var(--padding-x-small, 0);
 }
