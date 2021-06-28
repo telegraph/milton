@@ -155,25 +155,6 @@ export class Preview extends Component<{}, PreviewStateInterface> {
     this.setState({ selected: false });
   };
 
-  getIframeHeight = (): number => {
-    let height = 10;
-
-    const iframeBody = this.iframeEl.current?.contentDocument?.body;
-    if (iframeBody) {
-      height = iframeBody.getBoundingClientRect().height;
-    }
-
-    return height;
-  };
-
-  updateIframeHeight = (): void => {
-    const height = this.getIframeHeight();
-
-    if (height !== this.state.height) {
-      this.setState({ height, prevHeight: height });
-    }
-  };
-
   resizeMove = (x: number, y: number): void => {
     const { prevWidth, prevHeight } = this.state;
     const { zoom } = this.context;
@@ -264,48 +245,80 @@ export class Preview extends Component<{}, PreviewStateInterface> {
     }
   };
 
-  async componentDidMount() {
-    window.focus();
+  shouldReRenderHtml = () => {
+    const { getHTMLRenderPropsHash } = this.context;
+    const newHash = getHTMLRenderPropsHash(this.context);
+    const oldHash = getHTMLRenderPropsHash(this.privateContext);
+
+    return newHash !== oldHash;
+  };
+
+  setIframeContent = async () => {
     this.privateContext = this.context;
-    this.iframeEl.current?.addEventListener("load", this.updateIframeHeight);
+    const html = await this.context.getHtml();
+    this.iframeEl.current?.setAttribute("srcDoc", html);
+
+    const fileSize = Math.round(html.length / 1024);
+    this.setState(
+      { fileSize, width: 0, prevWidth: 0, x: 0, prevX: 0, y: 0, prevY: 0 },
+      this.updateIframeHeight
+    );
+  };
+
+  setNewBreakpointValues = (): void => {
+    this.setState(
+      {
+        panning: false,
+        width: 0,
+        prevWidth: 0,
+        x: 0,
+        y: 0,
+      },
+      this.updateIframeHeight
+    );
+  };
+
+  updateIframeHeight = (): void => {
+    const height = this.iframeEl.current?.contentDocument?.body?.scrollHeight;
+
+    if (height && height !== this.state.height) {
+      this.setState({ height, prevHeight: height });
+    }
+  };
+
+  componentDidMount() {
+    window.focus();
+
+    this.privateContext = this.context;
+
     window.addEventListener("keydown", this.setSpace);
     window.addEventListener("keyup", this.setSpace);
+
+    if (this.iframeEl.current) {
+      this.iframeEl.current.addEventListener("load", this.updateIframeHeight);
+    }
   }
 
   componentWillUnmount(): void {
     window.removeEventListener("keydown", this.setSpace);
     window.removeEventListener("keyup", this.setSpace);
-    this.iframeEl.current?.removeEventListener("load", this.updateIframeHeight);
+
+    if (this.iframeEl.current) {
+      const { current } = this.iframeEl;
+      current.removeEventListener("load", this.updateIframeHeight);
+    }
   }
 
   async componentDidUpdate(): Promise<void> {
-    const { getRenderPropsHash, breakpointWidth } = this.context;
-    const newHash = getRenderPropsHash(this.context);
-    const oldHash = getRenderPropsHash(this.privateContext);
-
-    if (newHash !== oldHash) {
-      this.privateContext = this.context;
-      const html = await this.context.getHtml();
-      this.iframeEl.current?.setAttribute("srcDoc", html);
-
-      const fileSize = Math.round(html.length / 1024);
-      this.setState({ fileSize });
+    if (this.shouldReRenderHtml()) {
+      this.setIframeContent();
     }
 
-    if (breakpointWidth !== this.privateContext.breakpointWidth) {
-      const height = this.getIframeHeight();
-
-      this.setState({
-        panning: false,
-        width: 0,
-        x: 0,
-        y: 0,
-        height,
-        prevHeight: this.state.height,
-      });
-
-      this.privateContext = this.context;
+    if (this.context.breakpointWidth !== this.privateContext.breakpointWidth) {
+      this.setNewBreakpointValues();
     }
+
+    this.privateContext = this.context;
   }
 
   render(): JSX.Element {

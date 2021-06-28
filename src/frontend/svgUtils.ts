@@ -194,8 +194,8 @@ export async function decodeSvgToString(
     // throw new Error("Optimization failed. Missing SVG data");
   }
 
-  // const svgEl = createSvgElement(optimizedSvg.data);
-  const svgEl = createSvgElement(svgStr);
+  const svgEl = createSvgElement(optimizedSvg.data);
+
   if (!svgEl) {
     throw new Error("Failed to create SVG element");
   }

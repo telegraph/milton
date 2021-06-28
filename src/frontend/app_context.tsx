@@ -36,7 +36,7 @@ interface StateMethods {
   getHtml: () => Promise<string>;
   getOutputFrames: () => FrameDataInterface[];
   toggleResponsive: () => void;
-  getRenderPropsHash: (state: StateInterface) => string;
+  getHTMLRenderPropsHash: (state: StateInterface) => string;
 }
 
 export interface StateInterface extends StateMethods, StateProps {}
@@ -181,7 +181,7 @@ export class AppProvider extends Component<{}, StateInterface> {
     this.setState({ notificationId: id, notificationMessage: msg });
   };
 
-  getRenderPropsHash = (state: StateInterface): string => {
+  getHTMLRenderPropsHash = (state: StateInterface): string => {
     return [
       state.embedUrl,
       state.headline,
@@ -209,7 +209,7 @@ export class AppProvider extends Component<{}, StateInterface> {
     setFrameSelection: this.setFrameSelection,
     getOutputFrames: this.getOutputFrames,
     getHtml: this.getHtml,
-    getRenderPropsHash: this.getRenderPropsHash,
+    getHTMLRenderPropsHash: this.getHTMLRenderPropsHash,
   };
 
   componentDidMount() {
