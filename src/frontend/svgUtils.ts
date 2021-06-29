@@ -132,7 +132,15 @@ export async function decodeSvgToString(
   imageNodeDimensions: imageNodeDimensions[]
 ): Promise<string> {
   let svgStr = new TextDecoder("utf-8").decode(svgData);
-  // svgStr = replaceHttpWithHttps(svgStr);
+  let svgEl = createSvgElement(svgStr);
+
+  if (!svgEl) {
+    throw new Error("Failed to create SVG element");
+  }
+
+  // Optimize images before SVG shapes for performance improvement
+  await optimizeSvgImages(svgEl, imageNodeDimensions);
+  svgStr = svgEl?.outerHTML;
 
   const optimizedSvg = optimize(svgStr, {
     plugins: extendDefaultPlugins([
@@ -190,11 +198,10 @@ export async function decodeSvgToString(
 
   if (!optimizedSvg.data) {
     console.error("Failed to optimize data", optimizedSvg);
-    console.log(svgStr);
     // throw new Error("Optimization failed. Missing SVG data");
   }
 
-  const svgEl = createSvgElement(optimizedSvg.data);
+  svgEl = createSvgElement(optimizedSvg.data);
 
   if (!svgEl) {
     throw new Error("Failed to create SVG element");
@@ -203,7 +210,6 @@ export async function decodeSvgToString(
   svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
   cleanUpSvg(svgEl);
   randomiseIds(svgEl);
-  await optimizeSvgImages(svgEl, imageNodeDimensions);
 
   return svgEl?.outerHTML;
 }
