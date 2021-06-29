@@ -284,11 +284,12 @@ export function generateEmbedHtml(props: renderInlineProps): string {
   );
 
   // html = minimiseText(html);
+  const nodeIdParam = encodeURIComponent(outputFrames[0].id);
 
   html = `<!--
   # [ Figma2HTML Export v${version} ]
   # 
-  # File: https://www.figma.com/file/${fileKey}
+  # File: https://www.figma.com/file/${fileKey}?node-id=${nodeIdParam}
   # Date: ${Date()}
   # Key: ${fileKey}
 -->
