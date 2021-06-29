@@ -35,7 +35,20 @@
 /* [ Breakpoints ]
 ----------------------------------------------------------------- */
 .dropdown__option.frame_width + .dropdown__option:not(.frame_width) {
-  border-top: 1px solid var(--colours-dark-border, #f0f);
+  margin-top: var(--padding-x-small);
+  border-top: var(--padding-x-small) solid #000;
+  position: relative;
+}
+
+.dropdown__option.frame_width + .dropdown__option:not(.frame_width)::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: calc(var(--padding-x-small) * -1);
+  height: 1px;
+  background-color: var(--colours-dark-border, #f0f);
 }
 
 /* [ Export - clipboard ]
