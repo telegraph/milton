@@ -1,7 +1,8 @@
-import type { JSX } from "preact";
-import { h, Component } from "preact";
-import { HexColorPicker } from "react-colorful";
+import { AppContext, StateInterface } from "frontend/app_context";
 import throttle from "just-throttle";
+import type { JSX } from "preact";
+import { Component, h } from "preact";
+import { HexColorPicker } from "react-colorful";
 import { UI_TEXT } from "../../constants";
 import { Modal } from "./modal/modal";
 
@@ -15,79 +16,84 @@ function cleanColourValue(value: string): string {
   return colour;
 }
 
-interface Props {
-  colour: string;
-  handleChange: (colour: string) => void;
-}
-
 interface State {
   colourPickerVisible: boolean;
+  active: boolean;
 }
 
-export class BackgroundInput extends Component<Props, State> {
+export class BackgroundInput extends Component<{}, State> {
+  static contextType = AppContext;
+  context!: StateInterface;
+
   state: State = {
     colourPickerVisible: false,
+    active: false,
   };
 
   openColourPicker = (): void => {
-    this.setState({ colourPickerVisible: true });
+    this.setState({ active: true, colourPickerVisible: true });
   };
 
   closeColourPicker = (): void => {
-    this.setState({ colourPickerVisible: false });
+    this.setState({ colourPickerVisible: false, active: false });
+  };
+
+  handleFocus = (): void => {
+    this.setState({
+      colourPickerVisible: false,
+      active: true,
+    });
   };
 
   handleColourChange = (colour: string): void => {
     const newColour = cleanColourValue(colour);
-    this.props.handleChange(newColour);
+    this.context.setBackgroundColour(newColour);
+
+    if (this.state.colourPickerVisible === false) {
+      this.setState({ active: false });
+    }
   };
 
   debouncedColourChange = throttle(this.handleColourChange, 100);
 
   render(): JSX.Element {
-    const { colour } = this.props;
-    const { colourPickerVisible } = this.state;
+    const { backgroundColour } = this.context;
+    const { colourPickerVisible, active } = this.state;
 
     return (
-      <div class="side_panel side_panel--background-color">
-        <div class="side_panel__row side_panel__row--title">
-          {UI_TEXT.TITLE_BACKGROUND_COLOUR}
-        </div>
+      <div class="colour_picker" data-active={active}>
+        {colourPickerVisible && (
+          <Modal
+            title={UI_TEXT.TITLE_BACKGROUND_MODAL}
+            draggable={true}
+            onClose={this.closeColourPicker}
+          >
+            <HexColorPicker
+              color={backgroundColour}
+              onChange={this.debouncedColourChange}
+            />
+          </Modal>
+        )}
 
-        <div class="side_panel__row side_panel__row--colour">
-          {colourPickerVisible && (
-            <Modal
-              title={UI_TEXT.TITLE_BACKGROUND_MODAL}
-              draggable={true}
-              onClose={this.closeColourPicker}
-            >
-              <HexColorPicker
-                color={colour}
-                onChange={this.debouncedColourChange}
-              />
-            </Modal>
-          )}
+        <button
+          class="btn--colour-picker"
+          onClick={this.openColourPicker}
+          style={`background-color: ${backgroundColour};`}
+        ></button>
 
-          <button
-            class="btn--colour-picker"
-            onClick={this.openColourPicker}
-            style={`background-color: ${colour};`}
-          ></button>
-
-          <input
-            id="backgroundColour"
-            class="input--text input--text-colour"
-            type="text"
-            value={colour}
-            maxLength={7}
-            minLength={4}
-            placeholder="#CFCFCF"
-            pattern="#[a-fA-F0-9]"
-            onFocus={this.closeColourPicker}
-            onInput={(e) => this.handleColourChange(e.currentTarget.value)}
-            spellcheck={false}
-          />
-        </div>
+        <div
+          contentEditable={true}
+          class="input input--textbox input--textbox--colour"
+          id="backgroundColour"
+          data-empty={!backgroundColour}
+          data-placeholder={UI_TEXT.BACKGROUND_COLOUR_PLACEHOLDER}
+          onFocus={this.handleFocus}
+          onBlur={({ currentTarget }) =>
+            this.handleColourChange(currentTarget.innerText.trim())
+          }
+          spellcheck={false}
+          dangerouslySetInnerHTML={{ __html: backgroundColour }}
+        />
       </div>
     );
   }

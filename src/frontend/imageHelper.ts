@@ -60,10 +60,7 @@ async function resizeImage(
     ctx.imageSmoothingQuality = "high";
     await pica().resize(img, canvas, {
       alpha: true,
-      quality: 3,
-      unsharpAmount: 40,
-      unsharpRadius: 0.5,
-      unsharpThreshold: 0.2,
+      quality: 1,
     });
   } else {
     ctx.drawImage(img, 0, 0);
@@ -128,7 +125,9 @@ export async function resizeAndOptimiseImage(
   if (!width || !height) return dataUrl;
 
   const newSize = calcResizeDimensions(width, height, nodeDimensions);
+  console.time("Milton - image resize");
   const imgCanvas = await resizeImage(img, newSize.width, newSize.height);
+  console.timeEnd("Milton - image resize");
 
   let newDataUrl = "";
   const imgFormat = getImageFormatFromDataUrl(dataUrl);

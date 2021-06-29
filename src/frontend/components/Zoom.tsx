@@ -1,35 +1,38 @@
-import { h, Component, JSX } from "preact";
-import { UI_TEXT } from "../../constants";
-import { ActionTypes, actionSetZoom } from "frontend/actions";
+import { AppContext, StateInterface } from "frontend/app_context";
 import { Dropdown } from "frontend/components/dropdown/dropdown";
+import { Component, h, JSX } from "preact";
+import { UI_TEXT } from "../../constants";
 
 enum KEYS {
   ZOOM_IN = "Equal",
   ZOOM_OUT = "Minus",
 }
 
-interface ZoomProps {
-  zoom: number;
-  handleChange: (action: ActionTypes) => void;
-}
-
-export class Zoom extends Component<ZoomProps> {
+export class Zoom extends Component {
   ZOOM_STEPS = 2;
   ZOOM_MIN = 0.015625;
   ZOOM_MAX = 100;
 
+  static contextType = AppContext;
+  context!: StateInterface;
+
   handleKeyboardInput = ({ code }: KeyboardEvent): void => {
-    const { handleChange, zoom } = this.props;
+    const { zoom, setZoom: updateZoom } = this.context;
 
     if (code === KEYS.ZOOM_IN) {
       const newZoom = Math.min(zoom * this.ZOOM_STEPS, this.ZOOM_MAX);
-      handleChange(actionSetZoom(newZoom));
+      updateZoom(newZoom);
     }
 
     if (code === KEYS.ZOOM_OUT) {
       const newZoom = Math.max(this.ZOOM_MIN, zoom / this.ZOOM_STEPS);
-      handleChange(actionSetZoom(newZoom));
+      updateZoom(newZoom);
     }
+  };
+
+  handleZoomSelect = (val: string | number) => {
+    const zoom = typeof val === "number" ? val : parseFloat(val);
+    this.context.setZoom(zoom);
   };
 
   componentDidMount(): void {
@@ -41,7 +44,7 @@ export class Zoom extends Component<ZoomProps> {
   }
 
   render(): JSX.Element {
-    const { handleChange, zoom } = this.props;
+    const { zoom } = this.context;
     const zoomLabel = `${(zoom * 100).toFixed(0)}%`;
     const zoomOptions = [
       {
@@ -59,7 +62,7 @@ export class Zoom extends Component<ZoomProps> {
       <div class="zoom">
         <Dropdown
           label={zoomLabel}
-          onSelect={(val: number) => handleChange(actionSetZoom(val))}
+          onSelect={(val) => this.handleZoomSelect(val)}
           options={zoomOptions}
           tooltip={UI_TEXT.ZOOM_TOOLTIP}
         />

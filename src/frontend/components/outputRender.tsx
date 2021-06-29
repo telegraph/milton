@@ -1,10 +1,9 @@
-import { Fragment, FunctionalComponent, h, JSX } from "preact";
-import render from "preact-render-to-string";
-import { textData, FrameDataInterface, TextRange } from "types";
-import { version } from "../../../package.json";
-
 // Import CSS file as plain text via esbuild loader option
 import embedCss from "backend/embed.css";
+import { Fragment, FunctionalComponent, h, JSX } from "preact";
+import render from "preact-render-to-string";
+import { FrameDataInterface, textData, TextRange } from "types";
+import { version } from "../../../package.json";
 // import fontsCss from "backend/telegraphFonts.css";
 import { buildFontFaceCss, generateFontStyles } from "../../backend/fonts";
 
@@ -223,8 +222,8 @@ const LinkWrapper: FunctionalComponent = (props): JSX.Element => {
 };
 
 type renderInlineProps = {
-  frames: FrameDataInterface[];
-  svg: string;
+  outputFrames: FrameDataInterface[];
+  svgText: string;
   headline: string;
   subhead: string;
   source: string;
@@ -235,8 +234,8 @@ type renderInlineProps = {
 };
 export function generateEmbedHtml(props: renderInlineProps): string {
   const {
-    frames,
-    svg,
+    outputFrames,
+    svgText,
     headline,
     subhead,
     source,
@@ -246,8 +245,8 @@ export function generateEmbedHtml(props: renderInlineProps): string {
     fileKey,
   } = props;
 
-  const mediaQuery = generateMediaQueries(frames);
-  const fontStyles = generateFontStyles(frames);
+  const mediaQuery = generateMediaQueries(outputFrames);
+  const fontStyles = generateFontStyles(outputFrames);
   const fontFaces = buildFontFaceCss(fontStyles);
   const css = fontFaces + embedCss + mediaQuery;
 
@@ -266,9 +265,9 @@ export function generateEmbedHtml(props: renderInlineProps): string {
         <WrapIf condition={!!embedUrl} Wrapper={LinkWrapper} href={embedUrl}>
           <div
             className="f2h__svg_container"
-            dangerouslySetInnerHTML={{ __html: svg }}
+            dangerouslySetInnerHTML={{ __html: svgText }}
           />
-          <TextContainer frames={frames} />
+          <TextContainer frames={outputFrames} />
         </WrapIf>
       </div>
 

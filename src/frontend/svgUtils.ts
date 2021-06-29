@@ -1,7 +1,9 @@
-import { resizeAndOptimiseImage } from "./imageHelper";
+import { extendDefaultPlugins, optimize } from "svgo/dist/svgo.browser.js";
 import { imageNodeDimensions } from "types";
 import { randomId } from "utils/common";
-import { optimize, extendDefaultPlugins } from "svgo/dist/svgo.browser.js";
+import { resizeAndOptimiseImage } from "./imageHelper";
+
+const imageCache: Record<string, string> = {};
 
 // TODO: Is there a way to identify mapping of image to elements from
 // the @figma context? If so we don't need to look inside the SVG elements
@@ -39,8 +41,12 @@ async function optimizeSvgImages(
     // Find max width out of all the found elements
     const dimensions = nodeDimensions.filter(({ name }) => ids.includes(name));
     if (dimensions.length > 0) {
-      const imgDataUrl = await resizeAndOptimiseImage(imgSrc, dimensions);
-      img.setAttribute("xlink:href", imgDataUrl);
+      if (!imageCache[imgSrc]) {
+        const imgDataUrl = await resizeAndOptimiseImage(imgSrc, dimensions);
+        imageCache[imgSrc] = imgDataUrl;
+      }
+
+      img.setAttribute("xlink:href", imageCache[imgSrc]);
     }
   }
 }
@@ -126,7 +132,15 @@ export async function decodeSvgToString(
   imageNodeDimensions: imageNodeDimensions[]
 ): Promise<string> {
   let svgStr = new TextDecoder("utf-8").decode(svgData);
-  svgStr = replaceHttpWithHttps(svgStr);
+  let svgEl = createSvgElement(svgStr);
+
+  if (!svgEl) {
+    throw new Error("Failed to create SVG element");
+  }
+
+  // Optimize images before SVG shapes for performance improvement
+  await optimizeSvgImages(svgEl, imageNodeDimensions);
+  svgStr = svgEl?.outerHTML;
 
   const optimizedSvg = optimize(svgStr, {
     plugins: extendDefaultPlugins([
@@ -182,13 +196,20 @@ export async function decodeSvgToString(
     ]),
   });
 
-  const svgEl = createSvgElement(optimizedSvg.data);
-  if (!svgEl) throw new Error("Failed to create SVG element");
+  if (!optimizedSvg.data) {
+    console.error("Failed to optimize data", optimizedSvg);
+    // throw new Error("Optimization failed. Missing SVG data");
+  }
+
+  svgEl = createSvgElement(optimizedSvg.data);
+
+  if (!svgEl) {
+    throw new Error("Failed to create SVG element");
+  }
 
   svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
   cleanUpSvg(svgEl);
   randomiseIds(svgEl);
-  await optimizeSvgImages(svgEl, imageNodeDimensions);
 
   return svgEl?.outerHTML;
 }

@@ -1,6 +1,7 @@
-import { actionSetZoom, ActionTypes } from "frontend/actions";
+import { STATUS, UI_TEXT } from "constants";
 import type { JSX, RefObject } from "preact";
-import { h, Component, createRef } from "preact";
+import { Component, createRef, h } from "preact";
+import { AppContext, StateInterface } from "../app_context";
 
 enum DIRECTIONS {
   NW = "NW",
@@ -105,18 +106,6 @@ class PointerCapture extends Component<
   }
 }
 
-interface PreviewProps {
-  rendering: boolean;
-  html: string;
-  responsive: boolean;
-  breakpointWidth: number;
-  backgroundColour: string;
-  selectedFrames: string[];
-  zoom: number;
-  embedUrl?: string;
-  dispatch: (action: ActionTypes) => void;
-}
-
 interface PreviewStateInterface {
   x: number;
   y: number;
@@ -129,9 +118,14 @@ interface PreviewStateInterface {
   selected: boolean;
   panning: boolean;
   spaceDown: boolean;
+  fileSize: number;
 }
 
-export class Preview extends Component<PreviewProps, PreviewStateInterface> {
+export class Preview extends Component<{}, PreviewStateInterface> {
+  static contextType = AppContext;
+  context!: StateInterface;
+  private privateContext!: StateInterface;
+
   state: PreviewStateInterface = {
     x: 0,
     y: 0,
@@ -144,6 +138,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     selected: true,
     panning: false,
     spaceDown: false,
+    fileSize: 0,
   };
 
   previewEl: RefObject<HTMLDivElement> = createRef();
@@ -160,20 +155,9 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     this.setState({ selected: false });
   };
 
-  updateIframeHeight = (): void => {
-    if (!this.iframeEl.current) return;
-    const iframe = this.iframeEl.current;
-    const height =
-      iframe.contentDocument?.body?.getBoundingClientRect().height ?? 1;
-
-    if (height !== this.state.height) {
-      this.setState({ height, prevHeight: height });
-    }
-  };
-
   resizeMove = (x: number, y: number): void => {
     const { prevWidth, prevHeight } = this.state;
-    const { zoom } = this.props;
+    const { zoom } = this.context;
 
     this.setState({
       width: prevWidth + (x / zoom) * 2,
@@ -204,7 +188,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
 
   handlePanZoom = (event: WheelEvent): void => {
     const { deltaY, deltaX, ctrlKey } = event;
-    const { dispatch, zoom } = this.props;
+    const { setZoom, zoom } = this.context;
 
     if (ctrlKey) {
       const ZOOM_STEP = 0.1;
@@ -212,7 +196,7 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
       newZoom = Math.max(0.2, newZoom);
       newZoom = Math.min(6, newZoom);
 
-      dispatch(actionSetZoom(newZoom));
+      setZoom(newZoom);
     } else {
       const MOVEMENT_IMPEDANCE = 0.6;
       const x = this.state.x - deltaX * MOVEMENT_IMPEDANCE;
@@ -261,13 +245,58 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     }
   };
 
-  componentDidMount(): void {
+  shouldReRenderHtml = () => {
+    const { getHTMLRenderPropsHash } = this.context;
+    const newHash = getHTMLRenderPropsHash(this.context);
+    const oldHash = getHTMLRenderPropsHash(this.privateContext);
+
+    return newHash !== oldHash;
+  };
+
+  setIframeContent = async () => {
+    this.privateContext = this.context;
+    const html = await this.context.getHtml();
+    this.iframeEl.current?.setAttribute("srcDoc", html);
+
+    const fileSize = Math.round(html.length / 1024);
+    this.setState(
+      { fileSize, width: 0, prevWidth: 0, x: 0, prevX: 0, y: 0, prevY: 0 },
+      this.updateIframeHeight
+    );
+  };
+
+  setNewBreakpointValues = (): void => {
+    this.setState(
+      {
+        panning: false,
+        width: 0,
+        prevWidth: 0,
+        x: 0,
+        y: 0,
+      },
+      this.updateIframeHeight
+    );
+  };
+
+  updateIframeHeight = (): void => {
+    const height = this.iframeEl.current?.contentDocument?.body?.scrollHeight;
+
+    if (height && height !== this.state.height) {
+      this.setState({ height, prevHeight: height });
+    }
+  };
+
+  componentDidMount() {
     window.focus();
 
-    if (!this.iframeEl.current) return;
-    this.iframeEl.current.addEventListener("load", this.updateIframeHeight);
+    this.privateContext = this.context;
+
     window.addEventListener("keydown", this.setSpace);
     window.addEventListener("keyup", this.setSpace);
+
+    if (this.iframeEl.current) {
+      this.iframeEl.current.addEventListener("load", this.updateIframeHeight);
+    }
   }
 
   componentWillUnmount(): void {
@@ -275,44 +304,30 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
     window.removeEventListener("keyup", this.setSpace);
 
     if (this.iframeEl.current) {
-      this.iframeEl.current.removeEventListener(
-        "load",
-        this.updateIframeHeight
-      );
+      const { current } = this.iframeEl;
+      current.removeEventListener("load", this.updateIframeHeight);
     }
   }
 
-  componentDidUpdate({ breakpointWidth, selectedFrames }: PreviewProps): void {
-    if (breakpointWidth !== this.props.breakpointWidth) {
-      this.setState({
-        panning: false,
-        width: 0,
-        x: 0,
-        y: 0,
-      });
+  async componentDidUpdate(): Promise<void> {
+    if (this.shouldReRenderHtml()) {
+      this.setIframeContent();
     }
 
-    if (selectedFrames.join() !== this.props.selectedFrames.join()) {
-      this.setState({
-        panning: false,
-        width: 0,
-        x: 0,
-        y: 0,
-      });
+    if (this.context.breakpointWidth !== this.privateContext.breakpointWidth) {
+      this.setNewBreakpointValues();
     }
+
+    this.privateContext = this.context;
   }
 
   render(): JSX.Element {
-    const { width, height, selected, x, y, spaceDown, panning } = this.state;
-    const {
-      breakpointWidth,
-      html,
-      zoom,
-      rendering,
-      backgroundColour,
-      embedUrl,
-    } = this.props;
+    const { width, height, selected, x, y, spaceDown, panning, fileSize } =
+      this.state;
+    const { breakpointWidth, status, backgroundColour, zoom, embedUrl } =
+      this.context;
 
+    // FIXME: Do we need this?
     const iframeWidth = Math.max(1, breakpointWidth + width);
     const iframeHeight = Math.max(1, height);
 
@@ -322,7 +337,11 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
         style={{ background: backgroundColour }}
         data-panning={panning || spaceDown}
       >
-        {rendering && <div class="preview__rendering">Rendering</div>}
+        {status === STATUS.RENDERING && (
+          <div class="preview__rendering">{UI_TEXT.INFO_RENDERING}</div>
+        )}
+
+        <p class="preview__filesize">{fileSize}KB</p>
 
         <PointerCapture
           onStart={this.handlePointerDown}
@@ -343,7 +362,6 @@ export class Preview extends Component<PreviewProps, PreviewStateInterface> {
           >
             <iframe
               class="preview__iframe"
-              srcDoc={html}
               ref={this.iframeEl}
               style={{
                 width: iframeWidth,

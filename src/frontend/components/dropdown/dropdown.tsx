@@ -1,8 +1,14 @@
 import { Component, h } from "preact";
 
+export interface DropdownOption {
+  title: string;
+  value: number | string;
+  className?: string;
+}
+
 interface DropdownProps {
   label: string;
-  options: { title: string; value: number | string; className?: string }[];
+  options: DropdownOption[];
   onSelect?: (val: number | string) => void;
   onBlur?: (val: string) => void;
   onOpen?: () => void;
@@ -52,7 +58,7 @@ export class Dropdown extends Component<DropdownProps> {
           onClick={this.toggleOpen}
           title={tooltip}
         >
-          {label} {showIcon && <span class="dropdown__arrow">⌄</span>}
+          {label} {showIcon && <span class="dropdown__arrow" />}
         </button>
 
         {open && (

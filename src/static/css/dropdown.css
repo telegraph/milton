@@ -83,6 +83,12 @@
 }
 
 .dropdown__arrow {
-  margin-top: -0.2em;
-  padding-left: var(--padding-x-small);
+  background-image: url(../images/icon-dropdown.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  width: var(--padding-medium, 0);
+  align-self: stretch;
+}
+.dropdown__btn--active .dropdown__arrow {
+  filter: invert(1) brightness(2);
 }

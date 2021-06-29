@@ -5,6 +5,7 @@
   border: none;
   margin: 0;
   padding: 0;
+  display: flex;
 }
 .btn--clean {
   color: var(--colours-dark-background, #f0f);
