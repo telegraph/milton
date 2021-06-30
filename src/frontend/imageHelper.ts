@@ -72,30 +72,24 @@ async function resizeImage(
 function calcResizeDimensions(
   imgWidth: number,
   imgHeight: number,
-  nodeDimensions: imageNodeDimensions[]
+  nodeWidth: number,
+  nodeHeight: number
 ): { width: number; height: number } {
   const imgAspect = imgWidth / imgHeight;
 
-  const sortedNodeAspects = [...nodeDimensions].sort((a, b) => {
-    const aAspect = a.width / a.height;
-    const bAspect = b.width / b.height;
-    return aAspect > bAspect ? 1 : -1;
-  });
-
-  const n = sortedNodeAspects.pop() as imageNodeDimensions;
-  const largestNodeAspect = n.width / n.height;
+  const largestNodeAspect = nodeWidth / nodeHeight;
 
   let width: number;
   let height: number;
 
   if (imgAspect > largestNodeAspect) {
     // scale image to node height
-    const scaleFactor = n.height / imgHeight;
+    const scaleFactor = nodeHeight / imgHeight;
     width = Math.ceil(imgWidth * scaleFactor);
     height = Math.ceil(imgHeight * scaleFactor);
   } else {
     // scale image to node width
-    const scaleFactor = n.width / imgWidth;
+    const scaleFactor = nodeWidth / imgWidth;
     width = Math.ceil(imgWidth * scaleFactor);
     height = Math.ceil(imgHeight * scaleFactor);
   }
@@ -115,7 +109,8 @@ function getImageFormatFromDataUrl(dataUrl: string): imageTypes | null {
 }
 export async function resizeAndOptimiseImage(
   dataUrl: string,
-  nodeDimensions: imageNodeDimensions[],
+  nodeWidth: number,
+  nodeHeight: number,
   jpegQuality = 75,
   paletteColours = 164
 ): Promise<string> {
@@ -124,7 +119,8 @@ export async function resizeAndOptimiseImage(
   const { width, height } = img || {};
   if (!width || !height) return dataUrl;
 
-  const newSize = calcResizeDimensions(width, height, nodeDimensions);
+  const newSize = calcResizeDimensions(width, height, nodeWidth, nodeHeight);
+
   console.time("Milton - image resize");
   const imgCanvas = await resizeImage(img, newSize.width, newSize.height);
   console.timeEnd("Milton - image resize");

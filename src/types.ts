@@ -104,7 +104,7 @@ export type ITextStyle = {
 export type TextRange = ITextStyle & { text: string };
 
 export type imageNodeDimensions = {
-  name: string;
+  id: string;
   width: number;
   height: number;
 };

@@ -1,13 +1,13 @@
+import { EMBED_PROPERTIES } from "constants";
+import { EmbedProperties } from "frontend/store";
 import {
-  IFrameData,
-  FrameRender,
   FrameDataInterface,
+  FrameRender,
+  IFrameData,
   imageNodeDimensions,
 } from "types";
-import { EMBED_PROPERTIES } from "constants";
 import { URL_REGEX } from "utils/common";
 import { getTextNodesFromFrame } from "utils/figmaText";
-import { EmbedProperties } from "frontend/store";
 
 export function resizeWindow(size: { x: number; y: number }): void {
   figma.ui.resize(size.x, size.y);
@@ -17,16 +17,6 @@ export function resizeWindow(size: { x: number; y: number }): void {
       height: size.y,
     })
     .catch((error) => console.log("Failed to save window size", error));
-}
-
-/**
- * Test if Figma node supports fill property type
- * @context figma
- */
-function supportsFills(
-  node: SceneNode
-): node is Exclude<SceneNode, SliceNode | GroupNode> {
-  return node.type !== "SLICE" && node.type !== "GROUP";
 }
 
 function flattenBooleanGroups(frameNode: FrameNode): void {
@@ -45,19 +35,45 @@ function flattenBooleanGroups(frameNode: FrameNode): void {
   }
 }
 
-function getImageDimensions(frameNode: FrameNode): imageNodeDimensions[] {
-  const nodesWithImages = frameNode.findAll(
-    (node) =>
-      supportsFills(node) &&
-      node.fills !== figma.mixed &&
-      node.fills.some((fill) => fill.type === "IMAGE")
-  );
+type ImageNode = Exclude<SceneNode, SliceNode | GroupNode>;
 
-  return nodesWithImages.map(({ name, width, height }) => ({
-    name,
-    width,
-    height,
-  }));
+function supportsFills(node: SceneNode): node is ImageNode {
+  return node.type !== "SLICE" && node.type !== "GROUP";
+}
+
+function getImageDimensions(frameNode: FrameNode): imageNodeDimensions[] {
+  const maxImageNodeWidths: Record<
+    string,
+    { width: number; height: number; id: string }
+  > = {};
+  const imageSupportingNodes = frameNode.findAll(supportsFills) as ImageNode[];
+
+  for (const node of imageSupportingNodes) {
+    if (node.fills === figma.mixed) {
+      continue;
+    }
+
+    for (const fill of node.fills) {
+      if (fill.type === "IMAGE" && fill.visible && fill.imageHash) {
+        const { imageHash } = fill;
+
+        const cssId = "m_" + node.id.replaceAll(/\W/g, "_");
+        node.name = cssId;
+
+        const oldWidth = maxImageNodeWidths[imageHash]?.width ?? 0;
+
+        if (node.width > oldWidth) {
+          maxImageNodeWidths[imageHash] = {
+            width: node.width,
+            height: node.height,
+            id: cssId,
+          };
+        }
+      }
+    }
+  }
+
+  return Object.values(maxImageNodeWidths);
 }
 
 function setRandomPrefixForUrlNodeNames(frameNode: FrameNode): void {
