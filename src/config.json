@@ -6,6 +6,7 @@
     "Telesans Agate",
     "Telesans Text"
   ],
-  "externalLogger": "https://storage.googleapis.com/ux-product-test.appspot.com/ux-figma-to-html/error_logging.js",
+  "logging": true,
+  "externalLogger": "https://storage.googleapis.com/ux-product-test.appspot.com/ux-milton/logging.js?v=1",
   "version": 1
 }

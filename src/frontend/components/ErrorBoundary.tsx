@@ -1,12 +1,13 @@
-import { h, Component, JSX } from "preact";
-import { loadScript } from "utils/common";
-import { externalLogger } from "../../config.json";
+import { Component, h, JSX } from "preact";
+import { logger } from "../logging";
 
 interface Props {
   children: preact.ComponentChildren;
 }
 
 export class ErrorBoundary extends Component<Props> {
+  private logger = logger;
+
   state = {
     hasError: false,
     errors: [] as Error[],
@@ -16,43 +17,14 @@ export class ErrorBoundary extends Component<Props> {
     return { hasError: true };
   }
 
-  componentDidMount() {
-    if (externalLogger) this.loadExternalLogger();
-  }
-
   componentDidCatch(err: Error, errInfo: string): void {
     console.error("caught error", err, errInfo);
+    this.logger.error("unknown", true, err);
 
     if (!this.state.errors.includes(err)) {
       this.setState({ errors: [...this.state.errors, err] });
     }
-
-    const pluginError = new CustomEvent("pluginError", {
-      detail: err,
-    });
-
-    window.dispatchEvent(pluginError);
   }
-
-  loadExternalLogger = (): void => {
-    loadScript(externalLogger)
-      .then(() => {
-        console.log("External logger loaded");
-
-        if (this.state.errors.length === 0) return;
-
-        for (const err of this.state.errors) {
-          const pluginError = new CustomEvent("pluginError", {
-            detail: err,
-          });
-
-          window.dispatchEvent(pluginError);
-        }
-
-        this.setState({ errros: [] });
-      })
-      .catch((err) => console.error("Failed to load external logger", err));
-  };
 
   render(): JSX.Element | preact.ComponentChildren {
     if (this.state.hasError) {
