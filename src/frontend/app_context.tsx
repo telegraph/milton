@@ -3,6 +3,7 @@ import { Component, createContext, h } from "preact";
 import { FigmaFramesType, FrameDataInterface } from "types";
 import { generateEmbedHtml } from "./components/outputRender";
 import { getRootFramesFromBackend, renderSvg, saveToFigma } from "./data";
+import { logger } from "./logging";
 
 interface StateProps {
   status: STATUS;
@@ -93,7 +94,7 @@ export class AppProvider extends Component<{}, StateInterface> {
       await this.getSvg(response.selectedFrames);
       this.setState({ ...response, status: STATUS.IDLE });
     } catch (err) {
-      console.error("Failed to fetch initial frames", err);
+      logger.error("initalizing_frames", true, new Error(err));
       this.setNotification(err);
     }
   };

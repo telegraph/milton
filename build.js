@@ -80,6 +80,8 @@ const isProduction = process.env.NODE_ENV === "production";
     // Combine JS and CSS into a single HTML block
     const uiHtml = `
       <div id="app"></div>
+      <script src="./node_modules/core-js-bundle/minified.js"></script>
+<script src="./node_modules/indexeddbshim/dist/indexeddbshim.min.js"></script>
       <style>${uiFiles.css}</style>
       <script>${uiFiles.js}</script>
     `;
