@@ -19,7 +19,7 @@ const isProduction = process.env.NODE_ENV === "production";
     );
 
     // Build backend JS
-    const backendJs = esbuild.build({
+    const backendJs = await esbuild.build({
       entryPoints: [path.join("src", "backend", "backend.ts")],
       outfile: path.join(BUILD_FOLDER, "figma2html.js"),
       format: "iife",
@@ -32,13 +32,17 @@ const isProduction = process.env.NODE_ENV === "production";
         }`,
         "process.browser": "true",
       },
+      metafile: true,
       bundle: true,
       sourcemap: isProduction ? false : "inline",
       minify: isProduction ? true : false,
     });
 
+    const backendAnalysis = await esbuild.analyzeMetafile(backendJs.metafile);
+    console.log(backendAnalysis);
+
     // Build UI JS
-    const uiJs = esbuild.build({
+    const uiJs = await esbuild.build({
       entryPoints: [path.join("src", "frontend", "ui.tsx")],
       format: "iife",
       target: "es2017",
@@ -55,18 +59,23 @@ const isProduction = process.env.NODE_ENV === "production";
       bundle: true,
       sourcemap: isProduction ? false : "inline",
       minify: isProduction ? true : false,
+      metafile: true,
       treeShaking: true,
       write: false,
     });
 
-    const uiCss = esbuild.build({
+    const uiCss = await esbuild.build({
       entryPoints: [path.join("src", "static", "css", "main.css")],
       platform: "browser",
       loader: { ".svg": "dataurl" },
       bundle: true,
       minify: false,
       write: false,
+      metafile: true,
     });
+
+    const uiAnalysis = await esbuild.analyzeMetafile(uiJs.metafile);
+    console.log(uiAnalysis);
 
     const uiFiles = await Promise.all([uiJs, uiCss, backendJs]).then(
       (results) => {
