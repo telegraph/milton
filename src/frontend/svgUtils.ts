@@ -177,57 +177,27 @@ export async function decodeSvgToString(
   svgStr = svgEl?.outerHTML;
 
   const optimizedSvg = optimize(svgStr, {
-    plugins: extendDefaultPlugins([
+    multipass: true,
+    js2svg: {
+      indent: 2,
+      pretty: true,
+    },
+    plugins: [
       {
-        name: "convertPathData",
+        name: "preset-default",
         params: {
-          floatPrecision: 1,
-        },
-        active: true,
-      },
-      {
-        name: "convertShapeToPath",
-        params: {
-          floatPrecision: 1,
-        },
-        active: true,
-      },
-
-      {
-        name: "mergePaths",
-        params: {
-          floatPrecision: 1,
-        },
-        active: true,
-      },
-
-      {
-        name: "cleanupListOfValues",
-        active: true,
-        params: {
-          floatPrecision: 1,
+          overrides: {
+            convertPathData: {
+              floatPrecision: 1,
+              transformPrecision: 1,
+            },
+            removeViewBox: false,
+            collapseGroups: false,
+            reusePaths: false,
+          },
         },
       },
-      {
-        name: "removeViewBox",
-        active: false,
-      },
-
-      {
-        name: "collapseGroups",
-        active: false,
-      },
-
-      {
-        name: "cleanupIDs",
-        active: false,
-      },
-
-      {
-        name: "reusePaths",
-        active: false,
-      },
-    ]),
+    ],
   });
 
   if (!optimizedSvg.data) {
