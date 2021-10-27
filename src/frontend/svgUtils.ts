@@ -1,4 +1,4 @@
-import { extendDefaultPlugins, optimize } from "svgo/dist/svgo.browser.js";
+import { optimize } from "svgo/dist/svgo.browser.js";
 import { imageNodeDimensions } from "types";
 import { randomId } from "utils/common";
 import { resizeAndOptimiseImage } from "./imageHelper";
@@ -183,18 +183,24 @@ export async function decodeSvgToString(
       pretty: true,
     },
     plugins: [
+      // General clean-up
+      "cleanupAttrs",
+      "removeComments",
+      "removeMetadata",
+      "removeUselessDefs",
+      "removeEmptyText",
+      "removeEmptyContainers",
+
+      // Optimize shapes
+      "convertPathData",
+      "convertTransform",
+      "convertShapeToPath",
+      "convertEllipseToCircle",
       {
-        name: "preset-default",
+        name: "convertPathData",
         params: {
-          overrides: {
-            convertPathData: {
-              floatPrecision: 1,
-              transformPrecision: 1,
-            },
-            removeViewBox: false,
-            collapseGroups: false,
-            reusePaths: false,
-          },
+          floatPrecision: 1,
+          transformPrecision: 1,
         },
       },
     ],
