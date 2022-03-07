@@ -6,9 +6,7 @@
   "scripts": {
     "dev": "node ./build.js",
     "build": "NODE_ENV=production node build.js",
-    "lint": "deno lint src",
-    "typecheck": "tsc",
-    "test": "uvu -r ts-node/register ./src"
+    "typecheck": "tsc"
   },
   "author": "Andrew Mason",
   "license": "ISC",
@@ -28,8 +26,7 @@
     "preact": "^10.5.15",
     "preact-render-to-string": "^5.1.19",
     "simple-color-picker": "^1.0.5",
-    "typescript": "^4.4.4",
-    "uvu": "^0.5.2"
+    "typescript": "^4.4.4"
   },
   "sideEffects": false,
   "type": "module",
