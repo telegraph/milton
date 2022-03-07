@@ -95,10 +95,6 @@ async function buildUI() {
 
     // Combine JS and CSS into a single HTML block
 
-    // DO WE NEED THESE?
-    // <script src="./node_modules/core-js-bundle/minified.js"></script>
-    // <script src="./node_modules/indexeddbshim/dist/indexeddbshim.min.js"></script>
-
     const uiHtml = `
       <div id="app"></div>
       <script>${frontendJS}</script>

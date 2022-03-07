@@ -1,10 +1,8 @@
+import type { JSX, RefObject } from "preact";
+import { Component, h, createRef } from "preact";
 import { AppContext, StateInterface } from "frontend/app_context";
-import throttle from "just-throttle";
-import type { JSX } from "preact";
-import { Component, h } from "preact";
-import { HexColorPicker } from "react-colorful";
+import ColorPicker from "simple-color-picker";
 import { UI_TEXT } from "../../constants";
-import { Modal } from "./modal/modal";
 
 function cleanColourValue(value: string): string {
   let colour = value.trim().toLocaleUpperCase();
@@ -24,6 +22,9 @@ interface State {
 export class BackgroundInput extends Component<{}, State> {
   static contextType = AppContext;
   context!: StateInterface;
+
+  colourPicker: ColorPicker = new ColorPicker();
+  colourPickerEl: RefObject<HTMLDivElement> = createRef();
 
   state: State = {
     colourPickerVisible: false,
@@ -45,8 +46,8 @@ export class BackgroundInput extends Component<{}, State> {
     });
   };
 
-  handleColourChange = (colour: string): void => {
-    const newColour = cleanColourValue(colour);
+  handleColourChange = (): void => {
+    const newColour = cleanColourValue(this.colourPicker.getHexString());
     this.context.setBackgroundColour(newColour);
 
     if (this.state.colourPickerVisible === false) {
@@ -54,27 +55,26 @@ export class BackgroundInput extends Component<{}, State> {
     }
   };
 
-  debouncedColourChange = throttle(this.handleColourChange, 100);
+  componentDidMount() {
+    if (this.colourPickerEl.current) {
+      const { backgroundColour } = this.context;
+
+      this.colourPicker.setColor(backgroundColour);
+      this.colourPicker.appendTo(this.colourPickerEl.current);
+      this.colourPicker.onChange(this.handleColourChange);
+    }
+  }
+
+  componentWillUnmount() {
+    this.colourPicker.remove();
+  }
 
   render(): JSX.Element {
     const { backgroundColour } = this.context;
-    const { colourPickerVisible, active } = this.state;
+    const { active, colourPickerVisible } = this.state;
 
     return (
       <div class="colour_picker" data-active={active}>
-        {colourPickerVisible && (
-          <Modal
-            title={UI_TEXT.TITLE_BACKGROUND_MODAL}
-            draggable={true}
-            onClose={this.closeColourPicker}
-          >
-            <HexColorPicker
-              color={backgroundColour}
-              onChange={this.debouncedColourChange}
-            />
-          </Modal>
-        )}
-
         <button
           class="btn--colour-picker"
           onClick={this.openColourPicker}
@@ -94,6 +94,17 @@ export class BackgroundInput extends Component<{}, State> {
           spellcheck={false}
           dangerouslySetInnerHTML={{ __html: backgroundColour }}
         />
+
+        <div
+          class="colour_picker__picker"
+          ref={this.colourPickerEl}
+          data-active={colourPickerVisible}
+        >
+          <div
+            class="colour_picker__close"
+            onClick={this.closeColourPicker}
+          ></div>
+        </div>
       </div>
     );
   }

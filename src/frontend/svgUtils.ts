@@ -1,4 +1,3 @@
-import { optimize } from "svgo/dist/svgo.browser.js";
 import { imageNodeDimensions } from "types";
 import { randomId } from "utils/common";
 import { resizeAndOptimiseImage } from "./imageHelper";
@@ -174,44 +173,8 @@ export async function decodeSvgToString(
   if (imageNodeDimensions.length > 0) {
     await optimizeSvgImages(svgEl, imageNodeDimensions);
   }
-  svgStr = svgEl?.outerHTML;
 
-  const optimizedSvg = optimize(svgStr, {
-    multipass: true,
-    js2svg: {
-      indent: 2,
-      pretty: true,
-    },
-    plugins: [
-      // General clean-up
-      "cleanupAttrs",
-      "removeComments",
-      "removeMetadata",
-      "removeUselessDefs",
-      "removeEmptyText",
-      "removeEmptyContainers",
-
-      // Optimize shapes
-      "convertPathData",
-      "convertTransform",
-      "convertShapeToPath",
-      "convertEllipseToCircle",
-      {
-        name: "convertPathData",
-        params: {
-          floatPrecision: 1,
-          transformPrecision: 1,
-        },
-      },
-    ],
-  });
-
-  if (!optimizedSvg.data) {
-    console.error("Failed to optimize data", optimizedSvg);
-    // throw new Error("Optimization failed. Missing SVG data");
-  }
-
-  svgEl = createSvgElement(optimizedSvg.data);
+  svgEl = createSvgElement(svgEl?.outerHTML);
 
   if (!svgEl) {
     throw new Error("Failed to create SVG element");

@@ -9,27 +9,13 @@
   display: flex;
   border-radius: var(--border-radius-small, 0);
   z-index: 1;
+  position: relative;
 }
 .colour_picker:hover {
   box-shadow: 0 0 0 1px var(--colours-light-border, #f0f);
 }
 .colour_picker[data-active] {
   box-shadow: 0 0 0 2px var(--colours-active, #f0f);
-}
-
-.react-colorful__alpha-gradient,
-.react-colorful__saturation {
-  box-shadow: none;
-}
-.react-colorful__saturation,
-.react-colorful__last-control {
-  border-radius: 0;
-}
-.react-colorful__pointer {
-  width: 12px;
-  height: 12px;
-  box-shadow: none;
-  border-width: 1px;
 }
 
 .btn--colour-picker {
@@ -42,5 +28,32 @@
   border-right: 1px solid transparent;
 }
 .btn--colour-picker:active {
+  outline: none;
+}
+
+.colour_picker__picker {
+  display: none;
+}
+.colour_picker__picker[data-active] {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  position: absolute;
+  top: -2px;
+  left: -2px;
+}
+
+.colour_picker__close {
+  border: none;
+  background-image: url(../images/icon-close-black.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  width: 28px;
+  height: 20px;
+  background-color: var(--colours-light-background, #f0f);
+  border-radius: var(--border-radius-small);
+  text-indent: -1000px;
+  overflow: hidden;
   outline: none;
 }
