@@ -77,15 +77,17 @@ function buildUI() {
       entryPoints: uiEntryPoints,
       write: false,
       outfile: "ui.js",
-      watch: {
-        onRebuild(error, result) {
-          if (error) console.error("Build watch failed", error);
-          else {
-            console.log("Rebuilt UI");
-            writeUIFile(result);
-          }
-        },
-      },
+      watch: isProduction
+        ? false
+        : {
+            onRebuild(error, result) {
+              if (error) console.error("Build watch failed", error);
+              else {
+                console.log("Rebuilt UI");
+                writeUIFile(result);
+              }
+            },
+          },
     })
     .then(writeUIFile);
 }
