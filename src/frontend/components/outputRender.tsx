@@ -17,33 +17,6 @@ body {
   -webkit-font-smoothing: antialiased; /* WebKit  */
 }
 
-/* [ Fonts ]
------------------------------------------------------------------ */
-@font-face {
-  font-family: "Telesans Agate";
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Telesans Agate-Regular.woff2")
-    format("woff2");
-  font-weight: 400;
-  font-display: "swap";
-}
-@font-face {
-  font-family: "Austin News Deck";
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin News Deck Web-Semibold.woff2")
-    format("woff2");
-  font-weight: 600;
-  font-display: "swap";
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Austin News Deck";
-  src: url("https://cf.eip.telegraph.co.uk/assets/_fonts/Austin+News+Deck+Web-Italic.woff2")
-    format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: "swap";
-}
-
 .f2h__embed.f2h--responsive {
   max-width: 100%;
   margin: 0 auto;
@@ -294,21 +267,13 @@ function generateParagraphStyle(
       `;
 }
 
-function generateSpanStyles({
-  weight,
-  colour,
-  family,
-  italic,
-  letterSpacing,
-  lineHeight,
-  size,
-}: TextRange): string {
-  // Special-case Telesans which online font version is wider
-  let letterSpacingAlt = letterSpacing;
+function generateSpanStyles(text: TextRange): string {
+  const { weight, colour, family, italic, letterSpacing, lineHeight, size } =
+    text;
 
-  if (family?.includes("Telesans Text")) {
-    letterSpacingAlt = `-0.04em`;
-  }
+  console.log(text);
+
+  let letterSpacingAlt = letterSpacing;
 
   let cssStyle = "";
   if (letterSpacingAlt) cssStyle += `letter-spacing: ${letterSpacingAlt};`;

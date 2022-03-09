@@ -22,12 +22,20 @@ function getRangeStyles(textNode: TextNode): TextRange[] {
     const figmaStyle = fontName === figma.mixed ? null : fontName.style;
     const italic = figmaStyle ? /italic/i.test(figmaStyle) : false;
 
+    console.log(fontName?.style);
+
     // Font weight
     let weight = 400;
     if (figmaStyle) {
-      if (/^bold$/i.test(figmaStyle)) weight = 700;
-      if (/^semi-?\s?bold$/i.test(figmaStyle)) weight = 600;
+      if (/^thin$/i.test(figmaStyle)) weight = 100;
+      if (/^extra--?\s?light$/i.test(figmaStyle)) weight = 200;
+      if (/^light$/i.test(figmaStyle)) weight = 300;
+      if (/^regular$/i.test(figmaStyle)) weight = 400;
       if (/^medium$/i.test(figmaStyle)) weight = 500;
+      if (/^semi-?\s?bold$/i.test(figmaStyle)) weight = 600;
+      if (/^bold$/i.test(figmaStyle)) weight = 700;
+      if (/^extra-?\s?bold$/i.test(figmaStyle)) weight = 800;
+      if (/^black$/i.test(figmaStyle)) weight = 900;
     }
 
     // Font size
