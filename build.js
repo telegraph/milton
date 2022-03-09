@@ -65,7 +65,12 @@ function writeUIFile(result) {
  */
 function buildUI() {
   const uiEntryPoints = [path.join("src", "frontend", "ui.tsx")];
+
   // Build UI JS
+  // Note: Outfile is called "ui.js" and included references to CSS files.
+  // Therefore, two files named "ui.js" and "ui.css" will be build and
+  // included in the returned result object.
+
   esbuild
     .build({
       ...commonBuildOptions,
