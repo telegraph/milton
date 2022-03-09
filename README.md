@@ -49,8 +49,8 @@ npm run dev
 
 Load the `manifest.json` file located in the `build` folder into Figma to crate
 a new plugin. Once you've created a new plugin you can use the development console
-within Figma to test and debug the plugin. Saving changes will cause `watchexec`
-to automatically rebuild allowing you to reload the plugin in Figma.
+within Figma to test and debug the plugin. Saving changes will automatically
+rebuild allowing you to reload the plugin in Figma.
 
 ## UI
 

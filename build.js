@@ -6,107 +6,97 @@ import path from "path";
 const isProduction = process.env.NODE_ENV === "production";
 const BUILD_FOLDER = "build";
 
-const buildTitle = `Build: ${new Date().toLocaleString()}`;
-console.time(buildTitle);
+/** @type {esbuild.BuildOptions} */
+const commonBuildOptions = {
+  format: "iife",
+  target: "es2017",
+  platform: "browser",
+  bundle: true,
+  sourcemap: isProduction ? false : "inline",
+  minify: isProduction ? true : false,
+  loader: { ".css": "css", ".svg": "dataurl" },
+};
 
 /**
  * Build backend JS
  *
- * @returns {Promise<void>} Writes backend JS file to folder
+ * @returns {void} Writes backend JS file to folder
  */
-async function buildBackend() {
+function buildBackend() {
   const entryPoint = [path.join("src", "backend", "backend.ts")];
   const outFile = path.join(BUILD_FOLDER, "figma2html.js");
 
-  const backendBuildResult = await esbuild.build({
+  esbuild.build({
+    ...commonBuildOptions,
     entryPoints: entryPoint,
     outfile: outFile,
-    format: "iife",
-    target: "es2017",
-    platform: "browser",
-    loader: { [".css"]: "text" },
-    define: {
-      "process.env.NODE_ENV": `${
-        isProduction ? '"production"' : '"development"'
-      }`,
-      "process.browser": "true",
-    },
-
-    bundle: true,
-    sourcemap: isProduction ? false : "inline",
-    minify: isProduction ? true : false,
+    watch: isProduction
+      ? false
+      : {
+          onRebuild: () => console.log("Rebuild Backend"),
+        },
   });
+}
 
-  if (backendBuildResult.errors.length > 0) {
-    console.error(backendBuildResult.errors);
-    throw new Error("Backend build error");
-  }
+/**
+ * Build UI HTML from esbuild result
+ *
+ * @param {esbuild.BuildResult} result
+ * @returns {void}
+ */
+function writeUIFile(result) {
+  // Combine JS and CSS into a single HTML block
+  const [frontendJS, frontendCSS] = result.outputFiles;
+
+  const uiHtml = `
+    <div id="app"></div>
+    <script>${frontendJS.text}</script>
+    <style>${frontendCSS.text}</style>
+  `;
+
+  // Save HTML
+  fs.writeFileSync(path.join(BUILD_FOLDER, "ui.html"), uiHtml);
 }
 
 /**
  * Build the frontend code
  *
- * @returns {Promise<string[]>} Array containing [JS, CSS]
+ * @returns {void} Array containing [JS, CSS]
  */
-async function buildUI() {
+function buildUI() {
+  const uiEntryPoints = [path.join("src", "frontend", "ui.tsx")];
   // Build UI JS
-  const uiBuildResult = await esbuild.build({
-    entryPoints: [path.join("src", "frontend", "ui.tsx")],
-    format: "iife",
-    target: "es2017",
-    platform: "browser",
-    define: {
-      "process.env.NODE_ENV": `${
-        isProduction ? '"production"' : '"development"'
-      }`,
-      "process.browser": "true",
-    },
-    loader: { ".css": "css", ".svg": "dataurl" },
-    jsxFactory: "preact.h",
-    jsxFragment: "preact.Fragment",
-    bundle: true,
-    sourcemap: isProduction ? false : "inline",
-    minify: isProduction ? true : false,
-    treeShaking: true,
-    write: false,
-    outfile: "ui.js",
-  });
-
-  if (uiBuildResult.errors.length > 0) {
-    console.error(uiBuildResult.errors);
-    throw new Error("Backend build error");
-  }
-
-  return uiBuildResult.outputFiles.map((file) => file.text);
+  esbuild
+    .build({
+      ...commonBuildOptions,
+      entryPoints: uiEntryPoints,
+      write: false,
+      outfile: "ui.js",
+      watch: {
+        onRebuild(error, result) {
+          if (error) console.error("Build watch failed", error);
+          else {
+            console.log("Rebuilt UI");
+            writeUIFile(result);
+          }
+        },
+      },
+    })
+    .then(writeUIFile);
 }
 
-(async () => {
-  try {
-    // Create and/or empty build folder
-    await fs.emptyDir(BUILD_FOLDER);
+try {
+  // Create and/or empty build folder
+  fs.emptyDirSync(BUILD_FOLDER);
 
-    const manifestPath = path.join(BUILD_FOLDER, "manifest.json");
-    // Copy over Figma plug-in manifest
-    await fs.copyFile("manifest.json", manifestPath);
+  // Copy over Figma plug-in manifest
+  const manifestPath = path.join(BUILD_FOLDER, "manifest.json");
+  fs.copyFileSync("manifest.json", manifestPath);
 
-    // Build backend JS
-    await buildBackend();
-    const [frontendJS, frontendCSS] = await buildUI();
-
-    // Combine JS and CSS into a single HTML block
-
-    const uiHtml = `
-      <div id="app"></div>
-      <script>${frontendJS}</script>
-      <style>${frontendCSS}</style>
-    `;
-
-    // Save HTML
-    await fs.writeFile(path.join(BUILD_FOLDER, "ui.html"), uiHtml);
-  } catch (err) {
-    // Handle build failure
-    console.error("Build failed with error:", err);
-
-    process.exit(1);
-  }
-})();
+  // Run esbuild
+  buildBackend();
+  buildUI();
+} catch (err) {
+  console.error("Build failed with error:", err);
+  process.exit(1);
+}
