@@ -15,6 +15,7 @@ interface StateProps {
   sourceUrl: string;
   embedUrl: string;
   responsive: boolean;
+  googleFonts: boolean;
   zoom: number;
   breakpointWidth: number;
   backgroundColour: string;
@@ -36,6 +37,7 @@ interface StateMethods {
   getHtml: () => Promise<string>;
   getOutputFrames: () => FrameDataInterface[];
   toggleResponsive: () => void;
+  toggleGoogleFonts: () => void;
   getHTMLRenderPropsHash: (state: StateInterface) => string;
 }
 
@@ -55,6 +57,7 @@ const initialProps: StateProps = {
   zoom: 1,
   fileKey: "",
   responsive: true,
+  googleFonts: true,
   breakpointWidth: 100,
   backgroundColour: "#C4C4C4",
   notificationId: undefined,
@@ -115,6 +118,7 @@ export class AppProvider extends Component<{}, StateInterface> {
       responsive,
       fileKey,
       selectedFrames,
+      googleFonts,
     } = this.state;
     const outputFrames = this.getOutputFrames();
     const svgText = await this.getSvg(selectedFrames);
@@ -129,6 +133,7 @@ export class AppProvider extends Component<{}, StateInterface> {
       responsive,
       svgText,
       fileKey,
+      googleFonts,
     });
   };
 
@@ -182,6 +187,7 @@ export class AppProvider extends Component<{}, StateInterface> {
 
   getHTMLRenderPropsHash = (state: StateInterface): string => {
     return [
+      state.googleFonts,
       state.embedUrl,
       state.headline,
       state.subhead,
@@ -194,6 +200,8 @@ export class AppProvider extends Component<{}, StateInterface> {
 
   state: StateInterface = {
     ...initialProps,
+    toggleGoogleFonts: () =>
+      this.setState({ googleFonts: !this.state.googleFonts }),
     toggleResponsive: () =>
       this.setState({ responsive: !this.state.responsive }),
     setZoom: (val) => this.setState({ zoom: val }),

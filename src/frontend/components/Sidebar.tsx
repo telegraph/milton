@@ -8,7 +8,13 @@ export function Sidebar() {
   return (
     <AppContext.Consumer>
       {(props) => {
-        const { selectedFrames, frames, setFrameSelection } = props;
+        const {
+          selectedFrames,
+          frames,
+          setFrameSelection,
+          googleFonts,
+          toggleGoogleFonts,
+        } = props;
 
         return (
           <div class="sidebar">
@@ -59,12 +65,23 @@ export function Sidebar() {
                   class="input__checkbox"
                   type="checkbox"
                   checked={props.responsive}
-                  onInput={() => {
-                    props.toggleResponsive();
-                  }}
+                  onInput={props.toggleResponsive}
                 />
                 <label for="responsive" class="input__label">
                   {UI_TEXT.RESPONSIVE_LABEL}
+                </label>
+              </div>
+
+              <div class="side_panel__row side_panel__row--input">
+                <input
+                  id="googleFonts"
+                  class="input__checkbox"
+                  type="checkbox"
+                  checked={props.googleFonts}
+                  onInput={props.toggleGoogleFonts}
+                />
+                <label for="googleFonts" class="input__label">
+                  {UI_TEXT.GOOGLE_FONTS_LABEL}
                 </label>
               </div>
             </div>

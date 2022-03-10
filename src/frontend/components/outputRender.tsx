@@ -3,7 +3,6 @@ import { Fragment, FunctionalComponent, h, JSX } from "preact";
 import render from "preact-render-to-string";
 import { FrameDataInterface, textData, TextRange } from "types";
 import { version } from "../../../package.json";
-// import fontsCss from "backend/telegraphFonts.css";
 import { buildFontFaceCss, generateFontStyles } from "../../backend/fonts";
 
 const embedCss = `
@@ -271,8 +270,6 @@ function generateSpanStyles(text: TextRange): string {
   const { weight, colour, family, italic, letterSpacing, lineHeight, size } =
     text;
 
-  console.log(text);
-
   let letterSpacingAlt = letterSpacing;
 
   let cssStyle = "";
@@ -370,6 +367,7 @@ type renderInlineProps = {
   embedUrl: string;
   responsive: boolean;
   fileKey: string;
+  googleFonts: boolean;
 };
 export function generateEmbedHtml(props: renderInlineProps): string {
   const {
@@ -382,12 +380,15 @@ export function generateEmbedHtml(props: renderInlineProps): string {
     responsive,
     embedUrl,
     fileKey,
+    googleFonts,
   } = props;
 
   const mediaQuery = generateMediaQueries(outputFrames);
   const fontStyles = generateFontStyles(outputFrames);
-  const fontFaces = buildFontFaceCss(fontStyles);
+  const fontFaces = googleFonts ? buildFontFaceCss(fontStyles) : "";
   const css = fontFaces + embedCss + mediaQuery;
+
+  console.log({ googleFonts, fontFaces });
 
   let html = render(
     <div className={`f2h__embed ${responsive ? "f2h--responsive" : ""}`}>

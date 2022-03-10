@@ -64,6 +64,7 @@ export const UI_TEXT = {
   DOWNLOAD: "Download",
   LABEL_BREAKPOINTS: "Breakpoints",
   RESPONSIVE_LABEL: "Responsive",
+  GOOGLE_FONTS_LABEL: "Use Google fonts",
   EMBED_PROPS_HEADLINE_PLACEHOLDER: "Enter headline",
   EMBED_PROPS_SUB_HEAD_PLACEHOLDER: "Enter sub headline",
   EMBED_PROPS_SOURCE_PLACEHOLDER: "Enter source/footer",
