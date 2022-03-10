@@ -1,13 +1,10 @@
 import { Component, h, JSX } from "preact";
-import { logger } from "../logging";
 
 interface Props {
   children: preact.ComponentChildren;
 }
 
 export class ErrorBoundary extends Component<Props> {
-  private logger = logger;
-
   state = {
     hasError: false,
     errors: [] as Error[],
@@ -19,7 +16,6 @@ export class ErrorBoundary extends Component<Props> {
 
   componentDidCatch(err: Error, errInfo: string): void {
     console.error("caught error", err, errInfo);
-    this.logger.error("unknown", true, err);
 
     if (!this.state.errors.includes(err)) {
       this.setState({ errors: [...this.state.errors, err] });

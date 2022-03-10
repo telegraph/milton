@@ -1,7 +1,6 @@
 import copy from "clipboard-copy";
 import { saveAs } from "file-saver";
 import { AppContext } from "frontend/app_context";
-import { logger } from "frontend/logging";
 import { h } from "preact";
 import { NOTIFICATIONS_IDS, UI_TEXT } from "../../constants";
 
@@ -38,11 +37,6 @@ export function Export() {
               const html = await props.getHtml();
               await copy(html);
               props.setNotification(NOTIFICATIONS_IDS.INFO_CLIPBOARD_COPIED);
-              logger.event(
-                "file_download",
-                "clipboard",
-                (html.length / 1024).toString()
-              );
             }}
           >
             {UI_TEXT.COPY_TO_CLIPBOARD}
@@ -55,11 +49,6 @@ export function Export() {
               const html = await props.getHtml();
               downloadHtml(html);
               props.setNotification(NOTIFICATIONS_IDS.INFO_DOWNLOAD_SUCCESS);
-              logger.event(
-                "file_download",
-                "download",
-                (html.length / 1024).toString()
-              );
             }}
           >
             {UI_TEXT.BUTTON_DOWNLOAD}

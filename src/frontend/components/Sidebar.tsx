@@ -1,8 +1,7 @@
+import { h } from "preact";
 import { EMBED_PROPERTIES, UI_TEXT } from "constants";
 import { AppContext } from "frontend/app_context";
-import { h } from "preact";
 import { cleanUrl } from "utils/common";
-import { logger } from "../logging";
 import { BackgroundInput } from "./background_input";
 
 export function Sidebar() {
@@ -45,7 +44,6 @@ export function Sidebar() {
                       disabled={disabled}
                       onChange={() => {
                         setFrameSelection(frame.id);
-                        logger.event("click", "selectFrame");
                       }}
                     />
                   </div>
@@ -63,7 +61,6 @@ export function Sidebar() {
                   checked={props.responsive}
                   onInput={() => {
                     props.toggleResponsive();
-                    logger.event("click", "toggleResponsive");
                   }}
                 />
                 <label for="responsive" class="input__label">
@@ -86,7 +83,6 @@ export function Sidebar() {
                   data-placeholder={UI_TEXT.EMBED_PROPS_HEADLINE_PLACEHOLDER}
                   onBlur={({ currentTarget }) => {
                     props.setHeadline(currentTarget.innerText.trim());
-                    logger.event("click", "setHeadline");
                   }}
                   spellcheck
                   dangerouslySetInnerHTML={{ __html: props.headline }}
@@ -102,7 +98,6 @@ export function Sidebar() {
                   data-placeholder={UI_TEXT.EMBED_PROPS_SUB_HEAD_PLACEHOLDER}
                   onBlur={({ currentTarget }) => {
                     props.setSubhead(currentTarget.innerText.trim());
-                    logger.event("click", "setSubHead");
                   }}
                   spellcheck
                   dangerouslySetInnerHTML={{ __html: props.subhead }}
@@ -118,7 +113,6 @@ export function Sidebar() {
                   data-placeholder={UI_TEXT.EMBED_PROPS_SOURCE_PLACEHOLDER}
                   onBlur={({ currentTarget }) => {
                     props.setSource(currentTarget.innerText.trim());
-                    logger.event("click", "setSource");
                   }}
                   spellcheck
                   dangerouslySetInnerHTML={{ __html: props.source }}
@@ -134,7 +128,6 @@ export function Sidebar() {
                   data-placeholder={UI_TEXT.EMBED_PROPS_SOURCE_URL_PLACEHOLDER}
                   onBlur={({ currentTarget }) => {
                     props.setSourceUrl(cleanUrl(currentTarget.innerText));
-                    logger.event("click", "setSourceUrl");
                   }}
                   spellcheck
                   dangerouslySetInnerHTML={{ __html: props.sourceUrl }}
@@ -157,7 +150,6 @@ export function Sidebar() {
                   data-placeholder={UI_TEXT.EMBED_PROPS_URL_PLACEHOLDER}
                   onBlur={({ currentTarget }) => {
                     props.setEmbedUrl(cleanUrl(currentTarget.innerText));
-                    logger.event("click", "setDestinationUrl");
                   }}
                   spellcheck
                   dangerouslySetInnerHTML={{ __html: props.embedUrl }}
