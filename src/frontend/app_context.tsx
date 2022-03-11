@@ -1,6 +1,12 @@
-import { EMBED_PROPERTIES, NOTIFICATIONS_IDS, STATUS } from "constants";
+import {
+  EMBED_PROPERTIES,
+  MSG_EVENTS,
+  NOTIFICATIONS_IDS,
+  STATUS,
+} from "constants";
 import { Component, createContext, h } from "preact";
 import { FigmaFramesType, FrameDataInterface } from "types";
+import { postMan } from "utils/messages";
 import { generateEmbedHtml } from "./components/outputRender";
 import { getRootFramesFromBackend, renderSvg, saveToFigma } from "./data";
 
@@ -19,6 +25,7 @@ interface StateProps {
   zoom: number;
   breakpointWidth: number;
   backgroundColour: string;
+  customHTML: string;
   notificationId: NOTIFICATIONS_IDS | undefined;
   notificationMessage?: string;
 }
@@ -39,6 +46,7 @@ interface StateMethods {
   toggleResponsive: () => void;
   toggleGoogleFonts: () => void;
   getHTMLRenderPropsHash: (state: StateInterface) => string;
+  setCustomHTML: (text: string) => void;
 }
 
 export interface StateInterface extends StateMethods, StateProps {}
@@ -60,6 +68,8 @@ const initialProps: StateProps = {
   googleFonts: true,
   breakpointWidth: 100,
   backgroundColour: "#C4C4C4",
+  customHTML: "",
+
   notificationId: undefined,
   notificationMessage: "",
 };
@@ -93,6 +103,7 @@ export class AppProvider extends Component<{}, StateInterface> {
       this.setState({ status: STATUS.RENDERING });
 
       const response = await getRootFramesFromBackend();
+      console.log(response);
       await this.getSvg(response.selectedFrames);
       this.setState({ ...response, status: STATUS.IDLE });
     } catch (err) {
@@ -119,6 +130,7 @@ export class AppProvider extends Component<{}, StateInterface> {
       fileKey,
       selectedFrames,
       googleFonts,
+      customHTML,
     } = this.state;
     const outputFrames = this.getOutputFrames();
     const svgText = await this.getSvg(selectedFrames);
@@ -134,6 +146,7 @@ export class AppProvider extends Component<{}, StateInterface> {
       svgText,
       fileKey,
       googleFonts,
+      customHTML,
     });
   };
 
@@ -194,8 +207,21 @@ export class AppProvider extends Component<{}, StateInterface> {
       state.source,
       state.sourceUrl,
       state.responsive,
+      state.customHTML,
       ...state.selectedFrames,
     ].join();
+  };
+
+  setCustomHTML = (text: string) => {
+    this.setState({ customHTML: text }, () => {
+      console.log("TODO: Save to local storage");
+
+      postMan
+        .send({ workload: MSG_EVENTS.SET_CUSTOM_HTML, data: text })
+        .catch((err) =>
+          console.error("Failed to send custom HTML to backend", err)
+        );
+    });
   };
 
   state: StateInterface = {
@@ -217,6 +243,7 @@ export class AppProvider extends Component<{}, StateInterface> {
     getOutputFrames: this.getOutputFrames,
     getHtml: this.getHtml,
     getHTMLRenderPropsHash: this.getHTMLRenderPropsHash,
+    setCustomHTML: this.setCustomHTML,
   };
 
   componentDidMount() {

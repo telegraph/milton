@@ -3,6 +3,7 @@ import {
   renderFrames,
   resizeWindow,
   setEmbedProperties,
+  setCustomHTML,
 } from "backend/figmaUtils";
 import { DEFAULT_WINDOW_SIZE, MSG_EVENTS } from "constants";
 import { postMan } from "utils/messages";
@@ -12,6 +13,7 @@ postMan.registerWorker(MSG_EVENTS.GET_ROOT_FRAMES, getRootFrames);
 postMan.registerWorker(MSG_EVENTS.RENDER, renderFrames);
 postMan.registerWorker(MSG_EVENTS.UPDATE_HEADLINES, setEmbedProperties);
 postMan.registerWorker(MSG_EVENTS.RESIZE_WINDOW, resizeWindow);
+postMan.registerWorker(MSG_EVENTS.SET_CUSTOM_HTML, setCustomHTML);
 
 // Render the DOM
 figma.showUI(__html__);

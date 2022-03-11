@@ -27,6 +27,7 @@ export type IFrameData = {
   sourceUrl: string;
   embedUrl: string;
   fileKey: string;
+  customHTML: string;
 };
 
 export type MsgFramesType = IFrameData & {

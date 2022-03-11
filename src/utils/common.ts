@@ -48,7 +48,7 @@ export function loadScript(url: string): Promise<boolean> {
 }
 
 export function cleanUrl(text: string): string {
-  const urlText = text.trim();
+  const urlText = encodeURI(text.trim());
 
   if (urlText === "") {
     return "";

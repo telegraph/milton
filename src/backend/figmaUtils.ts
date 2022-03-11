@@ -218,7 +218,7 @@ export function createFrameData(node: FrameNode): FrameDataInterface {
  *
  * @context figma
  */
-export function getRootFrames(): IFrameData {
+export async function getRootFrames(): Promise<IFrameData> {
   const { currentPage } = figma;
 
   let selectedFrames = currentPage.selection.filter(
@@ -237,6 +237,8 @@ export function getRootFrames(): IFrameData {
     frames[id] = createFrameData(frame);
   }
 
+  const customHTML = await figma.clientStorage.getAsync("CUSTOM_HTML");
+
   return {
     frames,
     headline: currentPage.getPluginData(EMBED_PROPERTIES.HEADLINE),
@@ -245,5 +247,16 @@ export function getRootFrames(): IFrameData {
     sourceUrl: currentPage.getPluginData(EMBED_PROPERTIES.SOURCE_URL),
     embedUrl: currentPage.getPluginData(EMBED_PROPERTIES.EMBED_URL),
     fileKey: figma.fileKey ?? "MISSING_KEY",
+    customHTML: customHTML,
   };
+}
+
+export function setCustomHTML(text: string) {
+  console.log("backend, saving custom HTML", text);
+
+  figma.clientStorage
+    .setAsync("CUSTOM_HTML", text)
+    .catch((error) =>
+      console.error("Failed to set custom HTML to local storage", error)
+    );
 }

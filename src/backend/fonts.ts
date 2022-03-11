@@ -42,8 +42,6 @@ export function generateGoogleFontCss(styles: FontStyles): string {
   // NOTE: Google enforces a strict API query param ordering
   // see https://developers.google.com/fonts/docs/css2#forming_api_urls
 
-  console.log(styles);
-
   const url = new URL("https://fonts.googleapis.com/css2");
 
   for (const [family, weights] of styles) {
@@ -71,7 +69,6 @@ export function generateGoogleFontCss(styles: FontStyles): string {
 // Generate the CSS for a given font family, weight and styles
 export function buildFontFaceCss(styles: FontStyle[]): string {
   const googleFonts = generateGoogleFontCss(styles);
-  console.log(googleFonts);
 
   return googleFonts;
 }

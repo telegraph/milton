@@ -37,6 +37,7 @@ export enum MSG_EVENTS {
   RENDER_IFRAME_HTML,
   MIN_MAX_WINDOW,
   RESIZE_WINDOW,
+  SET_CUSTOM_HTML,
 }
 
 export enum OUTPUT_FORMATS {
@@ -62,16 +63,21 @@ export const UI_TEXT = {
   ZOOM_TOOLTIP: "Zoom/view options",
   COPY_TO_CLIPBOARD: "Copy to clipboard",
   DOWNLOAD: "Download",
+
   LABEL_BREAKPOINTS: "Breakpoints",
-  RESPONSIVE_LABEL: "Responsive",
-  GOOGLE_FONTS_LABEL: "Use Google fonts",
-  EMBED_PROPS_HEADLINE_PLACEHOLDER: "Enter headline",
-  EMBED_PROPS_SUB_HEAD_PLACEHOLDER: "Enter sub headline",
-  EMBED_PROPS_SOURCE_PLACEHOLDER: "Enter source/footer",
-  EMBED_PROPS_URL_PLACEHOLDER: "Destination URL https://",
-  EMBED_PROPS_SOURCE_URL_PLACEHOLDER: "Source URL https://",
+  LABEL_RESPONSIVE: "Responsive",
+  LABEL_GOOGLE_FONTS: "Use Google fonts",
+  LABEL_CUSTOM_HTML: "Append custom HTML",
+
+  PLACEHOLDER_EMBED_PROPS_HEADLINE: "Enter headline",
+  PLACEHOLDER_EMBED_PROPS_SUB_HEAD: "Enter sub headline",
+  PLACEHOLDER_EMBED_PROPS_SOURCE: "Enter source/footer",
+  PLACEHOLDER_EMBED_PROPS_URL: "Destination URL https://",
+  PLACEHOLDER_EMBED_PROPS_SOURCE_URL: "Source URL https://",
   EMBED_PROPS_INVALID_URL: "Enter a valid link",
-  BACKGROUND_COLOUR_PLACEHOLDER: "#ccc",
+  PLACEHOLDER_BACKGROUND_COLOUR: "#ccc",
+  PLACEHOLDER_CUSTOM_HTML: "Enter custom <html>",
+
   TAB_OPTIONS: "Options",
   TAB_COMPRESSION: "Compression",
   TAB_WRAPPER: "Wrapper",

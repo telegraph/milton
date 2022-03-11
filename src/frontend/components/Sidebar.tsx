@@ -11,9 +11,23 @@ export function Sidebar() {
         const {
           selectedFrames,
           frames,
+          setEmbedUrl,
+          embedUrl,
           setFrameSelection,
+          responsive,
+          toggleResponsive,
           googleFonts,
           toggleGoogleFonts,
+          customHTML,
+          setCustomHTML,
+          setSourceUrl,
+          sourceUrl,
+          source,
+          setSource,
+          subhead,
+          setSubhead,
+          headline,
+          setHeadline,
         } = props;
 
         return (
@@ -64,11 +78,11 @@ export function Sidebar() {
                   id="responsive"
                   class="input__checkbox"
                   type="checkbox"
-                  checked={props.responsive}
-                  onInput={props.toggleResponsive}
+                  checked={responsive}
+                  onInput={toggleResponsive}
                 />
                 <label for="responsive" class="input__label">
-                  {UI_TEXT.RESPONSIVE_LABEL}
+                  {UI_TEXT.LABEL_RESPONSIVE}
                 </label>
               </div>
 
@@ -77,11 +91,11 @@ export function Sidebar() {
                   id="googleFonts"
                   class="input__checkbox"
                   type="checkbox"
-                  checked={props.googleFonts}
-                  onInput={props.toggleGoogleFonts}
+                  checked={googleFonts}
+                  onInput={toggleGoogleFonts}
                 />
                 <label for="googleFonts" class="input__label">
-                  {UI_TEXT.GOOGLE_FONTS_LABEL}
+                  {UI_TEXT.LABEL_GOOGLE_FONTS}
                 </label>
               </div>
             </div>
@@ -92,62 +106,58 @@ export function Sidebar() {
               </div>
 
               <div class="side_panel__row side_panel__row--headline">
-                <div
-                  contentEditable={true}
+                <input
                   class="input input--textbox input--icon input--icon--text"
                   id={EMBED_PROPERTIES.HEADLINE}
-                  data-empty={!props.headline}
-                  data-placeholder={UI_TEXT.EMBED_PROPS_HEADLINE_PLACEHOLDER}
-                  onBlur={({ currentTarget }) => {
-                    props.setHeadline(currentTarget.innerText.trim());
+                  placeholder={UI_TEXT.PLACEHOLDER_EMBED_PROPS_HEADLINE}
+                  onKeyDown={(e) => e.stopImmediatePropagation()}
+                  onChange={({ currentTarget }) => {
+                    setHeadline(currentTarget.value.trim());
                   }}
                   spellcheck
-                  dangerouslySetInnerHTML={{ __html: props.headline }}
+                  value={headline}
                 />
               </div>
 
               <div class="side_panel__row side_panel__row--headline">
-                <div
-                  contentEditable={true}
+                <input
                   class="input input--textbox input--icon input--icon--text"
                   id={EMBED_PROPERTIES.SUBHEAD}
-                  data-empty={!props.subhead}
-                  data-placeholder={UI_TEXT.EMBED_PROPS_SUB_HEAD_PLACEHOLDER}
-                  onBlur={({ currentTarget }) => {
-                    props.setSubhead(currentTarget.innerText.trim());
+                  placeholder={UI_TEXT.PLACEHOLDER_EMBED_PROPS_SUB_HEAD}
+                  onKeyDown={(e) => e.stopImmediatePropagation()}
+                  onChange={({ currentTarget }) => {
+                    setSubhead(currentTarget.value.trim());
                   }}
                   spellcheck
-                  dangerouslySetInnerHTML={{ __html: props.subhead }}
+                  value={subhead}
                 />
               </div>
 
               <div class="side_panel__row side_panel__row--headline">
-                <div
-                  contentEditable={true}
+                <input
                   class="input input--textbox input--icon input--icon--text"
-                  id={EMBED_PROPERTIES.SUBHEAD}
-                  data-empty={!props.source}
-                  data-placeholder={UI_TEXT.EMBED_PROPS_SOURCE_PLACEHOLDER}
-                  onBlur={({ currentTarget }) => {
-                    props.setSource(currentTarget.innerText.trim());
+                  id={EMBED_PROPERTIES.SOURCE}
+                  placeholder={UI_TEXT.PLACEHOLDER_EMBED_PROPS_SOURCE}
+                  onKeyDown={(e) => e.stopImmediatePropagation()}
+                  onChange={({ currentTarget }) => {
+                    setSource(currentTarget.value.trim());
                   }}
                   spellcheck
-                  dangerouslySetInnerHTML={{ __html: props.source }}
+                  value={source}
                 />
               </div>
 
               <div class="side_panel__row side_panel__row--headline">
-                <div
-                  contentEditable={true}
+                <input
+                  type="url"
                   class="input input--textbox input--icon input--icon--url"
                   id={EMBED_PROPERTIES.SOURCE_URL}
-                  data-empty={!props.sourceUrl}
-                  data-placeholder={UI_TEXT.EMBED_PROPS_SOURCE_URL_PLACEHOLDER}
-                  onBlur={({ currentTarget }) => {
-                    props.setSourceUrl(cleanUrl(currentTarget.innerText));
+                  placeholder={UI_TEXT.PLACEHOLDER_EMBED_PROPS_SOURCE_URL}
+                  onKeyDown={(e) => e.stopImmediatePropagation()}
+                  onChange={({ currentTarget }) => {
+                    setSourceUrl(cleanUrl(currentTarget.value));
                   }}
-                  spellcheck
-                  dangerouslySetInnerHTML={{ __html: props.sourceUrl }}
+                  value={sourceUrl}
                 />
               </div>
             </div>
@@ -159,17 +169,16 @@ export function Sidebar() {
               </div>
 
               <div class="side_panel__row ">
-                <div
-                  contentEditable={true}
+                <input
+                  type="url"
                   class="input input--textbox input--icon input--icon--url"
                   id={EMBED_PROPERTIES.EMBED_URL}
-                  data-empty={!props.sourceUrl}
-                  data-placeholder={UI_TEXT.EMBED_PROPS_URL_PLACEHOLDER}
-                  onBlur={({ currentTarget }) => {
-                    props.setEmbedUrl(cleanUrl(currentTarget.innerText));
+                  placeholder={UI_TEXT.PLACEHOLDER_EMBED_PROPS_URL}
+                  onKeyDown={(e) => e.stopImmediatePropagation()}
+                  onChange={({ currentTarget }) => {
+                    setEmbedUrl(cleanUrl(currentTarget.value));
                   }}
-                  spellcheck
-                  dangerouslySetInnerHTML={{ __html: props.embedUrl }}
+                  value={embedUrl}
                 />
               </div>
             </div>
@@ -182,6 +191,26 @@ export function Sidebar() {
 
               <div class="side_panel__row side_panel__row--colour">
                 <BackgroundInput />
+              </div>
+            </div>
+
+            {/* Custom  HTML  */}
+            <div class="side_panel side_panel--destination">
+              <div class="side_panel__row side_panel__row--title">
+                {UI_TEXT.LABEL_CUSTOM_HTML}
+              </div>
+
+              <div class="side_panel__row ">
+                <textarea
+                  placeholder={UI_TEXT.PLACEHOLDER_CUSTOM_HTML}
+                  onKeyDown={(e) => e.stopImmediatePropagation()}
+                  class="input input--textbox input--icon input--icon--text"
+                  onChange={(e) => {
+                    const { value } = e.target as HTMLTextAreaElement;
+                    setCustomHTML(value);
+                  }}
+                  value={customHTML}
+                />
               </div>
             </div>
           </div>

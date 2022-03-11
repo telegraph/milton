@@ -368,6 +368,7 @@ type renderInlineProps = {
   responsive: boolean;
   fileKey: string;
   googleFonts: boolean;
+  customHTML: string;
 };
 export function generateEmbedHtml(props: renderInlineProps): string {
   const {
@@ -381,6 +382,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
     embedUrl,
     fileKey,
     googleFonts,
+    customHTML,
   } = props;
 
   const mediaQuery = generateMediaQueries(outputFrames);
@@ -418,6 +420,11 @@ export function generateEmbedHtml(props: renderInlineProps): string {
           </p>
         </footer>
       )}
+
+      <div
+        dangerouslySetInnerHTML={{ __html: customHTML }}
+        class="custom_html"
+      ></div>
     </div>,
     null,
     { pretty: true }
