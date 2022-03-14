@@ -43,7 +43,7 @@ body {
   z-index: 1;
   left: 50%;
   transform: translateX(-50%);
-  pointer-events: none;
+  
 }
 
 .f2h__svg_container {
@@ -254,7 +254,7 @@ function generateParagraphStyle(
 
   return `
         ${styleText}
-        width: ${positionFixed ? "auto" : `${relWidth}%`};
+        min-width: ${positionFixed ? "auto" : `${relWidth}%`};
         height: ${positionFixed ? "auto" : `${relHeight}%`};
         left: ${positionFixed ? `${x}px` : left};
         ${verticalPosition};
@@ -284,6 +284,13 @@ function generateSpanStyles(text: TextRange): string {
   return cssStyle;
 }
 
+function createFontCSSName(family: string, style: string): string {
+  const fontName = family.trim().toLowerCase().replaceAll(" ", "_");
+  const fontStyle = style.trim().toLowerCase().replaceAll(" ", "_");
+
+  return `${fontName}--${fontStyle}`;
+}
+
 type TextProps = {
   node: textData;
   width: number;
@@ -304,6 +311,7 @@ function Text(props: TextProps) {
             key={style.text}
             data-text={node.strokeWeight ? style.text : ""}
             style={generateSpanStyles(style)}
+            class={createFontCSSName(style.family || "", style.styleText)}
             dangerouslySetInnerHTML={{
               __html: style.text.replace(/\n/g, "<br />"),
             }}
@@ -430,11 +438,10 @@ export function generateEmbedHtml(props: renderInlineProps): string {
     { pretty: true }
   );
 
-  // html = minimiseText(html);
   const nodeIdParam = encodeURIComponent(outputFrames[0].id);
 
   html = `<!--
-  # [ Figma2HTML Export v${version} ]
+  # [ Milton Export v${version} ]
   # 
   # File: https://www.figma.com/file/${fileKey}?node-id=${nodeIdParam}
   # Date: ${Date()}

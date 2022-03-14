@@ -22,20 +22,23 @@ function getRangeStyles(textNode: TextNode): TextRange[] {
     const figmaStyle = fontName === figma.mixed ? null : fontName.style;
     const italic = figmaStyle ? /italic/i.test(figmaStyle) : false;
 
-    console.log(fontName?.style);
-
     // Font weight
+    // Follows OS2 font weight naming convention
+    // https://docs.microsoft.com/en-us/typography/opentype/spec/os2#usweightclass
     let weight = 400;
     if (figmaStyle) {
-      if (/^thin$/i.test(figmaStyle)) weight = 100;
-      if (/^extra--?\s?light$/i.test(figmaStyle)) weight = 200;
-      if (/^light$/i.test(figmaStyle)) weight = 300;
-      if (/^regular$/i.test(figmaStyle)) weight = 400;
-      if (/^medium$/i.test(figmaStyle)) weight = 500;
-      if (/^semi-?\s?bold$/i.test(figmaStyle)) weight = 600;
-      if (/^bold$/i.test(figmaStyle)) weight = 700;
-      if (/^extra-?\s?bold$/i.test(figmaStyle)) weight = 800;
-      if (/^black$/i.test(figmaStyle)) weight = 900;
+      if (/^thin/i.test(figmaStyle)) weight = 100;
+      if (/^extra--?\s?light/i.test(figmaStyle)) weight = 200;
+      if (/^light/i.test(figmaStyle)) weight = 300;
+      if (/^roman/i.test(figmaStyle)) weight = 300;
+      if (/^regular/i.test(figmaStyle)) weight = 400;
+      if (/^medium/i.test(figmaStyle)) weight = 500;
+      if (/^semi-?\s?bold/i.test(figmaStyle)) weight = 600;
+      if (/^bold/i.test(figmaStyle)) weight = 700;
+      if (/^extra-?\s?bold/i.test(figmaStyle)) weight = 800;
+      if (/^black/i.test(figmaStyle)) weight = 900;
+      if (/^fat/i.test(figmaStyle)) weight = 900;
+      if (/^ultra/i.test(figmaStyle)) weight = 950;
     }
 
     // Font size
@@ -74,6 +77,7 @@ function getRangeStyles(textNode: TextNode): TextRange[] {
       letterSpacing,
       size,
       italic,
+      styleText: figmaStyle || "",
     };
 
     const char = textNode.characters[i];

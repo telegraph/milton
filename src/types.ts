@@ -100,6 +100,7 @@ export type ITextStyle = {
   letterSpacing: string | null;
   size: number | null;
   italic: boolean;
+  styleText: string;
 };
 
 export type TextRange = ITextStyle & { text: string };

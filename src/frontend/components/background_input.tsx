@@ -86,7 +86,7 @@ export class BackgroundInput extends Component<{}, State> {
           class="input input--textbox input--textbox--colour"
           id="backgroundColour"
           data-empty={!backgroundColour}
-          data-placeholder={UI_TEXT.BACKGROUND_COLOUR_PLACEHOLDER}
+          data-placeholder={UI_TEXT.PLACEHOLDER_BACKGROUND_COLOUR}
           onFocus={this.handleFocus}
           onBlur={({ currentTarget }) =>
             this.handleColourChange(currentTarget.innerText.trim())
