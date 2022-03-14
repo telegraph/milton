@@ -16,25 +16,25 @@ body {
   -webkit-font-smoothing: antialiased; /* WebKit  */
 }
 
-.f2h__embed.f2h--responsive {
+.milton__embed.milton--responsive {
   max-width: 100%;
   margin: 0 auto;
 }
 
-.f2h__text {
+.milton__text {
   margin: 0;
   font-family: sans-serif;
   transform: translate(-50%, -50%);
   position: absolute;
   display: flex;
 }
-.f2h__text_inner {
+.milton__text_inner {
   margin: 0;
   line-height: 0;
   width: 100%;
 }
 
-.f2h__text_container {
+.milton__text_container {
   position: absolute;
   left: 0;
   top: 0;
@@ -46,99 +46,58 @@ body {
   
 }
 
-.f2h__svg_container {
+.milton__svg_container {
   overflow: hidden;
 }
 
-.f2h__frame,
-.f2h__frame_text {
+.milton__frame,
+.milton__frame_text {
   display: none;
 }
 
-.f2h__svg_container path,
-.f2h__svg_container rect,
-.f2h__svg_container circle,
-.f2h__svg_container line,
-.f2h__svg_container polyline,
-.f2h__svg_container polygon,
-.f2h__svg_container path,
-.f2h__svg_container ellipse {
+.milton__svg_container path,
+.milton__svg_container rect,
+.milton__svg_container circle,
+.milton__svg_container line,
+.milton__svg_container polyline,
+.milton__svg_container polygon,
+.milton__svg_container path,
+.milton__svg_container ellipse {
   vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
-.f2h__svg_container svg {
+.milton__svg_container svg {
   height: auto;
 }
 
-.f2h__svg_container svg a,
-.f2h__svg_container svg a * {
+.milton__svg_container svg a,
+.milton__svg_container svg a * {
   pointer-events: all;
 }
 
-.f2h--responsive svg {
+.milton--responsive svg {
   position: absolute;
   top: 0;
   left: 0;
 }
 
-.f2h--responsive .f2h__wrap {
+.milton--responsive .milton__wrap {
   position: relative;
   overflow: hidden;
 }
 
-.f2h--responsive .f2h__svg_container,
-.f2h--responsive .f2h__wrap {
+.milton--responsive .milton__svg_container,
+.milton--responsive .milton__wrap {
   width: 100%;
   height: auto;
 }
 
-.f2h_headline {
-  font-family: "Austin News Deck", serif;
-  font-weight: 600;
-  font-size: 17px;
-  color: #333;
-  margin: 0 0 0 0;
-  line-height: 22px;
-}
-.f2h_subbhead {
-  font-family: "Austin News Deck", serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 17px;
-  color: #333;
-  margin: 4px 0 0 0;
-  line-height: 22px;
-}
-.f2h_header {
-  padding: 12px 0;
-  border-top: 1px solid #b5b5b5;
-}
-
-footer {
-  margin-top: 12px;
-  border-top: 1px solid #b5b5b5;
-}
-
-.f2h_source {
-  font-family: "Telesans Agate", sans-serif;
-  font-weight: normal;
-  font-size: 10px;
-  color: #959595;
-  margin: 4px 0;
-  line-height: 12px;
-  text-align: right;
-}
-
-.f2h_source a {
-  color: #04777b;
-}
-
 /* Experiment stroking text */
-.f2h__text--stroke span {
+.milton__text--stroke span {
   position: relative;
 }
 
-.f2h__text--stroke span:before {
+.milton__text--stroke span:before {
   content: attr(data-text);
   color: inherit;
   left: 0;
@@ -301,10 +260,10 @@ function Text(props: TextProps) {
 
   return (
     <div
-      class={`f2h__text ${node.strokeWeight ? "f2h__text--stroke" : ""}`}
+      class={`milton__text ${node.strokeWeight ? "milton__text--stroke" : ""}`}
       style={generateParagraphStyle(node, width, height, positionFixed)}
     >
-      <div class="f2h__text_inner">
+      <div class="milton__text_inner">
         {node.rangeStyles.map((style) => (
           <span
             key={style.text}
@@ -328,7 +287,7 @@ function TextContainer(props: FrameProps) {
   const { frames } = props;
 
   return (
-    <div class="f2h__text_container">
+    <div class="milton__text_container">
       {frames.map((frame) => (
         <div key={frame.id} id={`textblock-${frame.id}`}>
           {frame.textNodes.map((node) => (
@@ -400,20 +359,20 @@ export function generateEmbedHtml(props: renderInlineProps): string {
   console.log({ googleFonts, fontFaces });
 
   let html = render(
-    <div className={`f2h__embed ${responsive ? "f2h--responsive" : ""}`}>
+    <div className={`milton__embed ${responsive ? "milton--responsive" : ""}`}>
       <style dangerouslySetInnerHTML={{ __html: css }}></style>
 
       {(headline || subhead) && (
-        <header className="f2h_header">
-          {headline && <h1 className="f2h_headline">{headline}</h1>}
-          {subhead && <p className="f2h_subbhead">{subhead}</p>}
+        <header className="milton_header">
+          {headline && <h1 className="milton_headline">{headline}</h1>}
+          {subhead && <p className="milton_subbhead">{subhead}</p>}
         </header>
       )}
 
-      <div className="f2h__wrap" style={`position: relative;`}>
+      <div className="milton__wrap" style={`position: relative;`}>
         <WrapIf condition={!!embedUrl} Wrapper={LinkWrapper} href={embedUrl}>
           <div
-            className="f2h__svg_container"
+            className="milton__svg_container"
             dangerouslySetInnerHTML={{ __html: svgText }}
           />
           <TextContainer frames={outputFrames} />
@@ -422,7 +381,7 @@ export function generateEmbedHtml(props: renderInlineProps): string {
 
       {source && (
         <footer>
-          <p className="f2h_source">
+          <p className="milton_source">
             {sourceUrl ? <a href={sourceUrl}>{source}</a> : source}
           </p>
         </footer>
@@ -483,19 +442,19 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
       // Wrapper widths
       cssText += `
 
-        .f2h__embed {
+        .milton__embed {
           background-color: ${sortedFrames[i].backgroundColour};
         }
    
-        .f2h__svg_container,
-        .f2h__wrap {
+        .milton__svg_container,
+        .milton__wrap {
             width: ${width}px;
             height: ${height}px;
           }`;
 
-      cssText += `.f2h--responsive svg { width: ${relSvgWidth}%; } \n`;
+      cssText += `.milton--responsive svg { width: ${relSvgWidth}%; } \n`;
       cssText += `[data-id="${id}"], [id="textblock-${id}"] { display: block; } \n`;
-      cssText += `.f2h--responsive .f2h__wrap  { padding-top: ${paddingHeight}%; } \n`;
+      cssText += `.milton--responsive .milton__wrap  { padding-top: ${paddingHeight}%; } \n`;
     } else {
       // Styles for the  remaining breakpoints
       const { id: prevId } = sortedFrames[i - 1];
@@ -507,19 +466,19 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
       
       @media (min-width: ${width}px) {
 
-        .f2h__embed {
+        .milton__embed {
           background-color: ${sortedFrames[i].backgroundColour};
         }    
 
-        .f2h__svg_container,
-        .f2h__wrap {
+        .milton__svg_container,
+        .milton__wrap {
             width: ${width}px;
             height: ${height}px;
         }
-        .f2h--responsive svg {
+        .milton--responsive svg {
           width: ${relSvgWidth}%;
         }
-        .f2h--responsive .f2h__wrap  {
+        .milton--responsive .milton__wrap  {
           padding-top: ${paddingHeight}%;
         }
         [data-id="${prevId}"], [id="textblock-${prevId}"] { display: none !important; }
