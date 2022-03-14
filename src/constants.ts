@@ -117,7 +117,7 @@ export const NOTIFICATIONS: Record<
   },
   [NOTIFICATIONS_IDS.ERROR_MISSING_FRAMES]: {
     type: NOTIFICATION_TYPE.ERROR,
-    text: "👎 No frames found. Please add a frame and try again",
+    text: "👎 No frames found. Please select some frames and try again",
   },
   [NOTIFICATIONS_IDS.ERROR_MULTIPLE_SAME_WIDTH]: {
     type: NOTIFICATION_TYPE.ERROR,

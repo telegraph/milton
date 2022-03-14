@@ -355,6 +355,7 @@ export class Preview extends Component<{}, PreviewStateInterface> {
             data-active={selected}
             onPointerDown={this.enableSelection}
             style={{
+              display: status === STATUS.IDLE ? "block" : "none",
               width: iframeWidth * zoom,
               height: iframeHeight * zoom,
               transform: `translateX(${x}px) translateY(${y}px)`,

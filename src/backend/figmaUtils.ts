@@ -225,11 +225,11 @@ export async function getRootFrames(): Promise<IFrameData> {
     (node) => node.type === "FRAME"
   ) as FrameNode[];
 
-  if (selectedFrames.length === 0) {
-    selectedFrames = currentPage.children.filter(
-      (node) => node.type === "FRAME"
-    ) as FrameNode[];
-  }
+  // if (selectedFrames.length === 0) {
+  //   selectedFrames = currentPage.children.filter(
+  //     (node) => node.type === "FRAME"
+  //   ) as FrameNode[];
+  // }
 
   const frames: Record<string, FrameDataInterface> = {};
   for (const frame of selectedFrames) {

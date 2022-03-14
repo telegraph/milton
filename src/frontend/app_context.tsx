@@ -101,9 +101,7 @@ export class AppProvider extends Component<{}, StateInterface> {
   getFigmaFrames = async (): Promise<void> => {
     try {
       this.setState({ status: STATUS.RENDERING });
-
       const response = await getRootFramesFromBackend();
-      console.log(response);
       await this.getSvg(response.selectedFrames);
       this.setState({ ...response, status: STATUS.IDLE });
     } catch (err) {
@@ -195,7 +193,11 @@ export class AppProvider extends Component<{}, StateInterface> {
   };
 
   setNotification = (id?: NOTIFICATIONS_IDS, msg?: string): void => {
-    this.setState({ notificationId: id, notificationMessage: msg });
+    this.setState({
+      notificationId: id,
+      notificationMessage: msg,
+      status: STATUS.ERROR,
+    });
   };
 
   getHTMLRenderPropsHash = (state: StateInterface): string => {
