@@ -153,8 +153,6 @@ footer {
 }
 `;
 
-const PRECISION = 4;
-
 export function generateIframeHtml(body: string): string {
   return `
     <!doctype html>
@@ -203,13 +201,13 @@ function generateParagraphStyle(
 
   // Position center aligned
   const leftPos = ((x + width / 2) / frameWidth) * 100;
-  const left = `${leftPos.toPrecision(PRECISION)}%`;
+  const left = `${leftPos}%`;
 
   const topVal = ((y + height / 2) / frameHeight) * 100;
-  const top = `${topVal.toPrecision(PRECISION)}%`;
+  const top = `${topVal}%`;
 
   const bottomVal = frameHeight - y - height - height / 2;
-  const bottom = `${bottomVal.toPrecision(4)}px`;
+  const bottom = `${bottomVal}px`;
 
   let alignVertical = "center";
   let verticalPosition = "";
@@ -249,11 +247,12 @@ function generateParagraphStyle(
       break;
   }
 
-  const relWidth = ((width / frameWidth) * 100).toPrecision(PRECISION);
-  const relHeight = ((height / frameHeight) * 100).toPrecision(PRECISION);
+  const relWidth = (width / frameWidth) * 100;
+  const relHeight = (height / frameHeight) * 100;
 
   return `
         ${styleText}
+        width: ${positionFixed ? "auto" : `${relWidth}%`};
         min-width: ${positionFixed ? "auto" : `${relWidth}%`};
         height: ${positionFixed ? "auto" : `${relHeight}%`};
         left: ${positionFixed ? `${x}px` : left};
@@ -476,9 +475,8 @@ function generateMediaQueries(frames: FrameDataInterface[]) {
   for (let i = 0; i < sortedFrames.length; i++) {
     const { id, width, height } = sortedFrames[i];
 
-    // const relContainerWidth = ((width / height) * 100).toPrecision(PRECISION);
-    const relSvgWidth = ((largestWidth / width) * 100).toPrecision(PRECISION);
-    const paddingHeight = ((height / width) * 100).toPrecision(PRECISION);
+    const relSvgWidth = (largestWidth / width) * 100;
+    const paddingHeight = (height / width) * 100;
 
     // Styles for the first (smallest) breakpoint
     if (i === 0) {
