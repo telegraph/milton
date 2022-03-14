@@ -70,3 +70,10 @@
   border: 1px solid transparent;
   margin: 0 var(--padding-x-small, 0);
 }
+
+.side_panel .input--html {
+  white-space: normal;
+  font-family: monospace;
+  min-height: 14ch;
+  background-position-y: 9px;
+}

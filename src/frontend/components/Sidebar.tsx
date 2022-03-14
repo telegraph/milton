@@ -202,9 +202,11 @@ export function Sidebar() {
 
               <div class="side_panel__row ">
                 <textarea
+                  // @ts-expect-error
+                  spellCheck="false"
                   placeholder={UI_TEXT.PLACEHOLDER_CUSTOM_HTML}
                   onKeyDown={(e) => e.stopImmediatePropagation()}
-                  class="input input--textbox input--icon input--icon--text"
+                  class="input input--textbox input--icon input--icon--text input--html"
                   onChange={(e) => {
                     const { value } = e.target as HTMLTextAreaElement;
                     setCustomHTML(value);
