@@ -27,12 +27,6 @@ export class ErrorBoundary extends Component<Props> {
       return (
         <div class="crash">
           <p>Oops! Something went wrong. Try reloading the plug-in</p>
-          <p>
-            If things keep crashing email{" "}
-            <a href="mailto:andrew.mason@telegraph.co.uk">
-              andrew.mason@telegraph.co.uk
-            </a>
-          </p>
         </div>
       );
     }
