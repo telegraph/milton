@@ -221,18 +221,25 @@ export function createFrameData(node: FrameNode): FrameDataInterface {
 export async function getRootFrames(): Promise<IFrameData> {
   const { currentPage } = figma;
 
-  let selectedFrames = currentPage.selection.filter(
+  const rootFrames = currentPage.children.filter(
     (node) => node.type === "FRAME"
   ) as FrameNode[];
 
-  // if (selectedFrames.length === 0) {
-  //   selectedFrames = currentPage.children.filter(
-  //     (node) => node.type === "FRAME"
-  //   ) as FrameNode[];
-  // }
+  rootFrames.sort((frameA, frameB) => {
+    return frameA.width < frameB.width ? -1 : 1;
+  });
+
+  const userSelectedFrameIDs = currentPage.selection
+    .filter((node) => node.type === "FRAME")
+    .map((node) => node.id);
+
+  if (rootFrames.length > 0 && userSelectedFrameIDs.length === 0) {
+    userSelectedFrameIDs.push(rootFrames[0].id);
+  }
 
   const frames: Record<string, FrameDataInterface> = {};
-  for (const frame of selectedFrames) {
+
+  for (const frame of rootFrames) {
     const { id } = frame;
     frames[id] = createFrameData(frame);
   }
@@ -241,6 +248,7 @@ export async function getRootFrames(): Promise<IFrameData> {
 
   return {
     frames,
+    selectedFrames: userSelectedFrameIDs,
     headline: currentPage.getPluginData(EMBED_PROPERTIES.HEADLINE),
     subhead: currentPage.getPluginData(EMBED_PROPERTIES.SUBHEAD),
     source: currentPage.getPluginData(EMBED_PROPERTIES.SOURCE),

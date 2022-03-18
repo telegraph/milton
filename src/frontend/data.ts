@@ -44,7 +44,6 @@ export async function getRootFramesFromBackend(): Promise<InitialData> {
     return {
       ...response,
       breakpointWidth: minWidth,
-      selectedFrames: Object.keys(response.frames),
     };
   } catch (err) {
     if (err instanceof Error) {

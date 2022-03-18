@@ -21,6 +21,7 @@ export type FigmaFramesType = Record<string, FrameDataInterface>;
 
 export type IFrameData = {
   frames: FigmaFramesType;
+  selectedFrames: string[];
   headline: string;
   subhead: string;
   source: string;
