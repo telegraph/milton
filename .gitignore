@@ -1,4 +1,5 @@
 build/
+.vscode/
 
 pnpm-lock.yaml
 npm-lock.yaml
