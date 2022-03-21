@@ -1,24 +1,19 @@
-# Figma to HTML embed plug-in
+# Milton
 
-Figma plug-in that helps generate HTML embeds.
+![Milton promo screen](docs/promo.png)
+
+Milton is a Figma plugin that makes it easy to convert your graphics into responsive HTML and CSS. Download or copy the code and embed directly on to your web-page
+
+Inspired by the great [ai2html](http://ai2html.org/) for Adobe Illustrator.
 
 ## Features
 
-- Takes frames from current page and generates embedded SVGs
-- Shows preview of output at different breakpoints
+- Export frames from current page into embedded SVGs
+- Preview output at different breakpoints
+- Generate responsive embeds
 - Show help when starting for first time or when no frames are present
-- Warning about missing breakpoints
-- Warn about unsupported content
-- Choice of output format in-line or iframe
-- Saves output as a HTML file for easy output (or ZIP)?
-- Choose frames when more than three are present
-- Choose frames when names don't match (mobile/tablet/desktop)
-
-## Tasks
-
-- [BUG] Responsive preview text alignment issues (clipping mask)
-- [Improvement] Remove text nodes from SVG?
-- [Improvement] Tidy-up code
+- Optimize file size with image resize and compression
+- Output directly to a HTML or copy to the clipboard
 
 ## Development
 
@@ -33,25 +28,17 @@ npm run dev
 ```
 
 Load the `manifest.json` file located in the `build` folder into Figma to crate
-a new plugin. Once you've created a new plugin you can use the development console
+a new plugin.
+
+Once you've created a new plugin you can use the development console
 within Figma to test and debug the plugin. Saving changes will automatically
 rebuild allowing you to reload the plugin in Figma.
 
-## UI
-
-![UI drawing](docs/ui-design_v2.svg)
-
-https://excalidraw.com/#json=5549791576588288,QsqzU1x7rBDCzR_gIZUZRA
-
-## Notes
-
-What is wanted from this tool
-
-- Long form write-up for Nicola
-- How we put graphics (charts) into long-form
-- Fraiser uses AI2HTML script (no need to alter-workflow) - It auto populates head-footer & source - Remove these - Print designers use this
-
 ## Changelog
+
+### 0.1.53
+
+- Preparation for public launch
 
 ### 0.1.52
 
@@ -95,23 +82,10 @@ What is wanted from this tool
 - Improvement: Auto-size window based on fames
 - Fix: Only select top level frames on page
 
-## References
+## Credits
 
-[Responsive sticky text SVGs](https://bl.ocks.org/veltman/5cd1ba0b3c623e7b5146
-[Grid widths](https://docs.google.com/spreadsheets/d/1AxeiLKKsQn7pq6wFKcKsSbAgR44K8CA1cLyBYre64IY/edit?ts=5ebd2636#gid=0)
+Created at **The Telegraph** by the **Product Design Team**
 
-Examples:
-
-- https://interactive.guim.co.uk/uploader/embed/2020/01/iraq-airstrikes/giv-39029u79KgLyXZcG/
-- https://interactive.guim.co.uk/uploader/embed/2020/01/reaper-dronespecs/giv-3902RxT87H1Zvcyy/
-- https://interactive.guim.co.uk/uploader/embed/2020/01/baghdad_general-zip/giv-3902n6MjnGXSLzAt/
-- https://interactive.guim.co.uk/uploader/embed/2020/01/middle_east-zip/giv-3902Ow9fZ1NM5sM7/
-
-## Examples
-
-Telegraph AI2HTML Covid graphs
-
-- https://cf-particle-html.eip.telegraph.co.uk/b6b65be9-f851-4a02-acf6-a07756bdaed0.html
-- https://cf-particle-html.eip.telegraph.co.uk/7146379a-a29b-4d05-8a7f-c5070c8c63dc.html
-- https://cf-particle-html.eip.telegraph.co.uk/9bbfbfb6-452f-4626-951a-5d9712df2139.html
-- https://cf-particle-html.eip.telegraph.co.uk/e21e19d7-f4db-490a-b901-6f7b62b41a79.html?ref=https://www.telegraph.co.uk/news/2020/05/14/second-deadly-wave-coronavirus-hit-europe-winter/&title=Exclusive:%20Second%20more%20deadly%20wave%20of%20coronavirus%20%27to%20hit%20Europe%20this%20winter%27
+- DEVELOPER - Andrew Mason
+- PRODUCT DESIGNER - Ed Goldman
+- PRODUCT DESIGNER - Roxanne Poynter
