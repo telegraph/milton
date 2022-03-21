@@ -16,22 +16,7 @@ Figma plug-in that helps generate HTML embeds.
 
 ## Tasks
 
-- [TASK] Replace F2H class / ID's with Milton
-- [TASK] Remove Telegraph specific code
-- [TASK] Add external resource option for CSS and JS
-- [TASK] Save external resource to local storage
-- [TASK] Add custom CSS embed
-- [TASK] Save external resource to local storage
-- [TASK] Remove tracking code and use external resource instead
-- [TASK] List frames if none selected
 - [BUG] Responsive preview text alignment issues (clipping mask)
-- [BUG] Incorrect percentage based line-height
-- [Improvement] Optional headline, sub and source text
-- [Improvement] In situ preview mode
-- [BUG] Wide responsive preview breaks text layout
-- [BUG] Handle frames with the same width (make user choose?)
-- [UI] Add help message when no frames are used
-- [QA] Create test case Figma designs
 - [Improvement] Remove text nodes from SVG?
 - [Improvement] Tidy-up code
 
