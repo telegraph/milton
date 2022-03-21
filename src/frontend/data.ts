@@ -18,11 +18,11 @@ type InitialData = Pick<
   | "fileKey"
 >;
 
-function multipleFramesWithSameWidth(frames: FigmaFramesType): boolean {
-  const allWidths = Object.values(frames).map(({ width }) => width);
+// function multipleFramesWithSameWidth(frames: FigmaFramesType): boolean {
+//   const allWidths = Object.values(frames).map(({ width }) => width);
 
-  return containsDuplicate(allWidths);
-}
+//   return containsDuplicate(allWidths);
+// }
 
 export async function getRootFramesFromBackend(): Promise<InitialData> {
   try {
@@ -34,9 +34,9 @@ export async function getRootFramesFromBackend(): Promise<InitialData> {
       throw NOTIFICATIONS_IDS.ERROR_MISSING_FRAMES;
     }
 
-    if (multipleFramesWithSameWidth(response.frames)) {
-      throw NOTIFICATIONS_IDS.ERROR_MULTIPLE_SAME_WIDTH;
-    }
+    // if (multipleFramesWithSameWidth(response.frames)) {
+    //   throw NOTIFICATIONS_IDS.ERROR_MULTIPLE_SAME_WIDTH;
+    // }
 
     const widths = Object.values(response.frames).map(({ width }) => width);
     const minWidth = Math.min(...widths);
