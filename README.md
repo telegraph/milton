@@ -36,6 +36,10 @@ rebuild allowing you to reload the plugin in Figma.
 
 ## Changelog
 
+### 0.1.6
+
+- Initial public release
+
 ### 0.1.53
 
 - Preparation for public launch
@@ -89,3 +93,7 @@ Created at **The Telegraph** by the **Product Design Team**
 - DEVELOPER - Andrew Mason
 - PRODUCT DESIGNER - Ed Goldman
 - PRODUCT DESIGNER - Roxanne Poynter
+
+## License
+
+MIT
